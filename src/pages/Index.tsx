@@ -1,6 +1,6 @@
 import Navbar from "@/components/landing/Navbar";
 import Hero from "@/components/landing/Hero";
-import TrustStrip from "@/components/landing/TrustStrip";
+
 import CoreValue from "@/components/landing/CoreValue";
 import FeatureCards from "@/components/landing/FeatureCards";
 import PatientShowcase from "@/components/landing/PatientShowcase";
@@ -15,7 +15,7 @@ const Index = () => (
   <div className="min-h-screen bg-background">
     <Navbar />
     <Hero />
-    <TrustStrip />
+    
     <CoreValue />
     <FeatureCards />
     <PatientShowcase />
