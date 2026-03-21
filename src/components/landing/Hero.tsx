@@ -39,7 +39,7 @@ const Hero = () => (
         </div>
 
         <div className="mt-10 flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
-          <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-green-500" /> 24/7 AI Support</span>
+          <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-primary" /> 24/7 AI Support</span>
           <span>5,000+ care journeys</span>
           <span>Live doctor access</span>
         </div>
