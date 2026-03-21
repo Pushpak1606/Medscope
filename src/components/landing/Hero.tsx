@@ -1,17 +1,10 @@
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Pill, MessageCircle, Brain, CalendarClock } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
-
-const floatingCards = [
-  { icon: Pill, label: "Medicine Identified", sub: "Paracetamol 500mg · Allopathy", color: "bg-primary/10 text-primary" },
-  { icon: MessageCircle, label: "Doctor Online", sub: "Dr. Sharma is available now", color: "bg-accent text-accent-foreground" },
-  { icon: Brain, label: "Mental Wellness", sub: "Daily journal updated", color: "bg-secondary text-foreground" },
-  { icon: CalendarClock, label: "Next Reminder", sub: "Take medicine at 2:00 PM", color: "bg-primary/10 text-primary" },
-];
 
 const Hero = () => (
   <section className="relative overflow-hidden border-b border-border/40 bg-background">
-    <div className="container grid items-center gap-12 py-16 md:py-24 lg:grid-cols-2 lg:gap-16">
+    <div className="container grid items-center gap-12 py-16 md:py-24 lg:grid-cols-2 lg:gap-8">
       {/* Left */}
       <motion.div
         initial={{ opacity: 0, y: 24 }}
@@ -45,37 +38,21 @@ const Hero = () => (
         </div>
       </motion.div>
 
-      {/* Right — floating cards */}
+      {/* Right — Spline 3D */}
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.7, delay: 0.2 }}
-        className="relative hidden lg:block"
+        className="relative aspect-square w-full lg:aspect-auto lg:h-[520px]"
       >
-        <div className="relative mx-auto h-[420px] w-full max-w-md">
-          {/* Background shapes */}
-          <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-primary/5 via-accent/30 to-secondary" />
-
-          {floatingCards.map((card, i) => (
-            <motion.div
-              key={card.label}
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 + i * 0.15, duration: 0.5 }}
-              className={`absolute flex items-center gap-3 rounded-2xl border border-border/60 bg-card p-4 shadow-lg ${
-                i === 0 ? "left-4 top-6" : i === 1 ? "right-2 top-28" : i === 2 ? "left-8 bottom-28" : "right-4 bottom-8"
-              }`}
-            >
-              <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${card.color}`}>
-                <card.icon className="h-5 w-5" />
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-foreground">{card.label}</p>
-                <p className="text-xs text-muted-foreground">{card.sub}</p>
-              </div>
-            </motion.div>
-          ))}
-        </div>
+        <iframe
+          src="https://my.spline.design/interactiveaiwebsite-BbuQDRebKK790l24ffad8vPH/"
+          frameBorder="0"
+          className="h-full w-full rounded-3xl"
+          title="Medscope 3D Visual"
+          loading="lazy"
+          allow="autoplay"
+        />
       </motion.div>
     </div>
   </section>
