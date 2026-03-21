@@ -99,6 +99,6 @@
     text-wrap: balance;
   }
   .gradient-text {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-[hsl(200,60%,45%)];
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-[hsl(240,60%,55%)];
   }
 }
