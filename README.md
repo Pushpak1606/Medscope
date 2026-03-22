@@ -1,3 +1,1 @@
-# Welcome to your Lovable project
-
-TODO: Document your project here
+Medscope is an AI-powered digital healthcare platform that unifies physical health, mental health, medication management, and live doctor consultations into a single patient-centric ecosystem. Built as a B.Tech Final Year Project (IT, 2025–26).
