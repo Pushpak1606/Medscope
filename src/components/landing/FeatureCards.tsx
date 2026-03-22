@@ -70,7 +70,7 @@ const FeatureCards = () => (
             <Icon className="absolute h-6 w-6 -bottom-3 -right-3 text-muted-foreground/30" />
 
             {/* Evervault card effect */}
-            <EvervaultCard text={f.title} className="h-48" />
+            <EvervaultCard text={f.title} className="h-28" />
 
             {/* Content below */}
             <div className="relative z-10 rounded-b-3xl border-t border-border/40 bg-card p-6">
