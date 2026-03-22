@@ -5,6 +5,11 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Index from "./pages/Index.tsx";
 import NotFound from "./pages/NotFound.tsx";
+import SelectRole from "./pages/auth/SelectRole.tsx";
+import PatientLogin from "./pages/auth/PatientLogin.tsx";
+import PatientSignup from "./pages/auth/PatientSignup.tsx";
+import DoctorLogin from "./pages/auth/DoctorLogin.tsx";
+import DoctorSignup from "./pages/auth/DoctorSignup.tsx";
 
 const queryClient = new QueryClient();
 
