@@ -1,5 +1,6 @@
 import { Pill, BellRing, Video, Brain, Apple, Users } from "lucide-react";
 import { motion } from "framer-motion";
+import { EvervaultCard, Icon } from "@/components/ui/evervault-card";
 
 const features = [
   {
@@ -60,13 +61,25 @@ const FeatureCards = () => (
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: i * 0.08 }}
-            className="group rounded-3xl border border-border/60 bg-card p-7 transition-shadow hover:shadow-lg"
+            className="group relative rounded-3xl border border-border/60 bg-card p-px overflow-hidden"
           >
-            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
-              <f.icon className="h-6 w-6" />
+            {/* Corner icons */}
+            <Icon className="absolute h-6 w-6 -top-3 -left-3 text-muted-foreground/30" />
+            <Icon className="absolute h-6 w-6 -bottom-3 -left-3 text-muted-foreground/30" />
+            <Icon className="absolute h-6 w-6 -top-3 -right-3 text-muted-foreground/30" />
+            <Icon className="absolute h-6 w-6 -bottom-3 -right-3 text-muted-foreground/30" />
+
+            {/* Evervault card effect */}
+            <EvervaultCard text={f.title} className="h-48" />
+
+            {/* Content below */}
+            <div className="relative z-10 rounded-b-3xl border-t border-border/40 bg-card p-6">
+              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <f.icon className="h-5 w-5" />
+              </div>
+              <h3 className="text-lg font-bold text-foreground">{f.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{f.description}</p>
             </div>
-            <h3 className="text-lg font-bold text-foreground">{f.title}</h3>
-            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{f.description}</p>
           </motion.div>
         ))}
       </div>
