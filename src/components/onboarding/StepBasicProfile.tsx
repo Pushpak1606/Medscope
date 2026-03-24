@@ -1,4 +1,4 @@
-import { User, MapPin, Droplets } from "lucide-react";
+import { User, MapPin, Droplets, Mail, Phone } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -40,6 +40,42 @@ const StepBasicProfile = ({ data, onChange }: StepBasicProfileProps) => {
             onChange={(e) => onChange("fullName", e.target.value)}
             className="pl-11 h-12 bg-background/50 border-border/60 hover:bg-background focus-visible:bg-background focus-visible:ring-primary/20 focus-visible:border-primary transition-all rounded-xl"
           />
+        </div>
+      </div>
+
+      {/* Email & Phone */}
+      <div className="grid gap-5 sm:grid-cols-2">
+        <div className="space-y-2.5">
+          <Label htmlFor="email" className="text-sm font-semibold text-foreground/80">
+            Email
+          </Label>
+          <div className="relative group">
+            <Mail className="absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
+            <Input
+              id="email"
+              type="email"
+              placeholder="you@example.com"
+              value={data.email || ""}
+              onChange={(e) => onChange("email", e.target.value)}
+              className="pl-11 h-12 bg-background/50 border-border/60 hover:bg-background focus-visible:bg-background focus-visible:ring-primary/20 focus-visible:border-primary transition-all rounded-xl"
+            />
+          </div>
+        </div>
+        <div className="space-y-2.5">
+          <Label htmlFor="phone" className="text-sm font-semibold text-foreground/80">
+            Phone number
+          </Label>
+          <div className="relative group">
+            <Phone className="absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
+            <Input
+              id="phone"
+              type="tel"
+              placeholder="+91 98765 43210"
+              value={data.phone || ""}
+              onChange={(e) => onChange("phone", e.target.value)}
+              className="pl-11 h-12 bg-background/50 border-border/60 hover:bg-background focus-visible:bg-background focus-visible:ring-primary/20 focus-visible:border-primary transition-all rounded-xl"
+            />
+          </div>
         </div>
       </div>
 

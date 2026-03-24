@@ -11,6 +11,8 @@ import PatientLogin from "./pages/auth/PatientLogin.tsx";
 import PatientSignup from "./pages/auth/PatientSignup.tsx";
 import DoctorLogin from "./pages/auth/DoctorLogin.tsx";
 import DoctorSignup from "./pages/auth/DoctorSignup.tsx";
+import OnboardingPage from "./pages/patient/OnboardingPage.tsx";
+import DoctorOnboardingPage from "./pages/doctor/DoctorOnboardingPage.tsx";
 
 const queryClient = new QueryClient();
 
@@ -26,8 +28,10 @@ const App = () => (
           <Route path="/auth/select-role" element={<SelectRole />} />
           <Route path="/patient/login" element={<PatientLogin />} />
           <Route path="/patient/signup" element={<PatientSignup />} />
+          <Route path="/patient/onboarding" element={<OnboardingPage />} />
           <Route path="/doctor/login" element={<DoctorLogin />} />
           <Route path="/doctor/signup" element={<DoctorSignup />} />
+          <Route path="/doctor/onboarding" element={<DoctorOnboardingPage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
