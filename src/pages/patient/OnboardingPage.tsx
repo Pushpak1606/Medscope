@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
+import { usePatient } from "@/context/PatientContext";
 import { ArrowLeft, CheckCircle, ChevronLeft, ChevronRight, Loader2, Activity } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -24,6 +25,7 @@ const STEPS = [
 const OnboardingPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { setProfile } = usePatient();
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState<Record<string, any>>(location.state || {});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -56,7 +58,12 @@ const OnboardingPage = () => {
     
     // Redirect to dashboard after success
     setTimeout(() => {
-      navigate("/"); // typically "/patient/dashboard"
+      // Persist ALL form data into shared context
+      setProfile({
+        ...formData,
+        profileCompleteness: 100,
+      });
+      navigate("/patient/dashboard");
     }, 2000);
   };
 
