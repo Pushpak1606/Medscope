@@ -38,12 +38,12 @@ export const InfiniteGrid = ({ children, className }: { children?: React.ReactNo
       className={cn("relative overflow-hidden bg-background", className)}
     >
       {/* Base grid */}
-      <div className="absolute inset-0 opacity-[0.03]">
+      <div className="pointer-events-none absolute inset-0 opacity-[0.03]">
         <GridPattern offsetX={gridOffsetX} offsetY={gridOffsetY} />
       </div>
 
       {/* Mouse-reveal grid */}
-      <motion.div className="absolute inset-0 opacity-20" style={{ maskImage, WebkitMaskImage: maskImage }}>
+      <motion.div className="pointer-events-none absolute inset-0 opacity-20" style={{ maskImage, WebkitMaskImage: maskImage }}>
         <GridPattern offsetX={gridOffsetX} offsetY={gridOffsetY} />
       </motion.div>
 
@@ -62,7 +62,7 @@ export const InfiniteGrid = ({ children, className }: { children?: React.ReactNo
 
 const GridPattern = ({ offsetX, offsetY }: { offsetX: any; offsetY: any }) => {
   return (
-    <svg className="absolute inset-0 h-full w-full">
+    <svg className="pointer-events-none absolute inset-0 h-full w-full">
       <defs>
         <pattern id="grid-pattern" width="40" height="40" patternUnits="userSpaceOnUse">
           <motion.rect x={0} y={0} width="40" height="40" fill="none" stroke="currentColor" strokeWidth="0.5" style={{ x: useTransform(offsetX, (v: number) => -v), y: useTransform(offsetY, (v: number) => -v) }} />
