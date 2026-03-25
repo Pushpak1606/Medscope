@@ -19,7 +19,7 @@ const itemVariants = {
 };
 
 const Hero = () => (
-  <section className="relative overflow-hidden border-b border-border/40 bg-background">
+  <section id="home" className="relative overflow-hidden border-b border-border/40 bg-background">
     <AnimatedBackground variant="default" className="opacity-80 md:opacity-100" />
     
     <InfiniteGrid className="min-h-[700px] bg-transparent">

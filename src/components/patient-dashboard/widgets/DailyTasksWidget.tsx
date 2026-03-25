@@ -50,11 +50,11 @@ const SortableTaskItem = ({ task, onToggle }: SortableTaskItemProps) => {
     <div
       ref={setNodeRef}
       style={style}
-      className={`relative flex items-center justify-between p-4 rounded-2xl border transition-all ${
-        isDragging ? "bg-muted/50 border-primary/50 shadow-md scale-[1.02]" :
+      className={`relative flex items-center justify-between p-3 sm:p-4 rounded-3xl transition-all ${
+        isDragging ? "bg-card border border-primary/40 shadow-xl scale-[1.03] z-50" :
         task.completed 
-          ? 'bg-muted/30 border-border/40 opacity-70' 
-          : 'bg-background hover:bg-muted/50 border-border/60 shadow-sm group'
+          ? 'opacity-50 grayscale transition-opacity' 
+          : 'bg-transparent hover:bg-muted/40 group'
       }`}
     >
       <div className="flex items-center gap-3">
@@ -69,18 +69,18 @@ const SortableTaskItem = ({ task, onToggle }: SortableTaskItemProps) => {
         </button>
 
         {/* Task Icon */}
-        <div className={`h-10 w-10 rounded-xl flex items-center flex-shrink-0 justify-center ${
-          task.completed ? 'bg-primary/20 text-primary' : 'bg-muted text-muted-foreground group-hover:text-foreground'
+        <div className={`h-10 w-10 sm:h-12 sm:w-12 rounded-xl flex items-center flex-shrink-0 justify-center transition-all ${
+          task.completed ? 'bg-primary/20 text-primary scale-95' : 'bg-muted text-muted-foreground group-hover:text-foreground group-hover:bg-muted/80 group-hover:scale-105'
         }`}>
-          <IconObj className="h-5 w-5" />
+          <IconObj className="h-5 w-5 sm:h-6 sm:w-6" />
         </div>
 
         {/* Task Details */}
-        <div className="flex flex-col items-start gap-1">
-          <span className={`text-sm font-bold line-clamp-1 ${task.completed ? 'text-muted-foreground line-through decoration-2' : 'text-foreground'}`}>
+        <div className="flex flex-col items-start gap-0.5 sm:gap-1 pl-1">
+          <span className={`text-sm sm:text-base font-bold line-clamp-1 transition-colors ${task.completed ? 'text-muted-foreground/60 line-through decoration-2' : 'text-foreground'}`}>
             {task.label}
           </span>
-          <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">{task.time}</span>
+          <span className="text-[10px] sm:text-xs uppercase font-bold text-muted-foreground/80 tracking-wider">{task.time}</span>
         </div>
       </div>
 

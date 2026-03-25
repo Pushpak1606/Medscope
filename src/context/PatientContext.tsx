@@ -15,6 +15,25 @@ export interface WidgetConfig {
   visible: boolean;
 }
 
+export interface PatientPreferences {
+  notifications: {
+    medicine: boolean;
+    appointments: boolean;
+    wellness: boolean;
+    email: boolean;
+    sms: boolean;
+  };
+  privacy: {
+    twoFactor: boolean;
+    aiAnalysis: boolean;
+  };
+  consultation: {
+    defaultMode: string;
+    reminderTiming: string;
+    preferredGender: string;
+  };
+}
+
 export interface PatientProfile {
   // Basic
   fullName?: string;
@@ -53,6 +72,7 @@ export interface PatientProfile {
   language?: string;
   // Meta
   profileCompleteness?: number;
+  preferences?: PatientPreferences;
 }
 
 export type ReminderType = "All" | "Medicines" | "Meals" | "Water" | "Appointments" | "Wellness";
@@ -78,7 +98,9 @@ interface PatientContextType {
   setWidgetOrder: (order: WidgetConfig[]) => void;
   reminders: Reminder[];
   addReminder: (r: Omit<Reminder, "id">) => void;
+  editReminder: (id: string, updates: Partial<Reminder>) => void;
   markReminderDone: (id: string) => void;
+  snoozeReminder: (id: string) => void;
   deleteReminder: (id: string) => void;
 }
 
@@ -87,13 +109,19 @@ const PatientContext = createContext<PatientContextType | undefined>(undefined);
 const PROFILE_KEY = "medscope-patient-profile";
 const WIDGETS_KEY = "medscope-widget-order";
 
+const DEFAULT_PREFERENCES: PatientPreferences = {
+  notifications: { medicine: true, appointments: true, wellness: false, email: true, sms: false },
+  privacy: { twoFactor: false, aiAnalysis: true },
+  consultation: { defaultMode: "video", reminderTiming: "15", preferredGender: "any" }
+};
+
 export const PatientProvider = ({ children }: { children: ReactNode }) => {
   const [profile, setProfileState] = useState<PatientProfile>(() => {
     try {
       const stored = secureStorage.getItem<PatientProfile>(PROFILE_KEY);
-      return stored || {};
+      return stored || { preferences: DEFAULT_PREFERENCES };
     } catch {
-      return {};
+      return { preferences: DEFAULT_PREFERENCES };
     }
   });
 
@@ -147,7 +175,17 @@ export const PatientProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const updateProfile = (partial: Partial<PatientProfile>) => {
-    setProfileState((prev) => ({ ...prev, ...partial }));
+    setProfileState((prev) => {
+      let newPreferences = prev.preferences;
+      if (partial.preferences) {
+        newPreferences = {
+          notifications: { ...(prev.preferences?.notifications || DEFAULT_PREFERENCES.notifications), ...partial.preferences.notifications },
+          privacy: { ...(prev.preferences?.privacy || DEFAULT_PREFERENCES.privacy), ...partial.preferences.privacy },
+          consultation: { ...(prev.preferences?.consultation || DEFAULT_PREFERENCES.consultation), ...partial.preferences.consultation },
+        };
+      }
+      return { ...prev, ...partial, preferences: newPreferences || DEFAULT_PREFERENCES };
+    });
   };
 
   const setWidgetOrder = (order: WidgetConfig[]) => {
@@ -155,12 +193,36 @@ export const PatientProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const addReminder = (r: Omit<Reminder, "id">) => {
-    const newReminder = { ...r, id: Math.random().toString(36).substr(2, 9) };
+    const newReminder = { ...r, id: Math.random().toString(36).substring(2, 9) };
     setReminders(prev => [...prev, newReminder as Reminder]);
   };
 
+  const editReminder = (id: string, updates: Partial<Reminder>) => {
+    setReminders(prev => prev.map(r => r.id === id ? { ...r, ...updates } : r));
+  };
+
   const markReminderDone = (id: string) => {
-    setReminders(prev => prev.map(r => r.id === id ? { ...r, status: "completed" } : r));
+    setReminders(prev => prev.map(r => r.id === id ? { ...r, status: "completed" as const } : r));
+  };
+
+  const snoozeReminder = (id: string) => {
+    setReminders(prev => prev.map(r => {
+      if (r.id === id) {
+        // Simple 1-hour snooze logic for HH:MM AM/PM strings
+        const timeMatch = r.time.match(/(\d+):(\d+)\s(AM|PM)/i);
+        if (timeMatch) {
+          let hours = parseInt(timeMatch[1], 10);
+          const mins = timeMatch[2];
+          let period = timeMatch[3].toUpperCase();
+          hours += 1;
+          if (hours === 12) period = period === "AM" ? "PM" : "AM";
+          if (hours > 12) hours = 1;
+          const newTime = `${String(hours).padStart(2, '0')}:${mins} ${period}`;
+          return { ...r, time: newTime };
+        }
+      }
+      return r;
+    }));
   };
 
   const deleteReminder = (id: string) => {
@@ -171,7 +233,7 @@ export const PatientProvider = ({ children }: { children: ReactNode }) => {
     <PatientContext.Provider value={{ 
       profile, setProfile, updateProfile, 
       widgetOrder, setWidgetOrder,
-      reminders, addReminder, markReminderDone, deleteReminder
+      reminders, addReminder, editReminder, markReminderDone, snoozeReminder, deleteReminder
     }}>
       {children}
     </PatientContext.Provider>

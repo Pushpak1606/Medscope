@@ -24,10 +24,36 @@ export function NavBar({ items, className }: NavBarProps) {
       setIsMobile(window.innerWidth < 768)
     }
 
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY + window.innerHeight / 3;
+      let currentActive = activeTab;
+
+      const sections = items.map(item => {
+        if (item.url.startsWith("#")) {
+          const id = item.url === "#" ? "home" : item.url.slice(1);
+          return { name: item.name, element: document.getElementById(id) };
+        }
+        return null;
+      }).filter(Boolean);
+
+      for (const section of sections) {
+        if (section?.element && section.element.offsetTop <= scrollPosition) {
+          currentActive = section.name;
+        }
+      }
+
+      setActiveTab(prev => currentActive !== prev ? currentActive : prev);
+    }
+
     handleResize()
+    handleScroll()
     window.addEventListener("resize", handleResize)
-    return () => window.removeEventListener("resize", handleResize)
-  }, [])
+    window.addEventListener("scroll", handleScroll, { passive: true })
+    return () => {
+      window.removeEventListener("resize", handleResize)
+      window.removeEventListener("scroll", handleScroll)
+    }
+  }, [items])
 
   return (
     <div

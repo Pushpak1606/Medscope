@@ -25,15 +25,15 @@ const MentalWellnessWidget = () => {
         </div>
       </div>
 
-      {/* Mood Selector */}
-      <div className="flex justify-between items-center mb-6 bg-background p-2 rounded-2xl border border-border/30 shadow-sm">
+      {/* Mood Selector - allow overflow dragging on super small screens */}
+      <div className="flex justify-between sm:justify-around items-center mb-6 bg-background p-2 rounded-2xl border border-border/30 shadow-sm overflow-x-auto hide-scrollbar gap-1 sm:gap-0 snap-x">
         {MOODS.map((mood) => (
           <button
             key={mood.label}
-            className="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-muted transition-colors sm:min-w-[48px]"
+            className="flex flex-col items-center gap-1 p-2 sm:p-3 rounded-xl hover:bg-muted transition-colors min-w-[3rem] sm:min-w-[4rem] snap-center shrink-0"
             title={mood.label}
           >
-            <span className="text-2xl">{mood.emoji}</span>
+            <span className="text-2xl sm:text-3xl transition-transform hover:scale-125">{mood.emoji}</span>
           </button>
         ))}
       </div>

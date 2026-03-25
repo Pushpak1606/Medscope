@@ -71,7 +71,7 @@ const SelectRole = () => (
                 inactiveZone={0.01}
                 borderWidth={2}
               />
-              <div className="relative flex h-full flex-col p-8 rounded-xl border border-border/50 bg-card/80 backdrop-blur-md shadow-sm transition-all duration-300 group-hover:bg-card">
+              <div className="relative flex h-full flex-col p-5 sm:p-8 rounded-xl border border-border/50 bg-card/80 backdrop-blur-md shadow-sm transition-all duration-300 group-hover:bg-card">
                 <div className={cn("mb-6 flex h-14 w-14 items-center justify-center rounded-2xl shadow-inner", role.bgClass)}>
                   <role.icon className={cn("h-7 w-7 transition-transform duration-300 group-hover:scale-110", role.colorClass)} />
                 </div>

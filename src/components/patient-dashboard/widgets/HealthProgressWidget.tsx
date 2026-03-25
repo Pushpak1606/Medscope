@@ -1,57 +1,57 @@
-import { TrendingUp, Activity } from "lucide-react";
-import { LineChart, Line, ResponsiveContainer, Tooltip } from 'recharts';
-
-const data = [
-  { day: 'Mon', value: 3 },
-  { day: 'Tue', value: 4 },
-  { day: 'Wed', value: 2 },
-  { day: 'Thu', value: 5 },
-  { day: 'Fri', value: 4 },
-  { day: 'Sat', value: 6 },
-  { day: 'Sun', value: 7 },
-];
+import { Droplets, Moon, Flame, ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const HealthProgressWidget = () => {
+  const metrics = [
+    { label: "Water", value: 4, target: 8, unit: "glasses", icon: Droplets, color: "text-blue-500", bg: "bg-blue-500", track: "bg-blue-500/20" },
+    { label: "Sleep", value: 6.5, target: 8, unit: "hrs", icon: Moon, color: "text-indigo-500", bg: "bg-indigo-500", track: "bg-indigo-500/20" },
+    { label: "Activity", value: 350, target: 500, unit: "kcal", icon: Flame, color: "text-orange-500", bg: "bg-orange-500", track: "bg-orange-500/20" },
+  ];
+
   return (
-    <div className="h-full flex flex-col rounded-[2.5rem] bg-card border border-border/50 shadow-sm p-6 sm:p-8 relative overflow-hidden group">
-      <div className="absolute top-0 right-0 h-24 w-24 bg-gradient-to-br from-blue-500/10 to-transparent rounded-bl-full pointer-events-none"></div>
-
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h3 className="font-bold text-foreground flex items-center gap-2">
-            <Activity className="h-5 w-5 text-blue-500" /> Health Progress
-          </h3>
-          <p className="text-xs text-muted-foreground font-medium mt-1">Weekly care activity</p>
-        </div>
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/10 text-blue-500">
-          <TrendingUp className="h-5 w-5" />
-        </div>
+    <div className="rounded-[2.5rem] bg-card p-6 sm:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-border/50 relative overflow-hidden group">
+      {/* Subtle ambient light */}
+      <div className="absolute -top-10 -right-10 w-32 h-32 bg-primary/10 blur-[40px] rounded-full pointer-events-none transition-transform duration-700 group-hover:scale-150"></div>
+      
+      <div className="flex items-center justify-between mb-6 sm:mb-8 relative">
+        <h3 className="font-extrabold text-xl sm:text-2xl text-foreground tracking-tight">Daily Goals</h3>
+        <span className="text-[10px] sm:text-xs font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-full uppercase tracking-wider">In Progress</span>
       </div>
 
-      <div className="h-32 w-full mt-2 -ml-2">
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={data}>
-            <Tooltip 
-              contentStyle={{ backgroundColor: 'hsl(var(--card))', borderRadius: '12px', border: '1px solid hsl(var(--border))' }}
-              itemStyle={{ color: 'hsl(var(--foreground))', fontWeight: 'bold' }}
-              labelStyle={{ color: 'hsl(var(--muted-foreground))' }}
-            />
-            <Line 
-              type="monotone" 
-              dataKey="value" 
-              stroke="hsl(var(--primary))" 
-              strokeWidth={4} 
-              dot={{ r: 4, fill: "hsl(var(--primary))", strokeWidth: 2, stroke: "hsl(var(--background))" }}
-              activeDot={{ r: 6, fill: "hsl(var(--primary))" }} 
-            />
-          </LineChart>
-        </ResponsiveContainer>
+      <div className="space-y-6 relative">
+        {metrics.map((metric, idx) => {
+          const progress = Math.min((metric.value / metric.target) * 100, 100);
+          
+          return (
+            <div key={idx} className="flex items-center gap-4">
+              <div className={`p-3 rounded-2xl flex items-center justify-center shrink-0 ${metric.track}`}>
+                 <metric.icon className={`h-5 w-5 ${metric.color}`} />
+              </div>
+              <div className="flex-1 w-full min-w-0">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm font-extrabold text-foreground">{metric.label}</span>
+                  <span className="text-[11px] font-bold text-foreground bg-background px-2 py-0.5 rounded-full border border-border/50">
+                     {metric.value} <span className="text-muted-foreground font-semibold">/ {metric.target} {metric.unit}</span>
+                  </span>
+                </div>
+                <div className={`w-full h-1.5 sm:h-2 rounded-full ${metric.track} overflow-hidden`}>
+                  <div 
+                    className={`h-full ${metric.bg} rounded-full transition-all duration-1000 ease-out`}
+                    style={{ width: `${progress}%` }}
+                  ></div>
+                </div>
+              </div>
+            </div>
+          );
+        })}
       </div>
 
-      <div className="mt-4 flex items-center justify-between bg-muted/30 p-3 rounded-xl border border-border/40">
-        <span className="text-sm font-semibold text-foreground">5 of 7 days active</span>
-        <span className="text-xs font-bold text-green-500 bg-green-500/10 px-2 py-1 rounded-md">Good</span>
-      </div>
+      <Link 
+        to="/patient/log-vitals" 
+        className="mt-6 flex items-center justify-center w-full gap-2 py-3 rounded-xl bg-muted/50 text-sm font-bold text-foreground hover:bg-muted transition-colors border border-border/50"
+      >
+        Update Vitals <ArrowRight className="h-4 w-4" />
+      </Link>
     </div>
   );
 };

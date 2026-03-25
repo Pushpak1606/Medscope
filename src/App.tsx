@@ -16,6 +16,7 @@ import OnboardingPage from "./pages/patient/OnboardingPage.tsx";
 import PatientDashboard from "./pages/patient/PatientDashboard.tsx";
 import PatientSettings from "./pages/patient/PatientSettings.tsx";
 import PatientProfile from "./pages/patient/PatientProfile.tsx";
+import EditProfile from "./pages/patient/EditProfile.tsx";
 import DoctorOnboardingPage from "./pages/doctor/DoctorOnboardingPage.tsx";
 import ScanRxPage from "./pages/patient/ScanRxPage.tsx";
 import AskAIPage from "./pages/patient/AskAIPage.tsx";
@@ -23,8 +24,19 @@ import LogMoodPage from "./pages/patient/LogMoodPage.tsx";
 import EmergencyPage from "./pages/patient/EmergencyPage.tsx";
 import RecordsPage from "./pages/patient/RecordsPage.tsx";
 import RemindersPage from "./pages/patient/RemindersPage.tsx";
+import ScrollToTop from "@/components/ScrollToTop";
 
 const queryClient = new QueryClient();
+
+// Initialize global font scaling before React mounts to prevent FOUC
+const initFontSize = () => {
+  if (localStorage.getItem("medscope-font-size") === "large") {
+    document.documentElement.classList.add("font-large");
+  } else {
+    document.documentElement.classList.remove("font-large");
+  }
+};
+initFontSize();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -33,6 +45,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <ScrollToTop />
         <PatientProvider>
         <Routes>
           <Route path="/" element={<Index />} />
@@ -43,6 +56,7 @@ const App = () => (
           <Route path="/patient/dashboard" element={<PatientDashboard />} />
           <Route path="/patient/settings" element={<PatientSettings />} />
           <Route path="/patient/profile" element={<PatientProfile />} />
+          <Route path="/patient/profile/edit" element={<EditProfile />} />
           <Route path="/doctor/login" element={<DoctorLogin />} />
           <Route path="/doctor/signup" element={<DoctorSignup />} />
           <Route path="/doctor/onboarding" element={<DoctorOnboardingPage />} />

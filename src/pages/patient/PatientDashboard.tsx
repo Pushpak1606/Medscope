@@ -4,9 +4,12 @@ import AnimatedBackground from "@/components/ui/animated-background";
 import DashboardHeader from "@/components/patient-dashboard/DashboardHeader";
 import MobileNavDock from "@/components/patient-dashboard/MobileNavDock";
 import { usePatient } from "@/context/PatientContext";
+import { Sun, Moon, CloudSun, Sparkles } from "lucide-react";
+import { GlobalCommand } from "@/components/ui/global-command";
+import { EmergencyFAB } from "@/components/ui/emergency-fab";
 
 // Widgets
-import ProfileSnapshotWidget from "@/components/patient-dashboard/widgets/ProfileSnapshotWidget";
+import HealthProgressWidget from "@/components/patient-dashboard/widgets/HealthProgressWidget";
 import AccordionInfoWidget from "@/components/patient-dashboard/widgets/AccordionInfoWidget";
 import MedicineTimerWidget from "@/components/patient-dashboard/widgets/MedicineTimerWidget";
 import DailyTasksWidget from "@/components/patient-dashboard/widgets/DailyTasksWidget";
@@ -32,47 +35,45 @@ const PatientDashboard = () => {
   const displayName = profile.fullName?.split(" ")[0] || "Patient";
   const completeness = profile.profileCompleteness ?? 85;
 
+  // Time-Aware Logic
+  const currentHour = new Date().getHours();
+  let greeting = "Good Evening";
+  let subtitle = "Time to wind down and review your day.";
+  let timeTheme = "from-indigo-500/10 via-purple-500/5 to-transparent border-indigo-500/20";
+  let TimeIcon = Moon;
+  let iconColor = "text-indigo-400";
+
+  if (currentHour >= 5 && currentHour < 12) {
+    greeting = "Good Morning";
+    subtitle = "Let's start your day with your health in focus.";
+    timeTheme = "from-amber-500/15 via-orange-500/5 to-transparent border-amber-500/20";
+    TimeIcon = Sun;
+    iconColor = "text-amber-500";
+  } else if (currentHour >= 12 && currentHour < 18) {
+    greeting = "Good Afternoon";
+    subtitle = "Keep up the momentum for a healthy day.";
+    timeTheme = "from-blue-500/15 via-cyan-500/5 to-transparent border-blue-500/20";
+    TimeIcon = CloudSun;
+    iconColor = "text-blue-500";
+  }
+
   // Build ordered visible widgets from context
   const visibleWidgets = widgetOrder.filter((w) => w.visible);
 
-  // Separate into paired (render 2-per-row) and full-width
   const renderCenterColumn = () => {
-    const elements: React.ReactNode[] = [];
-    let pairBuffer: React.ReactNode[] = [];
-
-    visibleWidgets.forEach((w, i) => {
+    return visibleWidgets.map((w) => {
       const Component = WIDGET_MAP[w.id];
-      if (!Component) return;
+      if (!Component) return null;
 
-      if (PAIRED_IDS.has(w.id)) {
-        pairBuffer.push(<Component key={w.id} />);
-        // Flush pair when we have 2, or at end of list, or when next item is full-width
-        const nextWidget = visibleWidgets[i + 1];
-        const nextIsPaired = nextWidget && PAIRED_IDS.has(nextWidget.id);
-        if (pairBuffer.length === 2 || !nextIsPaired) {
-          elements.push(
-            <div key={`pair-${i}`} className="grid grid-cols-1 sm:grid-cols-2 gap-6 xl:gap-8">
-              {pairBuffer}
-            </div>
-          );
-          pairBuffer = [];
-        }
-      } else {
-        // Full-width widget (like Quick Actions)
-        elements.push(<Component key={w.id} />);
-      }
-    });
+      const isPaired = PAIRED_IDS.has(w.id);
+      const spanClass = isPaired ? "col-span-1" : "col-span-1 sm:col-span-2";
 
-    // Flush any remaining
-    if (pairBuffer.length > 0) {
-      elements.push(
-        <div key="pair-last" className="grid grid-cols-1 sm:grid-cols-2 gap-6 xl:gap-8">
-          {pairBuffer}
+      return (
+        <div key={w.id} className={spanClass}>
+          <Component />
         </div>
       );
-    }
-
-    return elements;
+    });
   };
 
   return (
@@ -87,70 +88,69 @@ const PatientDashboard = () => {
         {/* Header (Top Navigation) */}
         <DashboardHeader profile={{ name: displayName, profileCompleteness: completeness }} />
 
-        {/* Welcome Top Strip (Greeting & Pills) */}
+        {/* Welcome Banner (Immersive & Time-Aware) */}
         <motion.div
-           initial={{ opacity: 0, y: -10 }}
-           animate={{ opacity: 1, y: 0 }}
-           transition={{ duration: 0.4 }}
-           className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 py-6 border-b border-border/40 mb-2"
+           initial={{ opacity: 0, scale: 0.98, y: 10 }}
+           animate={{ opacity: 1, scale: 1, y: 0 }}
+           transition={{ duration: 0.5, ease: "easeOut" }}
+           className={`relative overflow-hidden flex flex-col lg:flex-row lg:items-center justify-between gap-8 p-8 sm:p-10 rounded-[2.5rem] bg-gradient-to-br ${timeTheme} border shadow-sm mb-4`}
         >
-          <div>
-            <h1 className="text-4xl font-extrabold font-heading text-foreground tracking-tight mb-2">
-              Welcome back, {displayName}
-            </h1>
-            <p className="text-muted-foreground font-medium">Your personalized AI health companion.</p>
+          {/* Ambient Glow behind the text */}
+          <div className="absolute top-0 left-0 w-full h-full bg-card/40 backdrop-blur-[2px] z-0 pointer-events-none"></div>
+
+          <div className="relative z-10 flex gap-5 items-center lg:items-start">
+            <div className={`hidden sm:flex h-16 w-16 items-center justify-center rounded-2xl bg-background/50 backdrop-blur-md border border-border/50 shadow-sm ${iconColor}`}>
+              <TimeIcon className="h-8 w-8" />
+            </div>
+            <div>
+              <h1 className="text-3xl sm:text-4xl font-extrabold font-heading text-foreground tracking-tight mb-2 flex items-center gap-3">
+                {greeting}, {displayName}
+              </h1>
+              <p className="text-muted-foreground font-medium text-base sm:text-lg">{subtitle}</p>
+            </div>
           </div>
           
-          <div className="flex flex-wrap items-center gap-2">
-             <div className="px-4 py-2 bg-primary/10 text-primary border border-primary/20 rounded-full font-bold text-sm shadow-sm flex items-center gap-2 hover:bg-primary/20 transition-colors">
-               <span className="h-2 w-2 rounded-full bg-primary animate-pulse"></span>
+          <div className="relative z-10 flex flex-wrap items-center gap-3">
+             <div className="px-5 py-2.5 bg-background/60 backdrop-blur-md text-primary border border-primary/20 rounded-xl font-bold text-sm shadow-sm flex items-center gap-2 hover:bg-background/80 transition-colors cursor-pointer group">
+               <span className="h-2 w-2 rounded-full bg-primary group-hover:animate-pulse"></span>
                3 Reminders Today
              </div>
-             <div className="px-4 py-2 bg-blue-500/10 text-blue-500 border border-blue-500/20 rounded-full font-bold text-sm shadow-sm hover:bg-blue-500/20 transition-colors">
+             <div className="px-5 py-2.5 bg-background/60 backdrop-blur-md text-amber-500 border border-amber-500/20 rounded-xl font-bold text-sm shadow-sm flex items-center gap-2 hover:bg-background/80 transition-colors cursor-pointer group">
+               <Sparkles className="h-4 w-4 group-hover:rotate-12 transition-transform" />
                12 Day Streak
              </div>
-             <div className="px-4 py-2 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 rounded-full font-bold text-sm shadow-sm hover:bg-emerald-500/20 transition-colors">
+             <div className="px-5 py-2.5 bg-background/60 backdrop-blur-md text-emerald-500 border border-emerald-500/20 rounded-xl font-bold text-sm shadow-sm hover:bg-background/80 transition-colors cursor-pointer">
                Profile {completeness}%
              </div>
           </div>
         </motion.div>
 
         {/* Bento Grid Architecture */}
-        <motion.div 
-           initial={{ opacity: 0, y: 20 }}
-           animate={{ opacity: 1, y: 0 }}
-           transition={{ duration: 0.5, delay: 0.1 }}
-           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 xl:gap-8 auto-rows-[minmax(0,auto)]"
-        >
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 xl:gap-8 auto-rows-max items-start">
+          
           {/* Left Column */}
-          <div className="flex flex-col gap-6 xl:gap-8 lg:col-span-1 md:col-span-1">
-            <ProfileSnapshotWidget profile={{
-              name: displayName,
-              healthFocus: profile.healthFocus,
-              age: profile.age,
-              bloodGroup: profile.bloodGroup,
-              height: profile.height,
-              weight: profile.weight,
-              profileCompleteness: completeness,
-            }} />
+          <div className="flex flex-col gap-6 xl:gap-8 lg:col-span-3">
+            <HealthProgressWidget />
             <AccordionInfoWidget />
           </div>
 
-          {/* Center Column — Dynamically rendered from widgetOrder */}
-          <div className="flex flex-col gap-6 xl:gap-8 lg:col-span-2 md:col-span-1">
+          {/* Center Column — Dynamically packed */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 xl:gap-8 lg:col-span-6 grid-flow-row-dense">
             {renderCenterColumn()}
           </div>
 
           {/* Right Column */}
-          <div className="flex flex-col gap-6 xl:gap-8 lg:col-span-1 md:col-span-1">
+          <div className="flex flex-col gap-6 xl:gap-8 lg:col-span-3">
             <DailyTasksWidget />
           </div>
 
-        </motion.div>
+        </div>
       </div>
 
-      {/* Mobile Nav */}
+      {/* Mobile Nav & Global Controls */}
       <MobileNavDock />
+      <GlobalCommand />
+      <EmergencyFAB />
     </div>
   );
 };

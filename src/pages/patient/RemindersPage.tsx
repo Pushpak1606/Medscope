@@ -4,10 +4,10 @@ import PatientPageLayout from "@/components/patient-dashboard/shared/PatientPage
 import PageHeader from "@/components/patient-dashboard/shared/PageHeader";
 import GlassCard from "@/components/patient-dashboard/shared/GlassCard";
 import LiquidGlassButton from "@/components/patient-dashboard/shared/LiquidGlassButton";
-import { Pill, Utensils, Droplets, Calendar, Brain, Clock, CheckCircle2, ChevronRight, ChevronLeft, ChevronUp, ChevronDown, Plus, Flame, RefreshCcw, BellOff, X } from "lucide-react";
+import { Pill, Utensils, Droplets, Calendar, Brain, Clock, CheckCircle2, ChevronRight, ChevronLeft, ChevronUp, ChevronDown, Plus, Flame, RefreshCcw, BellOff, X, Edit2, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { usePatient, ReminderType } from "@/context/PatientContext";
+import { usePatient, ReminderType, Reminder } from "@/context/PatientContext";
 
 const ICON_MAP: Record<string, any> = {
   Pill,
@@ -30,7 +30,7 @@ const TYPE_MAP: Record<ReminderType, { icon: string, color: string, bg: string }
 const FILTER_CHIPS: ReminderType[] = ["All", "Medicines", "Meals", "Water", "Appointments", "Wellness"];
 
 const RemindersPage = () => {
-  const { reminders, addReminder, markReminderDone } = usePatient();
+  const { reminders, addReminder, editReminder, deleteReminder, snoozeReminder, markReminderDone } = usePatient();
   const [activeFilter, setActiveFilter] = useState<ReminderType>("All");
   const [isLoading, setIsLoading] = useState(true);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -49,8 +49,8 @@ const RemindersPage = () => {
     return () => clearTimeout(timer);
   }, []);
   
-  // Add Form State
   const [isAddOpen, setIsAddOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [newTitle, setNewTitle] = useState("");
   const [newHour, setNewHour] = useState(8);
   const [newMinute, setNewMinute] = useState(0);
@@ -61,28 +61,67 @@ const RemindersPage = () => {
   const cycleHour = (dir: 1 | -1) => setNewHour(h => { const n = h + dir; if (n > 12) return 1; if (n < 1) return 12; return n; });
   const cycleMinute = (dir: 1 | -1) => setNewMinute(m => { const n = m + dir * 5; if (n >= 60) return 0; if (n < 0) return 55; return n; });
 
+  const resetForm = () => {
+    setEditingId(null);
+    setNewTitle("");
+    setNewHour(8);
+    setNewMinute(0);
+    setNewPeriod("AM");
+    setNewType("Medicines");
+    setNewRepeat("One-time");
+  };
+
+  const openAdd = () => {
+    resetForm();
+    setIsAddOpen(true);
+  };
+
+  const openEdit = (reminder: Reminder) => {
+    setEditingId(reminder.id);
+    setNewTitle(reminder.title);
+    setNewType(reminder.type);
+    setNewRepeat(reminder.repeat);
+    const match = reminder.time.match(/(\d+):(\d+)\s*(AM|PM)/i);
+    if (match) {
+      setNewHour(parseInt(match[1], 10));
+      setNewMinute(parseInt(match[2], 10));
+      setNewPeriod(match[3].toUpperCase() as "AM" | "PM");
+    }
+    setIsAddOpen(true);
+  };
+
   const handleAdd = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTitle.trim()) return;
 
     const displayTime = `${String(newHour).padStart(2, '0')}:${String(newMinute).padStart(2, '0')} ${newPeriod}`;
     const style = TYPE_MAP[newType];
-    addReminder({
-      title: newTitle,
-      time: displayTime,
-      type: newType,
-      status: "upcoming",
-      repeat: newRepeat,
-      iconName: style.icon,
-      color: style.color,
-      bg: style.bg
-    });
+    
+    if (editingId) {
+      editReminder(editingId, {
+        title: newTitle,
+        time: displayTime,
+        type: newType,
+        repeat: newRepeat,
+        iconName: style.icon,
+        color: style.color,
+        bg: style.bg
+      });
+    } else {
+      addReminder({
+        title: newTitle,
+        time: displayTime,
+        type: newType,
+        status: "upcoming",
+        repeat: newRepeat,
+        iconName: style.icon,
+        color: style.color,
+        bg: style.bg
+      });
+    }
 
     setIsAddOpen(false);
-    setNewTitle("");
-    setNewHour(8);
-    setNewMinute(0);
-    setNewPeriod("AM");
+    resetForm();
   };
 
   // Filter out completed tasks as requested
@@ -236,7 +275,7 @@ const RemindersPage = () => {
                           return <Icon className="h-6 w-6 relative z-10" />
                         })()}
                       </div>
-                      <div className="flex-1">
+                      <div className="flex-1 pr-14 sm:pr-0">
                         <div className="flex items-center gap-2 mb-1">
                           <h4 className={cn("font-bold text-base sm:text-lg line-clamp-1", reminder.status === "completed" ? "text-muted-foreground line-through" : "text-foreground")}>
                             {reminder.title}
@@ -256,11 +295,29 @@ const RemindersPage = () => {
                       </div>
                     </div>
 
-                    {/* Actions */}
-                    <div className="flex w-full sm:w-auto items-center gap-2 mt-2 sm:mt-0 pt-3 sm:pt-0 border-t border-border/30 sm:border-0">
+                    {/* Actions (Including Edit/Delete) */}
+                    <div className="flex w-full sm:w-auto items-center justify-end sm:justify-start gap-2 mt-2 sm:mt-0 pt-3 sm:pt-0 border-t border-border/30 sm:border-transparent">
+                      
+                      {/* Edit/Delete Icons */}
+                      <div className="flex items-center gap-1 mr-2 sm:mr-4 pr-2 sm:pr-4 border-r border-border/40">
+                        <button 
+                          onClick={() => openEdit(reminder)}
+                          className="h-10 w-10 sm:h-9 sm:w-9 rounded-xl flex items-center justify-center text-muted-foreground hover:bg-muted hover:text-foreground active:scale-95 transition-all"
+                        >
+                          <Edit2 className="h-4 w-4 sm:h-4 sm:w-4" />
+                        </button>
+                        <button 
+                          onClick={() => deleteReminder(reminder.id)}
+                          className="h-10 w-10 sm:h-9 sm:w-9 rounded-xl flex items-center justify-center text-muted-foreground hover:bg-red-500/10 hover:text-red-500 active:scale-95 transition-all"
+                        >
+                          <Trash2 className="h-4 w-4 sm:h-4 sm:w-4" />
+                        </button>
+                      </div>
+
                       {reminder.status === "upcoming" ? (
                         <>
                           <button 
+                            onClick={() => snoozeReminder(reminder.id)}
                             className="flex-1 sm:flex-none px-4 py-2.5 rounded-2xl bg-background border border-border/60 text-muted-foreground font-bold text-sm hover:bg-muted transition-colors"
                           >
                             Snooze
@@ -273,11 +330,14 @@ const RemindersPage = () => {
                           </LiquidGlassButton>
                         </>
                       ) : reminder.status === "completed" ? (
-                        <div className="w-full sm:w-auto px-4 py-2.5 flex items-center justify-center gap-2 text-emerald-500 font-bold text-sm bg-emerald-500/10 rounded-2xl">
+                        <div className="w-full sm:w-auto px-4 py-2.5 flex items-center justify-center gap-2 text-emerald-500 font-bold text-sm bg-emerald-500/10 rounded-2xl border border-emerald-500/20">
                           <CheckCircle2 className="h-4 w-4" /> Completed
                         </div>
                       ) : (
-                        <button className="w-full sm:w-auto px-4 py-2.5 rounded-2xl bg-background border border-border/60 text-foreground font-bold text-sm hover:bg-muted transition-colors flex items-center justify-center gap-2">
+                        <button 
+                          onClick={() => openEdit(reminder)}
+                          className="w-full sm:w-auto px-4 py-2.5 rounded-2xl bg-background border border-border/60 text-foreground font-bold text-sm hover:bg-muted transition-colors flex items-center justify-center gap-2"
+                        >
                            <RefreshCcw className="h-4 w-4" /> Reschedule
                         </button>
                       )}
@@ -292,7 +352,7 @@ const RemindersPage = () => {
                   </div>
                   <h3 className="text-lg font-bold text-foreground mb-1">No upcoming reminders</h3>
                   <p className="text-sm text-muted-foreground mb-6 max-w-sm">You've completely cleared your schedule. Take a breather or add a new routine.</p>
-                  <LiquidGlassButton className="px-6" onClick={() => setIsAddOpen(true)}>
+                  <LiquidGlassButton className="px-6" onClick={openAdd}>
                     <Plus className="mr-2 h-5 w-5" /> Create Reminder
                   </LiquidGlassButton>
                 </div>
@@ -313,7 +373,7 @@ const RemindersPage = () => {
               </div>
               <h3 className="text-xl font-bold font-heading mb-2">New Reminder</h3>
               <p className="text-sm text-muted-foreground mb-6">Create a custom schedule for meals, hydration, or meds.</p>
-              <LiquidGlassButton className="w-full py-6 text-base rounded-[1.5rem]" onClick={() => setIsAddOpen(true)}>
+              <LiquidGlassButton className="w-full py-6 text-base rounded-[1.5rem]" onClick={openAdd}>
                  Build Routine <ChevronRight className="ml-2 h-5 w-5" />
               </LiquidGlassButton>
             </GlassCard>
@@ -346,7 +406,7 @@ const RemindersPage = () => {
 
       {/* Mobile Floating Action Button */}
       <div className="fixed bottom-20 left-4 right-4 z-40 sm:hidden pb-safe">
-        <LiquidGlassButton className="w-full py-4 rounded-2xl shadow-xl shadow-primary/20 text-lg" onClick={() => setIsAddOpen(true)}>
+        <LiquidGlassButton className="w-full py-4 rounded-2xl shadow-xl shadow-primary/20 text-lg" onClick={openAdd}>
           <Plus className="mr-2 h-6 w-6" /> Add Reminder
         </LiquidGlassButton>
       </div>
@@ -356,12 +416,15 @@ const RemindersPage = () => {
         <DialogContent className="sm:max-w-lg !rounded-[2.5rem] p-0 border-0 bg-transparent shadow-2xl shadow-black/20 overflow-hidden [&>button:last-child]:hidden">
           {/* Glass Container */}
           <div className="relative bg-card/95 backdrop-blur-2xl border border-border/40 rounded-[2.5rem] overflow-hidden">
-            {/* Top Gradient Glow */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2/3 h-32 bg-primary/15 blur-[60px] pointer-events-none"></div>
+            {/* Top Gradient Glow (GPU Optimized without blur effect) */}
+            <div 
+              className="absolute top-0 left-1/2 -translate-x-1/2 w-[150%] h-32 pointer-events-none"
+              style={{ background: 'radial-gradient(ellipse at top, rgba(var(--primary), 0.15) 0%, transparent 70%)' }}
+            ></div>
             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary/60 to-transparent"></div>
 
             {/* Header */}
-            <div className="relative px-8 pt-8 pb-4">
+            <div className="relative px-6 sm:px-8 pt-6 sm:pt-8 pb-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center text-primary border border-primary/20 shadow-lg shadow-primary/10">
@@ -369,9 +432,13 @@ const RemindersPage = () => {
                   </div>
                   <div>
                     <DialogHeader className="p-0 space-y-0">
-                      <DialogTitle className="text-2xl font-heading font-extrabold text-foreground tracking-tight">New Reminder</DialogTitle>
+                      <DialogTitle className="text-2xl font-heading font-extrabold text-foreground tracking-tight">
+                        {editingId ? "Edit Reminder" : "New Reminder"}
+                      </DialogTitle>
                     </DialogHeader>
-                    <p className="text-xs text-muted-foreground font-medium mt-0.5">Set up a new health routine</p>
+                    <p className="text-xs text-muted-foreground font-medium mt-0.5">
+                      {editingId ? "Update your health routine" : "Set up a new health routine"}
+                    </p>
                   </div>
                 </div>
                 <button 
@@ -383,10 +450,11 @@ const RemindersPage = () => {
               </div>
             </div>
 
-            {/* Form Body */}
-            <form onSubmit={handleAdd} className="px-8 pb-8 space-y-6">
-              
-              {/* Title Input */}
+            {/* Form Body - Scrollable on mobile */}
+            <div className="max-h-[70vh] sm:max-h-none overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+              <form onSubmit={handleAdd} className="px-6 sm:px-8 pb-6 sm:pb-8 space-y-6 pt-2">
+                
+                {/* Title Input */}
               <div className="space-y-2">
                 <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Reminder Title</label>
                 <div className="relative group">
@@ -467,10 +535,10 @@ const RemindersPage = () => {
                 </div>
               </div>
 
-              {/* Category Selector - Interactive Pills */}
-              <div className="space-y-3">
-                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Category</label>
-                <div className="grid grid-cols-5 gap-2">
+                {/* Category Selector - Interactive Pills */}
+                <div className="space-y-3">
+                  <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Category</label>
+                  <div className="grid grid-cols-5 gap-1.5 sm:gap-2">
                   {(Object.keys(TYPE_MAP) as ReminderType[]).filter(t => t !== "All").map(type => {
                     const cfg = TYPE_MAP[type];
                     const IconComp = ICON_MAP[cfg.icon] || Clock;
@@ -519,23 +587,24 @@ const RemindersPage = () => {
                 </div>
               </div>
 
-              {/* Separator */}
-              <div className="h-px bg-gradient-to-r from-transparent via-border/60 to-transparent"></div>
+                {/* Separator */}
+                <div className="h-px bg-gradient-to-r from-transparent via-border/60 to-transparent"></div>
 
-              {/* Action Buttons */}
-              <div className="flex gap-3">
-                <button 
-                  type="button" 
-                  onClick={() => setIsAddOpen(false)}
-                  className="flex-1 px-5 py-4 rounded-2xl bg-muted/40 border border-border/40 text-muted-foreground font-bold text-sm hover:bg-muted/60 hover:text-foreground transition-all"
-                >
-                  Cancel
-                </button>
-                <LiquidGlassButton type="submit" className="flex-[1.5] py-4 text-sm rounded-2xl">
-                  <Plus className="h-4 w-4 mr-1.5" /> Create Reminder
-                </LiquidGlassButton>
-              </div>
-            </form>
+                {/* Action Buttons */}
+                <div className="flex gap-2 sm:gap-3 mt-4">
+                  <button 
+                    type="button" 
+                    onClick={() => setIsAddOpen(false)}
+                    className="flex-1 px-4 sm:px-5 py-4 rounded-2xl bg-muted/40 border border-border/40 text-muted-foreground font-bold text-sm hover:bg-muted/60 hover:text-foreground transition-all"
+                  >
+                    Cancel
+                  </button>
+                  <LiquidGlassButton type="submit" className="flex-[1.5] py-4 text-sm rounded-2xl">
+                    {editingId ? <><CheckCircle2 className="h-4 w-4 mr-1.5" /> Save Changes</> : <><Plus className="h-4 w-4 mr-1.5" /> Create Reminder</>}
+                  </LiquidGlassButton>
+                </div>
+              </form>
+            </div>
           </div>
         </DialogContent>
       </Dialog>

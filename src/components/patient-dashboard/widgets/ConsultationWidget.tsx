@@ -29,12 +29,12 @@ const ConsultationWidget = () => {
           </div>
           
           <div className="flex items-center gap-4 mb-4">
-            <div className="h-12 w-12 rounded-full overflow-hidden bg-muted">
+            <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-full overflow-hidden bg-muted shrink-0">
               <img src="https://api.dicebear.com/7.x/notionists/svg?seed=DrJane" alt="Doctor" className="h-full w-full object-cover" />
             </div>
             <div>
-              <h4 className="font-bold text-foreground text-sm">Dr. Jane Smith</h4>
-              <p className="text-xs text-muted-foreground">General Practitioner</p>
+              <h4 className="font-bold text-foreground text-sm sm:text-base">Dr. Jane Smith</h4>
+              <p className="text-xs sm:text-sm text-muted-foreground">General Practitioner</p>
             </div>
           </div>
 
@@ -47,8 +47,8 @@ const ConsultationWidget = () => {
             </div>
           </div>
 
-          <Button className="w-full h-11 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-md shadow-emerald-500/20 transition-all border-0">
-            <Video className="mr-2 h-4 w-4" /> Join Call
+          <Button className="w-full h-12 sm:h-14 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm sm:text-base shadow-md shadow-emerald-500/20 transition-all border-0 hover:scale-[1.02] active:scale-95">
+            <Video className="mr-2 h-4 w-4 sm:h-5 sm:w-5" /> Join Call
           </Button>
         </div>
       </div>

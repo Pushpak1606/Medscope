@@ -73,7 +73,7 @@ const ScanRxPage = () => {
         
         {/* Left Column: Upload & Scan */}
         <div className="lg:col-span-5 space-y-6">
-          <GlassCard className="flex flex-col items-center justify-center p-8 sm:p-12 text-center border-dashed border-2 bg-card/60 hover:bg-card/80 transition-colors group cursor-pointer">
+          <GlassCard className="flex flex-col items-center justify-center p-6 sm:p-12 text-center border-dashed border-2 bg-card/60 hover:bg-card/80 transition-colors group cursor-pointer">
             <div className="h-16 w-16 mb-4 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform duration-300 shadow-[0_0_20px_rgba(var(--primary),0.2)]">
               <Upload className="h-8 w-8" />
             </div>
@@ -128,21 +128,46 @@ const ScanRxPage = () => {
                 </motion.div>
               )}
 
-              {/* Scanning State */}
+              {/* Premium AR Scanning State */}
               {isScanning && (
                 <motion.div 
                   key="scanning"
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95 }}
-                  className="flex-1 flex flex-col items-center justify-center text-center"
+                  className="flex-1 flex flex-col items-center justify-center text-center relative z-10"
                 >
-                  <div className="relative">
-                    <ScanLine className="h-16 w-16 text-primary mb-6 animate-pulse" />
-                    <div className="absolute inset-0 border-t-2 border-primary w-full animate-[scan_2s_ease-in-out_infinite]" />
+                  <div className="relative w-48 h-48 md:w-64 md:h-64 mb-8">
+                    {/* Glowing Backdrop */}
+                    <div className="absolute inset-0 bg-primary/5 rounded-2xl animate-pulse backdrop-blur-sm"></div>
+
+                    {/* Corner Reticles */}
+                    <div className="absolute top-0 left-0 w-10 h-10 border-t-4 border-l-4 border-primary rounded-tl-xl transition-all duration-300"></div>
+                    <div className="absolute top-0 right-0 w-10 h-10 border-t-4 border-r-4 border-primary rounded-tr-xl transition-all duration-300"></div>
+                    <div className="absolute bottom-0 left-0 w-10 h-10 border-b-4 border-l-4 border-primary rounded-bl-xl transition-all duration-300"></div>
+                    <div className="absolute bottom-0 right-0 w-10 h-10 border-b-4 border-r-4 border-primary rounded-br-xl transition-all duration-300"></div>
+                    
+                    {/* Center Icon */}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <ScanLine className="h-20 w-20 text-primary opacity-30" />
+                    </div>
+
+                    {/* Scanning Laser Line */}
+                    <div className="absolute top-0 flex flex-col items-center w-full animate-scan z-10">
+                      <div className="w-full h-1 bg-primary relative">
+                        <div className="absolute inset-0 bg-primary blur-[8px] h-6 -top-3"></div>
+                      </div>
+                    </div>
                   </div>
-                  <h3 className="text-xl font-bold text-foreground font-heading">Analyzing Image...</h3>
-                  <p className="text-sm text-muted-foreground mt-2">Medscope AI is extracting details</p>
+                  
+                  <h3 className="text-xl sm:text-2xl font-extrabold text-foreground font-heading tracking-widest uppercase mb-2 flex items-center gap-3">
+                    <span className="h-2 w-2 rounded-full bg-primary animate-ping"></span>
+                    Analyzing
+                  </h3>
+                  <div className="flex flex-col items-center">
+                    <p className="text-sm font-bold text-primary animate-pulse tracking-widest uppercase mb-1">Medscope Neural Engine</p>
+                    <p className="text-xs text-muted-foreground font-mono opacity-70">Extracting chemical composition and dosage...</p>
+                  </div>
                 </motion.div>
               )}
 

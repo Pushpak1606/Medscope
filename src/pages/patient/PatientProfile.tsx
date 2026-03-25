@@ -97,8 +97,10 @@ const PatientProfile = () => {
           </div>
           
           <div className="w-full md:w-auto mt-4 md:mt-0">
-             <Button variant="outline" className="w-full rounded-xl border-border/60 hover:bg-muted font-bold h-11">
-               <Edit3 className="mr-2 h-4 w-4" /> Edit Profile
+             <Button asChild variant="outline" className="w-full rounded-xl border-border/60 hover:bg-muted font-bold h-11">
+               <Link to="/patient/profile/edit">
+                 <Edit3 className="mr-2 h-4 w-4" /> Edit Profile
+               </Link>
              </Button>
           </div>
         </motion.div>

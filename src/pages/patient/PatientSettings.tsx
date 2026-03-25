@@ -56,20 +56,65 @@ const TABS = [
 
 const PatientSettings = () => {
   const { theme, setTheme } = useTheme();
-  const { profile, widgetOrder, setWidgetOrder } = usePatient();
+  const { profile, updateProfile, widgetOrder, setWidgetOrder } = usePatient();
   const [activeTab, setActiveTab] = useState("appearance");
   const [isSaving, setIsSaving] = useState(false);
   const [savedStatus, setSavedStatus] = useState(false);
-
   const displayName = profile.fullName?.split(" ")[0] || "Patient";
+  
+  // Buffered Appearance State (Applies only on Save)
+  const [appearanceData, setAppearanceData] = useState({
+    theme: theme,
+    fontSize: localStorage.getItem("medscope-font-size") || "default"
+  });
+  
+  // Local state for account text inputs so we can save them on button click
+  const [accountData, setAccountData] = useState({
+    fullName: profile.fullName || "",
+    email: profile.email || "",
+    phone: profile.phone || "",
+    city: profile.city || ""
+  });
 
   const handleSave = () => {
     setIsSaving(true);
+    // Save settings that were buffered
+    setTheme(appearanceData.theme as "light"|"dark"|"system");
+    
+    // Commit Font Size
+    localStorage.setItem("medscope-font-size", appearanceData.fontSize);
+    if (appearanceData.fontSize === "large") {
+      document.documentElement.classList.add("font-large");
+    } else {
+      document.documentElement.classList.remove("font-large");
+    }
+
+    // Commit Profile edits
+    updateProfile({
+      fullName: accountData.fullName,
+      email: accountData.email,
+      phone: accountData.phone,
+      city: accountData.city
+    });
+    
     setTimeout(() => {
       setIsSaving(false);
       setSavedStatus(true);
       setTimeout(() => setSavedStatus(false), 3000);
-    }, 1000);
+    }, 600);
+  };
+
+  const updatePrefs = (category: "notifications"| "privacy" | "consultation", key: string, value: any) => {
+    const currentPrefs = profile.preferences!;
+    updateProfile({
+      preferences: {
+        ...currentPrefs,
+        [category]: {
+          ...currentPrefs[category],
+          [key]: value
+        }
+      }
+    });
   };
 
   // Widget reorder helpers
@@ -175,24 +220,24 @@ const PatientSettings = () => {
                     <h3 className="text-lg font-bold text-foreground mb-4">Theme</h3>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       <button 
-                        onClick={() => setTheme("light")}
-                        className={`flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all gap-3 ${theme === "light" ? "border-primary bg-primary/5" : "border-border/50 hover:border-border bg-background"}`}
+                        onClick={() => setAppearanceData({...appearanceData, theme: "light"})}
+                        className={`flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all gap-3 ${appearanceData.theme === "light" ? "border-primary bg-primary/5 shadow-md scale-[1.02]" : "border-border/50 hover:border-border bg-background"}`}
                       >
-                        <Sun className={`h-8 w-8 ${theme === "light" ? "text-primary" : "text-muted-foreground"}`} />
+                        <Sun className={`h-8 w-8 ${appearanceData.theme === "light" ? "text-primary" : "text-muted-foreground"}`} />
                         <span className="font-semibold text-sm">Light</span>
                       </button>
                       <button 
-                         onClick={() => setTheme("dark")}
-                        className={`flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all gap-3 ${theme === "dark" ? "border-primary bg-primary/5" : "border-border/50 hover:border-border bg-background"}`}
+                         onClick={() => setAppearanceData({...appearanceData, theme: "dark"})}
+                        className={`flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all gap-3 ${appearanceData.theme === "dark" ? "border-primary bg-primary/5 shadow-md scale-[1.02]" : "border-border/50 hover:border-border bg-background"}`}
                       >
-                        <Moon className={`h-8 w-8 ${theme === "dark" ? "text-primary" : "text-muted-foreground"}`} />
+                        <Moon className={`h-8 w-8 ${appearanceData.theme === "dark" ? "text-primary" : "text-muted-foreground"}`} />
                         <span className="font-semibold text-sm">Dark</span>
                       </button>
                       <button 
-                        onClick={() => setTheme("system")}
-                        className={`flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all gap-3 ${theme === "system" ? "border-primary bg-primary/5" : "border-border/50 hover:border-border bg-background"}`}
+                        onClick={() => setAppearanceData({...appearanceData, theme: "system"})}
+                        className={`flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all gap-3 ${appearanceData.theme === "system" ? "border-primary bg-primary/5 shadow-md scale-[1.02]" : "border-border/50 hover:border-border bg-background"}`}
                       >
-                        <Laptop className={`h-8 w-8 ${theme === "system" ? "text-primary" : "text-muted-foreground"}`} />
+                        <Laptop className={`h-8 w-8 ${appearanceData.theme === "system" ? "text-primary" : "text-muted-foreground"}`} />
                         <span className="font-semibold text-sm">System</span>
                       </button>
                     </div>
@@ -200,13 +245,16 @@ const PatientSettings = () => {
                   <Separator className="bg-border/50" />
                   <div>
                     <h3 className="text-lg font-bold text-foreground mb-4">Font Size</h3>
-                    <Select defaultValue="default">
-                      <SelectTrigger className="w-[200px] rounded-xl h-11 bg-background">
+                    <Select 
+                      value={appearanceData.fontSize} 
+                      onValueChange={(val) => setAppearanceData({...appearanceData, fontSize: val})}
+                    >
+                      <SelectTrigger className="w-[200px] rounded-xl h-11 bg-background select-none outline-none focus:ring-1 focus:ring-primary shadow-sm border-border/60">
                         <SelectValue placeholder="Select size" />
                       </SelectTrigger>
-                      <SelectContent className="rounded-xl">
-                        <SelectItem value="default" className="rounded-lg">Default</SelectItem>
-                        <SelectItem value="large" className="rounded-lg">Large (Accessibility)</SelectItem>
+                      <SelectContent className="rounded-xl border-border/50 shadow-lg">
+                        <SelectItem value="default" className="rounded-lg cursor-pointer">Default</SelectItem>
+                        <SelectItem value="large" className="rounded-lg cursor-pointer">Large (Accessibility)</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -263,21 +311,33 @@ const PatientSettings = () => {
                         <Label className="text-base font-bold">Medicine Reminders</Label>
                         <p className="text-sm text-muted-foreground">Receive alerts when it's time to take your medication.</p>
                       </div>
-                      <Switch defaultChecked className="data-[state=checked]:bg-primary" />
+                      <Switch 
+                        checked={profile.preferences?.notifications.medicine}
+                        onCheckedChange={(val) => updatePrefs("notifications", "medicine", val)}
+                        className="data-[state=checked]:bg-primary" 
+                      />
                     </div>
                     <div className="flex items-center justify-between p-4 rounded-2xl bg-muted/30 border border-border/50">
                       <div className="space-y-0.5">
                         <Label className="text-base font-bold">Appointment Alerts</Label>
                         <p className="text-sm text-muted-foreground">Get notified before upcoming consultations.</p>
                       </div>
-                      <Switch defaultChecked className="data-[state=checked]:bg-primary" />
+                      <Switch 
+                        checked={profile.preferences?.notifications.appointments}
+                        onCheckedChange={(val) => updatePrefs("notifications", "appointments", val)}
+                        className="data-[state=checked]:bg-primary" 
+                      />
                     </div>
                     <div className="flex items-center justify-between p-4 rounded-2xl bg-muted/30 border border-border/50">
                       <div className="space-y-0.5">
                         <Label className="text-base font-bold">Wellness Tips</Label>
                         <p className="text-sm text-muted-foreground">Daily AI-generated advice based on your profile.</p>
                       </div>
-                      <Switch className="data-[state=checked]:bg-primary" />
+                      <Switch 
+                         checked={profile.preferences?.notifications.wellness}
+                         onCheckedChange={(val) => updatePrefs("notifications", "wellness", val)}
+                         className="data-[state=checked]:bg-primary" 
+                      />
                     </div>
                   </div>
                   <Separator className="bg-border/50" />
@@ -285,11 +345,19 @@ const PatientSettings = () => {
                     <h3 className="text-lg font-bold text-foreground">Delivery Methods</h3>
                     <div className="flex items-center justify-between">
                       <Label className="text-sm font-bold">Email Notifications</Label>
-                      <Switch defaultChecked className="data-[state=checked]:bg-primary" />
+                      <Switch 
+                         checked={profile.preferences?.notifications.email}
+                         onCheckedChange={(val) => updatePrefs("notifications", "email", val)}
+                         className="data-[state=checked]:bg-primary" 
+                      />
                     </div>
                     <div className="flex items-center justify-between">
                       <Label className="text-sm font-bold">SMS Notifications</Label>
-                      <Switch className="data-[state=checked]:bg-primary" />
+                      <Switch 
+                         checked={profile.preferences?.notifications.sms}
+                         onCheckedChange={(val) => updatePrefs("notifications", "sms", val)}
+                         className="data-[state=checked]:bg-primary" 
+                      />
                     </div>
                   </div>
                 </div>
@@ -305,7 +373,11 @@ const PatientSettings = () => {
                         <Label className="text-base font-bold">Two-Factor Authentication (2FA)</Label>
                         <p className="text-sm text-muted-foreground">Add an extra layer of security to your account.</p>
                       </div>
-                      <Switch className="data-[state=checked]:bg-primary" />
+                      <Switch 
+                        checked={profile.preferences?.privacy.twoFactor}
+                        onCheckedChange={(val) => updatePrefs("privacy", "twoFactor", val)}
+                        className="data-[state=checked]:bg-primary" 
+                      />
                     </div>
                     <Button variant="outline" className="rounded-xl border-border/60 hover:bg-muted font-bold h-11">
                       Change Password
@@ -319,7 +391,11 @@ const PatientSettings = () => {
                         <Label className="text-base font-bold">AI Health Suggestions</Label>
                         <p className="text-sm text-muted-foreground">Allow Medscope AI to analyze your data securely to provide insights.</p>
                       </div>
-                      <Switch defaultChecked className="data-[state=checked]:bg-primary" />
+                      <Switch 
+                         checked={profile.preferences?.privacy.aiAnalysis}
+                         onCheckedChange={(val) => updatePrefs("privacy", "aiAnalysis", val)}
+                         className="data-[state=checked]:bg-primary" 
+                      />
                     </div>
                   </div>
                   <Separator className="bg-border/50" />
@@ -345,7 +421,10 @@ const PatientSettings = () => {
                   <div className="grid gap-6 sm:grid-cols-2">
                     <div className="space-y-2">
                       <Label className="font-semibold text-foreground">Default Consultation Mode</Label>
-                      <Select defaultValue="video">
+                      <Select 
+                        value={profile.preferences?.consultation.defaultMode}
+                        onValueChange={(val) => updatePrefs("consultation", "defaultMode", val)}
+                      >
                         <SelectTrigger className="w-full rounded-xl bg-background border-border/60 h-11">
                           <SelectValue placeholder="Select" />
                         </SelectTrigger>
@@ -358,7 +437,10 @@ const PatientSettings = () => {
                     </div>
                     <div className="space-y-2">
                       <Label className="font-semibold text-foreground">Reminder Timing</Label>
-                      <Select defaultValue="15">
+                      <Select 
+                        value={profile.preferences?.consultation.reminderTiming}
+                        onValueChange={(val) => updatePrefs("consultation", "reminderTiming", val)}
+                      >
                         <SelectTrigger className="w-full rounded-xl bg-background border-border/60 h-11">
                           <SelectValue placeholder="Select" />
                         </SelectTrigger>
@@ -371,7 +453,10 @@ const PatientSettings = () => {
                     </div>
                     <div className="space-y-2">
                       <Label className="font-semibold text-foreground">Preferred Doctor Gender</Label>
-                      <Select defaultValue="any">
+                      <Select 
+                        value={profile.preferences?.consultation.preferredGender}
+                        onValueChange={(val) => updatePrefs("consultation", "preferredGender", val)}
+                      >
                         <SelectTrigger className="w-full rounded-xl bg-background border-border/60 h-11">
                           <SelectValue placeholder="Select" />
                         </SelectTrigger>
@@ -391,7 +476,10 @@ const PatientSettings = () => {
                 <div className="space-y-6">
                   <div className="space-y-2">
                     <Label className="font-semibold text-foreground">Current Health Focus</Label>
-                    <Select defaultValue={profile.healthFocus || "both"}>
+                    <Select 
+                       value={profile.healthFocus || "both"}
+                       onValueChange={(val) => updateProfile({ healthFocus: val })}
+                    >
                       <SelectTrigger className="w-full sm:w-[300px] rounded-xl bg-background border-border/60 h-11">
                         <SelectValue placeholder="Select focus" />
                       </SelectTrigger>
@@ -412,19 +500,35 @@ const PatientSettings = () => {
                   <div className="grid gap-6 sm:grid-cols-2">
                     <div className="space-y-2">
                       <Label className="font-semibold">Full Name</Label>
-                      <Input defaultValue={profile.fullName || ""} className="bg-background rounded-xl h-11" />
+                      <Input 
+                        value={accountData.fullName} 
+                        onChange={(e) => setAccountData({...accountData, fullName: e.target.value})}
+                        className="bg-background rounded-xl h-11" 
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label className="font-semibold">Email Address</Label>
-                      <Input defaultValue={profile.email || ""} className="bg-background rounded-xl h-11" />
+                      <Input 
+                        value={accountData.email} 
+                        onChange={(e) => setAccountData({...accountData, email: e.target.value})}
+                        className="bg-background rounded-xl h-11" 
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label className="font-semibold">Phone Number</Label>
-                      <Input defaultValue={profile.phone || ""} className="bg-background rounded-xl h-11" />
+                      <Input 
+                        value={accountData.phone} 
+                        onChange={(e) => setAccountData({...accountData, phone: e.target.value})}
+                        className="bg-background rounded-xl h-11" 
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label className="font-semibold">City</Label>
-                      <Input defaultValue={profile.city || ""} className="bg-background rounded-xl h-11" />
+                      <Input 
+                        value={accountData.city} 
+                        onChange={(e) => setAccountData({...accountData, city: e.target.value})}
+                        className="bg-background rounded-xl h-11" 
+                      />
                     </div>
                   </div>
 

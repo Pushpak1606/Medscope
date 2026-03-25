@@ -15,38 +15,31 @@ const AnimatedBackground = memo(({ variant = "default", className }: AnimatedBac
       {/* Subtle base gradient overlay */}
       <div className="absolute inset-0 bg-background/80 mix-blend-overlay z-10" />
       
-      {/* Primary Blob */}
+      {/* Primary Blob - Radial Gradient replacing excessive Blur Filter */}
       <div
-        className={cn(
-          "absolute -left-32 -top-32 w-[600px] h-[600px] rounded-full mix-blend-screen opacity-30 md:opacity-40 blur-[100px] md:blur-[130px] animate-blob-drift",
-          isDoctor ? "bg-indigo-600/30" : "bg-primary/30",
-          !isPatient && !isDoctor && "bg-cyan-500/30"
-        )}
-        style={{ willChange: "transform" }}
+        className="absolute -left-32 -top-32 w-[600px] h-[600px] rounded-full animate-blob-drift"
+        style={{ 
+          background: `radial-gradient(circle, ${isDoctor ? 'rgba(79, 70, 229, 0.15)' : 'rgba(var(--primary), 0.15)'} 0%, transparent 70%)` 
+        }}
       />
       
       {/* Secondary Blob - Opposite side, spinning slow */}
       <div
-        className={cn(
-          "absolute -right-40 top-20 w-[500px] h-[500px] rounded-full mix-blend-screen opacity-25 md:opacity-30 blur-[90px] md:blur-[120px] animate-blob-spin-slow",
-          isDoctor ? "bg-violet-600/30" : "bg-teal-500/20",
-          !isPatient && !isDoctor && "bg-blue-600/30"
-        )}
-        style={{ willChange: "transform", animationDelay: "2s" }}
+        className="absolute -right-40 top-20 w-[500px] h-[500px] rounded-full animate-blob-spin-slow"
+        style={{ 
+          background: `radial-gradient(circle, ${isDoctor ? 'rgba(124, 58, 237, 0.12)' : 'rgba(20, 184, 166, 0.12)'} 0%, transparent 70%)`,
+          animationDelay: "2s" 
+        }}
       />
 
       {/* Tertiary Blob - Hidden on small screens to save performance */}
       <div
-        className={cn(
-          "hidden sm:block absolute left-1/4 -bottom-40 w-[700px] h-[500px] rounded-full mix-blend-screen opacity-20 blur-[100px] md:blur-[140px] animate-blob-spin-slow-reverse",
-          isDoctor ? "bg-slate-500/20" : "bg-emerald-500/10",
-          !isPatient && !isDoctor && "bg-indigo-500/20"
-        )}
-        style={{ willChange: "transform", animationDelay: "4s" }}
+        className="hidden sm:block absolute left-1/4 -bottom-40 w-[700px] h-[500px] rounded-full animate-blob-spin-slow-reverse"
+        style={{ 
+          background: `radial-gradient(circle, ${isDoctor ? 'rgba(100, 116, 139, 0.1)' : 'rgba(16, 185, 129, 0.08)'} 0%, transparent 70%)`,
+          animationDelay: "4s" 
+        }}
       />
-
-      {/* Optional grid overlay for extra texture (optional but adds premium healthcare-tech feel) */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] z-10 opacity-70"></div>
     </div>
   );
 });

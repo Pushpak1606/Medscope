@@ -3,6 +3,8 @@ import AnimatedBackground from "@/components/ui/animated-background";
 import DashboardHeader from "@/components/patient-dashboard/DashboardHeader";
 import MobileNavDock from "@/components/patient-dashboard/MobileNavDock";
 import { usePatient } from "@/context/PatientContext";
+import { GlobalCommand } from "@/components/ui/global-command";
+import { EmergencyFAB } from "@/components/ui/emergency-fab";
 
 interface PatientPageLayoutProps {
   children: ReactNode;
@@ -30,6 +32,8 @@ const PatientPageLayout = ({ children, className }: PatientPageLayoutProps) => {
 
       {/* Shared Mobile Navigation */}
       <MobileNavDock />
+      <GlobalCommand />
+      <EmergencyFAB />
     </div>
   );
 };

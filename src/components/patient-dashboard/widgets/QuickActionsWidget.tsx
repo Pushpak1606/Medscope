@@ -27,10 +27,10 @@ const QuickActionsWidget = () => {
             to={action.href}
             className="flex flex-col items-center gap-3 group/btn shrink-0 snap-start"
           >
-            <div className="relative overflow-hidden h-16 w-16 sm:h-20 sm:w-20 rounded-2xl sm:rounded-[1.5rem] bg-background border border-border/30 shadow-sm flex items-center justify-center transition-all duration-300 group-hover/btn:-translate-y-1 group-hover/btn:shadow-md">
+            <div className="relative overflow-hidden h-16 w-16 sm:h-[4.5rem] sm:w-[4.5rem] rounded-[1.2rem] bg-background/60 border border-border/40 shadow-sm flex items-center justify-center transition-all duration-300 group-hover/btn:-translate-y-1 group-hover/btn:shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
               <action.icon className={`relative z-10 h-7 w-7 sm:h-8 sm:w-8 ${action.color} transition-transform duration-300 group-hover/btn:scale-110`} />
             </div>
-            <span className="text-[11px] sm:text-xs font-bold text-muted-foreground text-center group-hover/btn:text-foreground transition-colors">
+            <span className="text-xs font-bold text-muted-foreground text-center group-hover/btn:text-foreground transition-colors mt-1">
               {action.label}
             </span>
           </Link>

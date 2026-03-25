@@ -14,8 +14,8 @@ export default {
     },
     extend: {
       fontFamily: {
-        heading: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
-        body: ['"DM Sans"', 'system-ui', 'sans-serif'],
+        heading: ['"Outfit"', 'system-ui', 'sans-serif'],
+        body: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
       },
       colors: {
         "color-1": "hsl(var(--color-1))",
@@ -111,6 +111,11 @@ export default {
         "blob-spin": {
           "from": { transform: "rotate(0deg)" },
           "to": { transform: "rotate(360deg)" },
+        },
+        "scan": {
+          "0%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(100px)" },
+          "100%": { transform: "translateY(0)" },
         },
       },
       animation: {
