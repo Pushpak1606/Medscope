@@ -1,4 +1,5 @@
 import { Stethoscope, ClipboardList, CalendarDays, Users, UserCheck, ArrowRight, MoreHorizontal, CheckCircle2 } from "lucide-react";
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 
 const doctorFeatures = [
@@ -52,9 +53,9 @@ const DoctorShowcase = () => (
             ))}
           </div>
 
-          <a href="#" className="mt-8 inline-flex items-center gap-2 text-sm font-semibold text-primary transition-colors hover:text-primary/80 group-hover:underline">
-            Explore doctor features <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-          </a>
+          <Link to="/doctor/login" className="mt-8 inline-flex items-center gap-2 text-sm font-semibold text-primary transition-colors hover:text-primary/80 group-hover:underline">
+            View doctor features <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+          </Link>
         </motion.div>
 
         {/* Right Dashboard Mockup */}

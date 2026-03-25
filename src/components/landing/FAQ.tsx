@@ -1,4 +1,5 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { MessageCircleQuestion, Mail } from "lucide-react";
 
@@ -43,9 +44,9 @@ const FAQ = () => (
             <p className="mb-6 text-sm text-muted-foreground">
               Can't find the answer you're looking for? Please chat to our friendly team.
             </p>
-            <a href="#" className="inline-flex w-full items-center justify-center rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 hover:shadow-primary/20 hover:shadow-lg">
-              Get in touch
-            </a>
+            <Link to="/patient/signup" className="inline-flex w-full items-center justify-center rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 hover:shadow-primary/20 hover:shadow-lg">
+              Create patient account
+            </Link>
           </div>
         </motion.div>
 

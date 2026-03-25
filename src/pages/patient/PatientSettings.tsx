@@ -103,7 +103,7 @@ const PatientSettings = () => {
       <AnimatedBackground variant="patient" className="opacity-30 fixed inset-0 pointer-events-none" />
       <div className="fixed inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none z-0"></div>
 
-      <div className="relative z-10 w-full max-w-6xl flex flex-col px-4 sm:px-6 py-6 sm:py-8 min-h-screen gap-6">
+      <div className="relative z-10 w-full max-w-[1400px] flex flex-col px-4 sm:px-8 py-8 md:py-10 min-h-screen gap-8">
         <DashboardHeader profile={{ name: displayName, profileCompleteness: profile.profileCompleteness }} />
 
         <motion.div
@@ -498,6 +498,7 @@ const SortableWidgetItem = ({ widget, index, onToggleVisibility }: SortableItemP
       {/* Drag handle */}
       <button
         type="button"
+        aria-label="Drag to reorder widget"
         className="text-muted-foreground hover:text-foreground cursor-grab active:cursor-grabbing p-1 -ml-2 rounded-md hover:bg-muted/50 transition-colors"
         {...attributes}
         {...listeners}
@@ -520,6 +521,7 @@ const SortableWidgetItem = ({ widget, index, onToggleVisibility }: SortableItemP
         <Button
           variant="ghost"
           size="icon"
+          aria-label={widget.visible ? "Hide widget" : "Show widget"}
           onPointerDown={(e) => e.stopPropagation()}
           className={`h-8 w-8 rounded-lg ${widget.visible ? "hover:bg-red-500/10 text-foreground" : "hover:bg-green-500/10 text-muted-foreground"}`}
           onClick={onToggleVisibility}

@@ -16,8 +16,9 @@ const PatientPageLayout = ({ children, className }: PatientPageLayoutProps) => {
     <div className={`min-h-screen bg-surface relative flex justify-center pb-24 sm:pb-8 overflow-x-hidden ${className || ''}`}>
       {/* Shared Animated Background */}
       <AnimatedBackground variant="patient" className="opacity-30 fixed inset-0 pointer-events-none" />
+      <div className="fixed inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none z-0"></div>
 
-      <main className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 flex flex-col gap-6 sm:gap-8">
+      <main className="relative z-10 w-full max-w-[1400px] flex flex-col px-4 sm:px-8 py-8 md:py-10 min-h-screen gap-8">
         {/* Shared Dashboard Header */}
         <DashboardHeader profile={profile} />
 

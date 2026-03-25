@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/command";
 import { 
   Bell, FileText, Home, Settings, Calendar, 
-  User, Pill, MessageSquare, Activity 
+  User, Pill, MessageSquare, BotMessageSquare, Camera, BookHeart, PhoneCall
 } from "lucide-react";
 
 interface GlobalSearchProps {
@@ -62,18 +62,26 @@ const GlobalSearch = ({ open, onOpenChange }: GlobalSearchProps) => {
 
         <CommandSeparator />
 
-        <CommandGroup heading="Health Data">
-          <CommandItem onSelect={() => runCommand(() => navigate("/patient/journal"))}>
-            <FileText className="mr-2 h-4 w-4 text-pink-500" />
-            <span>Daily Journal</span>
+        <CommandGroup heading="Main Features">
+          <CommandItem onSelect={() => runCommand(() => navigate("/patient/ask-ai"))}>
+            <BotMessageSquare className="mr-2 h-4 w-4 text-purple-500" />
+            <span>Ask AI</span>
           </CommandItem>
-          <CommandItem onSelect={() => runCommand(() => navigate("/patient/wellness"))}>
-            <Activity className="mr-2 h-4 w-4 text-emerald-500" />
-            <span>Health Progress</span>
+          <CommandItem onSelect={() => runCommand(() => navigate("/patient/scan-rx"))}>
+            <Camera className="mr-2 h-4 w-4 text-blue-500" />
+            <span>Scan Rx (Medicine Details)</span>
           </CommandItem>
-          <CommandItem onSelect={() => runCommand(() => navigate("/patient/reminders"))}>
-            <Pill className="mr-2 h-4 w-4 text-teal-500" />
-            <span>Medications</span>
+          <CommandItem onSelect={() => runCommand(() => navigate("/patient/log-mood"))}>
+            <BookHeart className="mr-2 h-4 w-4 text-pink-500" />
+            <span>Log Mood</span>
+          </CommandItem>
+          <CommandItem onSelect={() => runCommand(() => navigate("/patient/emergency"))}>
+            <PhoneCall className="mr-2 h-4 w-4 text-red-500" />
+            <span>Emergency Contact</span>
+          </CommandItem>
+          <CommandItem onSelect={() => runCommand(() => navigate("/patient/records"))}>
+            <FileText className="mr-2 h-4 w-4 text-emerald-500" />
+            <span>Medical Records</span>
           </CommandItem>
         </CommandGroup>
 

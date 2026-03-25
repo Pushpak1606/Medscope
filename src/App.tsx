@@ -17,6 +17,12 @@ import PatientDashboard from "./pages/patient/PatientDashboard.tsx";
 import PatientSettings from "./pages/patient/PatientSettings.tsx";
 import PatientProfile from "./pages/patient/PatientProfile.tsx";
 import DoctorOnboardingPage from "./pages/doctor/DoctorOnboardingPage.tsx";
+import ScanRxPage from "./pages/patient/ScanRxPage.tsx";
+import AskAIPage from "./pages/patient/AskAIPage.tsx";
+import LogMoodPage from "./pages/patient/LogMoodPage.tsx";
+import EmergencyPage from "./pages/patient/EmergencyPage.tsx";
+import RecordsPage from "./pages/patient/RecordsPage.tsx";
+import RemindersPage from "./pages/patient/RemindersPage.tsx";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +46,12 @@ const App = () => (
           <Route path="/doctor/login" element={<DoctorLogin />} />
           <Route path="/doctor/signup" element={<DoctorSignup />} />
           <Route path="/doctor/onboarding" element={<DoctorOnboardingPage />} />
+          <Route path="/patient/scan-rx" element={<ScanRxPage />} />
+          <Route path="/patient/ask-ai" element={<AskAIPage />} />
+          <Route path="/patient/log-mood" element={<LogMoodPage />} />
+          <Route path="/patient/emergency" element={<EmergencyPage />} />
+          <Route path="/patient/records" element={<RecordsPage />} />
+          <Route path="/patient/reminders" element={<RemindersPage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

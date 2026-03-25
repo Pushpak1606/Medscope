@@ -57,7 +57,7 @@ const PatientProfile = () => {
       <AnimatedBackground variant="patient" className="opacity-30 fixed inset-0 pointer-events-none" />
       <div className="fixed inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none z-0"></div>
 
-      <div className="relative z-10 w-full max-w-5xl flex flex-col px-4 sm:px-6 py-6 sm:py-8 min-h-screen gap-6">
+      <div className="relative z-10 w-full max-w-[1400px] flex flex-col px-4 sm:px-8 py-8 md:py-10 min-h-screen gap-8">
         <DashboardHeader profile={{ name: displayName, profileCompleteness: completeness }} />
 
         {/* HERO SECTION */}

@@ -8,7 +8,6 @@ import { usePatient } from "@/context/PatientContext";
 // Widgets
 import ProfileSnapshotWidget from "@/components/patient-dashboard/widgets/ProfileSnapshotWidget";
 import AccordionInfoWidget from "@/components/patient-dashboard/widgets/AccordionInfoWidget";
-import HealthProgressWidget from "@/components/patient-dashboard/widgets/HealthProgressWidget";
 import MedicineTimerWidget from "@/components/patient-dashboard/widgets/MedicineTimerWidget";
 import DailyTasksWidget from "@/components/patient-dashboard/widgets/DailyTasksWidget";
 import ConsultationWidget from "@/components/patient-dashboard/widgets/ConsultationWidget";
@@ -17,7 +16,6 @@ import MentalWellnessWidget from "@/components/patient-dashboard/widgets/MentalW
 
 // Widget registry — maps IDs from widgetOrder to actual components
 const WIDGET_MAP: Record<string, React.FC> = {
-  "health-progress": HealthProgressWidget,
   "medicine-timer": MedicineTimerWidget,
   "quick-actions": QuickActionsWidget,
   "consultations": ConsultationWidget,
@@ -25,7 +23,7 @@ const WIDGET_MAP: Record<string, React.FC> = {
 };
 
 // Widgets that render as a pair (side-by-side on desktop)
-const PAIRED_IDS = new Set(["health-progress", "medicine-timer", "consultations", "mental-wellness"]);
+const PAIRED_IDS = new Set(["medicine-timer", "consultations", "mental-wellness"]);
 
 const PatientDashboard = () => {
   const { profile, widgetOrder } = usePatient();

@@ -31,6 +31,7 @@ interface DashboardHeaderProps {
 const DashboardHeader = ({ profile }: DashboardHeaderProps) => {
   const location = useLocation();
   const [searchOpen, setSearchOpen] = useState(false);
+  const userName = profile?.fullName || "Patient";
 
   return (
     <header className="flex items-center justify-between w-full pb-2">
@@ -67,18 +68,27 @@ const DashboardHeader = ({ profile }: DashboardHeaderProps) => {
 
       {/* Actions */}
       <div className="flex items-center gap-2 sm:gap-3">
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          className="rounded-full bg-card border border-border/50 shadow-sm hover:bg-muted relative"
+        <button
           onClick={() => setSearchOpen(true)}
+          className="relative hidden sm:flex items-center gap-2 group ml-2 rounded-[2rem] bg-gradient-to-r hover:bg-gradient-to-l from-blue-500/20 to-indigo-500/20 px-4 sm:px-6 py-2 border border-blue-200/20 shadow-[inset_0_1px_2px_rgba(255,255,255,0.3),0_4px_12px_rgba(0,0,0,0.1)] hover:shadow-[inset_0_1px_3px_rgba(255,255,255,0.4),0_8px_20px_rgba(0,0,0,0.2)] transition-all duration-500 overflow-hidden backdrop-blur-md"
+        >
+          <div className="absolute inset-0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none"></div>
+          <Search className="h-4 w-4 text-foreground/80 shrink-0" />
+          <span className="text-foreground/80 font-medium text-sm pr-4">Type here...</span>
+        </button>
+        
+        {/* Mobile search icon version */}
+        <button
+          onClick={() => setSearchOpen(true)}
+          aria-label="Open global search"
+          className="sm:hidden relative flex items-center justify-center h-10 w-10 rounded-full bg-gradient-to-br from-blue-500/20 to-indigo-500/20 border border-blue-200/20 shadow-[inset_0_1px_2px_rgba(255,255,255,0.3),0_4px_12px_rgba(0,0,0,0.1)] transition-transform active:scale-95 backdrop-blur-md"
         >
           <Search className="h-4 w-4 text-foreground/80" />
-        </Button>
+        </button>
         <GlobalSearch open={searchOpen} onOpenChange={setSearchOpen} />
         
         <NotificationPanel>
-          <Button variant="ghost" size="icon" className="rounded-full bg-card border border-border/50 shadow-sm hover:bg-muted relative">
+          <Button variant="ghost" size="icon" aria-label="Open notifications" className="rounded-full bg-card border border-border/50 shadow-sm hover:bg-muted relative">
             <Bell className="h-4 w-4 text-foreground/80" />
             <span className="absolute top-2 right-2.5 h-2 w-2 rounded-full bg-red-500 animate-pulse border border-background"></span>
           </Button>
@@ -86,18 +96,18 @@ const DashboardHeader = ({ profile }: DashboardHeaderProps) => {
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="relative h-10 w-10 rounded-full ml-1 border-2 border-primary/20 hover:border-primary/50 transition-colors p-0">
+            <Button variant="ghost" aria-label="Open user menu" className="relative h-10 w-10 rounded-full ml-1 border-2 border-primary/20 hover:border-primary/50 transition-colors p-0">
               <Avatar className="h-full w-full">
-                <AvatarImage src={`https://api.dicebear.com/7.x/notionists/svg?seed=${profile.name}`} alt={profile.name} />
-                <AvatarFallback className="bg-primary/10 text-primary font-bold">{profile.name.charAt(0)}</AvatarFallback>
+                <AvatarImage src={`https://api.dicebear.com/7.x/notionists/svg?seed=${userName}`} alt={userName} />
+                <AvatarFallback className="bg-primary/10 text-primary font-bold">{userName.charAt(0)}</AvatarFallback>
               </Avatar>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-56" align="end" forceMount>
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium leading-none">{profile.name}</p>
-                <p className="text-xs text-muted-foreground leading-none">Profile {profile.profileCompleteness}% complete</p>
+                <p className="text-sm font-medium leading-none">{userName}</p>
+                <p className="text-xs text-muted-foreground leading-none">Profile {profile?.profileCompleteness || 0}% complete</p>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />

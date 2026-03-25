@@ -1,11 +1,10 @@
-import { Home, Bell, Calendar, BookOpen, Users } from "lucide-react";
+import { Home, ClipboardList, Calendar, BookOpen, Users } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
-import NotificationPanel from "./NotificationPanel";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
   { icon: Home, label: "Home", path: "/patient/dashboard" },
-  { icon: Bell, label: "Reminders", path: "/patient/reminders" },
+  { icon: ClipboardList, label: "Reminders", path: "/patient/reminders" },
   { icon: Calendar, label: "Consult", path: "/patient/consultations" },
   { icon: BookOpen, label: "Journal", path: "/patient/journal" },
   { icon: Users, label: "Community", path: "/patient/community" },
@@ -34,10 +33,7 @@ const MobileNavDock = () => {
                       : "text-muted-foreground group-hover:text-foreground"
                   )}
                 />
-                {/* Red dot for bell */}
-                {item.icon === Bell && (
-                  <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-red-500 border border-background"></span>
-                )}
+
               </div>
               <span
                 className={cn(
@@ -49,16 +45,6 @@ const MobileNavDock = () => {
               </span>
             </>
           );
-
-          if (item.icon === Bell) {
-            return (
-              <NotificationPanel key={item.label}>
-                <button className="relative flex flex-col items-center justify-center w-14 h-full gap-1 group">
-                  {NavItemContent}
-                </button>
-              </NotificationPanel>
-            );
-          }
 
           return (
             <Link

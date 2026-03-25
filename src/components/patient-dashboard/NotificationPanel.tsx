@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { 
-  Bell, CheckCircle, Info, AlertTriangle, X
+  Bell, CheckCircle, Info, AlertTriangle, X, ChevronLeft
 } from "lucide-react";
 import {
   Sheet,
@@ -8,6 +8,7 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
+  SheetClose,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 
@@ -75,8 +76,13 @@ const NotificationPanel = ({ children }: NotificationPanelProps) => {
       <SheetContent className="w-full sm:max-w-md border-l border-border/50 bg-card/95 backdrop-blur-xl p-0 flex flex-col h-full overflow-hidden [&>button:last-child]:hidden">
         
         {/* Header */}
-        <SheetHeader className="p-6 border-b border-border/50 bg-background/50 text-left space-y-0 relative">
-          <SheetTitle className="flex items-center gap-2 text-xl font-bold font-heading">
+        <SheetHeader className="p-6 border-b border-border/50 bg-background/50 text-left space-y-0 relative flex flex-row items-center gap-4">
+          <SheetClose asChild className="sm:hidden -ml-2">
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground">
+              <ChevronLeft className="h-6 w-6" />
+            </Button>
+          </SheetClose>
+          <SheetTitle className="flex items-center gap-2 text-xl font-bold font-heading m-0">
             <div className="relative">
               <Bell className="h-5 w-5 text-foreground" />
               {unreadCount > 0 && <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-red-500 animate-pulse"></span>}
@@ -86,7 +92,7 @@ const NotificationPanel = ({ children }: NotificationPanelProps) => {
           {unreadCount > 0 && (
             <button 
               onClick={markAllAsRead}
-              className="absolute right-6 top-1/2 -translate-y-1/2 text-xs font-bold text-primary hover:text-primary/80 transition-colors"
+              className="absolute right-6 top-1/2 -translate-y-1/2 text-xs font-bold text-primary hover:text-primary/80 transition-colors hidden sm:block"
             >
               Mark all as read
             </button>

@@ -5,9 +5,10 @@ interface GlassCardProps {
   children: ReactNode;
   className?: string;
   variant?: "default" | "subtle" | "highlight";
+  onClick?: () => void;
 }
 
-const GlassCard = ({ children, className, variant = "default" }: GlassCardProps) => {
+const GlassCard = ({ children, className, variant = "default", onClick }: GlassCardProps) => {
   const getVariantStyles = () => {
     switch (variant) {
       case "highlight":
@@ -22,6 +23,7 @@ const GlassCard = ({ children, className, variant = "default" }: GlassCardProps)
 
   return (
     <div
+      onClick={onClick}
       className={cn(
         "rounded-[2rem] sm:rounded-[2.5rem] p-6 sm:p-8 transition-all duration-300",
         getVariantStyles(),

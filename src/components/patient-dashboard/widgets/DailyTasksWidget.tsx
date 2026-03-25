@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { CheckSquare, Circle, Sun, Droplets, Dumbbell, Brain, Moon, Stethoscope, GripVertical } from "lucide-react";
+import { useState, useEffect } from "react";
+import { CheckSquare, Circle, Sun, Droplets, Dumbbell, Brain, Moon, Stethoscope, GripVertical, Pill, Utensils, Calendar, Clock } from "lucide-react";
+import { usePatient, ReminderType } from "@/context/PatientContext";
 import {
   DndContext,
   closestCenter,
@@ -18,22 +19,12 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
-// Keep initial tasks outside so we can initialize state
-const INITIAL_TASKS = [
-  { id: "1", label: "Morning medicine", time: "8:00 AM", icon: Sun, completed: true },
-  { id: "2", label: "Drink water (4/8)", time: "Ongoing", icon: Droplets, completed: false },
-  { id: "3", label: "30 min exercise", time: "5:00 PM", icon: Dumbbell, completed: false },
-  { id: "4", label: "Journal entry", time: "8:00 PM", icon: Brain, completed: false },
-  { id: "5", label: "Evening medicine", time: "9:00 PM", icon: Moon, completed: false },
-  { id: "6", label: "Consultation check-in", time: "Tomorrow", icon: Stethoscope, completed: false },
-];
+const ICON_MAP: Record<string, any> = {
+  Sun, Droplets, Dumbbell, Brain, Moon, Stethoscope, Pill, Utensils, Calendar, Clock
+};
 
-/**
- * SortableTaskItem Component
- * Handles the individual task row, drag handle, and toggle logic
- */
 interface SortableTaskItemProps {
-  task: typeof INITIAL_TASKS[0];
+  task: { id: string; label: string; time: string; iconName: string; completed: boolean };
   onToggle: (id: string) => void;
 }
 
@@ -53,7 +44,7 @@ const SortableTaskItem = ({ task, onToggle }: SortableTaskItemProps) => {
     zIndex: isDragging ? 1 : 0,
   };
 
-  const IconObj = task.icon;
+  const IconObj = ICON_MAP[task.iconName] || Clock;
 
   return (
     <div
@@ -114,13 +105,37 @@ const SortableTaskItem = ({ task, onToggle }: SortableTaskItemProps) => {
  * DailyTasksWidget Main Component
  */
 const DailyTasksWidget = () => {
-  const [tasks, setTasks] = useState(INITIAL_TASKS);
+  const { reminders, markReminderDone } = usePatient();
+  const [tasks, setTasks] = useState<{ id: string; label: string; time: string; iconName: string; completed: boolean }[]>([]);
+
+  useEffect(() => {
+    // Sync reminders to local tasks
+    const mapped = reminders.map(r => ({
+      id: r.id,
+      label: r.title,
+      time: r.time,
+      iconName: r.iconName,
+      completed: r.status === "completed"
+    }));
+
+    // Maintain drag order if exists
+    setTasks(prev => {
+      if (prev.length === 0) return mapped;
+      
+      const orderMap = new Map(prev.map((t, i) => [t.id, i]));
+      const sorted = [...mapped].sort((a, b) => {
+        const indexA = orderMap.has(a.id) ? orderMap.get(a.id)! : Infinity;
+        const indexB = orderMap.has(b.id) ? orderMap.get(b.id)! : Infinity;
+        return indexA - indexB;
+      });
+      return sorted;
+    });
+  }, [reminders]);
 
   const completedCount = tasks.filter(t => t.completed).length;
 
-  // Toggle completion status
   const toggleTask = (id: string) => {
-    setTasks(prev => prev.map(t => t.id === id ? { ...t, completed: !t.completed } : t));
+    markReminderDone(id); // Global update
   };
 
   // Drag and drop setup
@@ -139,7 +154,8 @@ const DailyTasksWidget = () => {
   };
 
   return (
-    <div className="flex flex-col rounded-[2.5rem] bg-card/80 backdrop-blur-xl border border-border/50 shadow-sm p-6 sm:p-8 h-full">
+    <div className="flex flex-col rounded-[2.5rem] bg-card shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-6 sm:p-8 h-full relative overflow-hidden group">
+      <div className="absolute top-0 left-0 right-0 h-2 bg-indigo-400 opacity-80"></div>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
           <h3 className="font-bold text-xl text-foreground font-heading">Today's Care Plan</h3>

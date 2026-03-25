@@ -1,4 +1,5 @@
 import { Stethoscope, Brain, ArrowRight, Pill, Salad, MessageCircle, BookOpen, Users as UsersIcon, BellRing } from "lucide-react";
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 
 const physicalSteps = [
@@ -95,9 +96,9 @@ const PatientShowcase = () => (
             ))}
           </motion.div>
           
-          <a href="#" className="mt-10 inline-flex items-center gap-2 text-sm font-semibold text-primary transition-colors hover:text-primary/80 group-hover:underline">
+          <Link to="/patient/login" className="mt-10 inline-flex items-center gap-2 text-sm font-semibold text-primary transition-colors hover:text-primary/80 group-hover:underline">
             Explore physical care features <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-          </a>
+          </Link>
         </motion.div>
 
         {/* Mental Pathway Card */}
@@ -144,9 +145,9 @@ const PatientShowcase = () => (
             ))}
           </motion.div>
 
-          <a href="#" className="mt-10 inline-flex items-center gap-2 text-sm font-semibold text-violet-600 transition-colors hover:text-violet-500 group-hover:underline dark:text-violet-400 dark:hover:text-violet-300">
+          <Link to="/patient/login" className="mt-10 inline-flex items-center gap-2 text-sm font-semibold text-violet-600 transition-colors hover:text-violet-500 group-hover:underline dark:text-violet-400 dark:hover:text-violet-300">
             Explore mental wellness features <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-          </a>
+          </Link>
         </motion.div>
       </div>
     </div>

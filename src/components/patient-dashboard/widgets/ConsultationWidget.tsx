@@ -3,9 +3,9 @@ import { Button } from "@/components/ui/button";
 
 const ConsultationWidget = () => {
   return (
-    <div className="h-full flex flex-col rounded-[2.5rem] bg-card border border-border/50 shadow-sm p-6 sm:p-8 hover:shadow-md transition-shadow relative overflow-hidden group">
-      {/* Subtle top-light gradient */}
-      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-400 to-green-500 opacity-50"></div>
+    <div className="h-full flex flex-col rounded-[2.5rem] bg-card shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-6 sm:p-8 hover:shadow-md transition-shadow relative overflow-hidden group">
+      {/* Solid top accent bar */}
+      <div className="absolute top-0 left-0 right-0 h-2 bg-emerald-400"></div>
       
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
@@ -23,7 +23,7 @@ const ConsultationWidget = () => {
       </div>
 
       <div className="flex-1 flex flex-col justify-center">
-        <div className="p-4 rounded-2xl bg-gradient-to-br from-background/80 to-muted/50 border border-border/60 shadow-sm relative overflow-hidden">
+        <div className="p-4 rounded-3xl bg-background border border-border/30 shadow-sm relative overflow-hidden">
           <div className="absolute top-0 right-0 p-3 opacity-10 pointer-events-none">
             <Stethoscope className="h-16 w-16" />
           </div>
