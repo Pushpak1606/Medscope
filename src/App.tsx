@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/theme-provider";
 import { PatientProvider } from "@/context/PatientContext";
+import { ConsultationProvider } from "@/context/ConsultationContext";
 import Index from "./pages/Index.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import SelectRole from "./pages/auth/SelectRole.tsx";
@@ -24,6 +25,7 @@ import LogMoodPage from "./pages/patient/LogMoodPage.tsx";
 import EmergencyPage from "./pages/patient/EmergencyPage.tsx";
 import RecordsPage from "./pages/patient/RecordsPage.tsx";
 import RemindersPage from "./pages/patient/RemindersPage.tsx";
+import ConsultationsPage from "./pages/patient/ConsultationsPage.tsx";
 import ScrollToTop from "@/components/ScrollToTop";
 
 const queryClient = new QueryClient();
@@ -47,6 +49,7 @@ const App = () => (
       <BrowserRouter>
         <ScrollToTop />
         <PatientProvider>
+        <ConsultationProvider>
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/auth/select-role" element={<SelectRole />} />
@@ -66,9 +69,11 @@ const App = () => (
           <Route path="/patient/emergency" element={<EmergencyPage />} />
           <Route path="/patient/records" element={<RecordsPage />} />
           <Route path="/patient/reminders" element={<RemindersPage />} />
+          <Route path="/patient/consultations" element={<ConsultationsPage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
+        </ConsultationProvider>
         </PatientProvider>
       </BrowserRouter>
     </TooltipProvider>
