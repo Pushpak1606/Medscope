@@ -1,40 +1,149 @@
-import { FileText, Camera, PhoneCall, BotMessageSquare, BookHeart } from "lucide-react";
-import { Link } from "react-router-dom";
+import { FileText, Camera, PhoneCall, BotMessageSquare, Sparkles, FileScan, Activity } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
-const ACTIONS = [
-  { href: "/patient/scan-rx", icon: Camera, label: "Scan Rx", color: "text-blue-500", bg: "bg-blue-500/10", border: "border-blue-500/20" },
-  { href: "/patient/ask-ai", icon: BotMessageSquare, label: "Ask AI", color: "text-purple-500", bg: "bg-purple-500/10", border: "border-purple-500/20" },
-  { href: "/patient/log-mood", icon: BookHeart, label: "Log Mood", color: "text-pink-500", bg: "bg-pink-500/10", border: "border-pink-500/20" },
-  { href: "/patient/emergency", icon: PhoneCall, label: "Emergency", color: "text-red-500", bg: "bg-red-500/10", border: "border-red-500/20" },
-  { href: "/patient/records", icon: FileText, label: "Records", color: "text-emerald-500", bg: "bg-emerald-500/10", border: "border-emerald-500/20" },
+const SMART_ACTIONS = [
+  { 
+    href: "/patient/ask-ai", 
+    icon: BotMessageSquare, 
+    label: "Ask AI Assistant", 
+    desc: "Analyze symptoms & reports",
+    color: "text-purple-500", 
+    bg: "bg-purple-500/10", 
+    border: "border-purple-500/20",
+    glow: "group-hover/card:shadow-[0_0_30px_rgba(168,85,247,0.15)]",
+    isDialog: false
+  },
+  { 
+    href: "#", 
+    icon: Camera, 
+    label: "Scan", 
+    desc: "Scan Rx or lab results",
+    color: "text-blue-500", 
+    bg: "bg-blue-500/10", 
+    border: "border-blue-500/20",
+    glow: "group-hover/card:shadow-[0_0_30px_rgba(59,130,246,0.15)]",
+    isDialog: true
+  },
+  { 
+    href: "/patient/log-mood", 
+    icon: Sparkles, 
+    label: "Mental Wellness", 
+    desc: "Log your daily mood",
+    color: "text-pink-500", 
+    bg: "bg-pink-500/10", 
+    border: "border-pink-500/20",
+    glow: "group-hover/card:shadow-[0_0_30px_rgba(236,72,153,0.15)]",
+    isDialog: false
+  },
+  { 
+    href: "/patient/emergency", 
+    icon: PhoneCall, 
+    label: "Emergency SOS", 
+    desc: "Get help immediately",
+    color: "text-red-500", 
+    bg: "bg-red-500/10", 
+    border: "border-red-500/20",
+    glow: "group-hover/card:shadow-[0_0_30px_rgba(239,68,68,0.15)]",
+    isDialog: false
+  },
 ];
 
 const QuickActionsWidget = () => {
+  const navigate = useNavigate();
+
+  const handleDocumentOptionClick = (path: string) => {
+    // You could close the dialog programmatically here if needed, 
+    // but navigating away effectively unmounts it or navigates away.
+    navigate(path);
+  };
+
+  const renderCardContent = (action: any) => (
+    <>
+      <div className={`absolute inset-0 bg-gradient-to-br from-transparent to-${action.color.replace('text-', '')}/5 opacity-0 group-hover/card:opacity-100 transition-opacity duration-500 pointer-events-none`}></div>
+      <div className={`h-12 w-12 rounded-2xl flex items-center justify-center mb-4 backdrop-blur-md border ${action.bg} ${action.border}`}>
+        <action.icon className={`h-6 w-6 ${action.color} transition-transform duration-300 group-hover/card:scale-110`} />
+      </div>
+      <span className="font-bold text-base text-foreground mb-1 group-hover/card:text-primary transition-colors">
+        {action.label}
+      </span>
+      <span className="text-xs font-semibold text-muted-foreground line-clamp-2">
+        {action.desc}
+      </span>
+    </>
+  );
+
   return (
-    <div className="flex flex-col rounded-[2.5rem] bg-card shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-8 relative overflow-hidden group">
-      {/* Decorative ambient light */}
-      <div className="absolute -top-24 -right-24 w-48 h-48 bg-primary/20 blur-[60px] rounded-full pointer-events-none transition-transform duration-700 group-hover:scale-150"></div>
-      
-      <div className="flex items-center justify-between mb-6 relative">
-        <h3 className="font-extrabold text-xl text-foreground tracking-tight">Quick Actions</h3>
-        <span className="text-xs font-bold text-primary bg-primary/10 px-3 py-1 rounded-full uppercase tracking-wider">Most Used</span>
+    <div className="flex flex-col">
+      <div className="flex items-center justify-between mb-4 px-2">
+        <h3 className="font-extrabold text-xl text-foreground tracking-tight">Smart Actions</h3>
       </div>
 
-      <div className="flex sm:grid sm:grid-cols-5 gap-4 sm:gap-6 relative overflow-x-auto pb-4 sm:pb-0 -mx-4 sm:mx-0 px-4 sm:px-0 hide-scrollbar snap-x snap-mandatory">
-        {ACTIONS.map((action, i) => (
-          <Link
-            key={i}
-            to={action.href}
-            className="flex flex-col items-center gap-3 group/btn shrink-0 snap-start"
-          >
-            <div className="relative overflow-hidden h-16 w-16 sm:h-[4.5rem] sm:w-[4.5rem] rounded-[1.2rem] bg-background/60 border border-border/40 shadow-sm flex items-center justify-center transition-all duration-300 group-hover/btn:-translate-y-1 group-hover/btn:shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
-              <action.icon className={`relative z-10 h-7 w-7 sm:h-8 sm:w-8 ${action.color} transition-transform duration-300 group-hover/btn:scale-110`} />
-            </div>
-            <span className="text-xs font-bold text-muted-foreground text-center group-hover/btn:text-foreground transition-colors mt-1">
-              {action.label}
-            </span>
-          </Link>
-        ))}
+      {/* Horizontal scroll on mobile, responsive grid on larger screens */}
+      <div className="flex sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-4 overflow-x-auto pb-6 -mx-4 px-4 sm:mx-0 sm:px-0 sm:pb-0 hide-scrollbar snap-x snap-mandatory">
+        {SMART_ACTIONS.map((action, i) => {
+          const cardClasses = `group/card relative flex flex-col p-4 sm:p-5 rounded-3xl bg-card border border-border/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-300 hover:-translate-y-1 ${action.glow} min-w-[160px] sm:min-w-0 snap-start shrink-0 overflow-hidden text-left`;
+
+          if (action.isDialog) {
+            return (
+              <Dialog key={i}>
+                <DialogTrigger className={cardClasses}>
+                  {renderCardContent(action)}
+                </DialogTrigger>
+                <DialogContent className="w-[92vw] max-w-md rounded-[2rem] p-5 sm:p-8 border-border/50 bg-card/95 backdrop-blur-xl shadow-2xl">
+                  <DialogHeader className="mb-4 sm:mb-6">
+                    <DialogTitle className="text-xl sm:text-2xl font-extrabold text-foreground text-center">
+                      What are you scanning?
+                    </DialogTitle>
+                  </DialogHeader>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                    <button 
+                      onClick={() => handleDocumentOptionClick("/patient/scan-rx")}
+                      className="flex sm:flex-col items-center sm:justify-center gap-4 p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-blue-500/5 hover:bg-blue-500/10 border border-blue-500/20 transition-all duration-300 hover:scale-[1.02] sm:hover:scale-105 hover:shadow-[0_8px_30px_rgba(59,130,246,0.15)] group text-left sm:text-center"
+                    >
+                      <div className="h-12 w-12 sm:h-16 sm:w-16 shrink-0 rounded-2xl bg-white shadow-sm flex items-center justify-center text-blue-500 group-hover:scale-110 transition-transform">
+                        <FileScan className="h-8 w-8" />
+                      </div>
+                      <div className="text-center">
+                        <h4 className="font-bold text-foreground text-lg">Scan Rx</h4>
+                        <p className="text-sm text-muted-foreground font-medium">Prescriptions</p>
+                      </div>
+                    </button>
+                    
+                    <button 
+                      onClick={() => handleDocumentOptionClick("/patient/records")}
+                      className="flex sm:flex-col items-center sm:justify-center gap-4 p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-emerald-500/5 hover:bg-emerald-500/10 border border-emerald-500/20 transition-all duration-300 hover:scale-[1.02] sm:hover:scale-105 hover:shadow-[0_8px_30px_rgba(16,185,129,0.15)] group text-left sm:text-center"
+                    >
+                      <div className="h-12 w-12 sm:h-16 sm:w-16 shrink-0 rounded-2xl bg-white shadow-sm flex items-center justify-center text-emerald-500 group-hover:scale-110 transition-transform">
+                        <Activity className="h-8 w-8" />
+                      </div>
+                      <div className="text-center">
+                        <h4 className="font-bold text-foreground text-lg">Scan Report</h4>
+                        <p className="text-sm text-muted-foreground font-medium">Lab Results</p>
+                      </div>
+                    </button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            );
+          }
+
+          return (
+            <Link
+              key={i}
+              to={action.href}
+              className={cardClasses}
+            >
+              {renderCardContent(action)}
+            </Link>
+          );
+        })}
       </div>
     </div>
   );

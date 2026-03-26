@@ -21,10 +21,10 @@ const AccordionInfoWidget = () => {
         <AccordionItem value="item-1" className="bg-background/40 border border-border/40 rounded-2xl px-4 data-[state=open]:bg-background transition-colors shadow-sm">
           <AccordionTrigger className="hover:no-underline hover:text-primary transition-colors py-4">
             <div className="flex items-center gap-3">
-              <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg sm:rounded-xl bg-orange-500/10 text-orange-500 flex items-center justify-center shrink-0">
-                <Activity className="h-4 w-4 sm:h-5 sm:w-5" />
+              <div className="h-10 w-10 rounded-xl bg-orange-500/10 text-orange-500 flex items-center justify-center shrink-0">
+                <Activity className="h-5 w-5" />
               </div>
-              <span className="font-bold text-sm sm:text-base">Active Conditions</span>
+              <span className="font-bold text-sm">Active Conditions</span>
             </div>
           </AccordionTrigger>
           <AccordionContent className="text-muted-foreground pb-4 space-y-2 flex flex-wrap gap-2">
@@ -37,10 +37,10 @@ const AccordionInfoWidget = () => {
         <AccordionItem value="item-2" className="bg-background/40 border border-border/40 rounded-2xl px-4 data-[state=open]:bg-background transition-colors shadow-sm">
           <AccordionTrigger className="hover:no-underline hover:text-primary transition-colors py-4">
             <div className="flex items-center gap-3">
-              <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg sm:rounded-xl bg-red-500/10 text-red-500 flex items-center justify-center shrink-0">
-                <ShieldAlert className="h-4 w-4 sm:h-5 sm:w-5" />
+              <div className="h-10 w-10 rounded-xl bg-red-500/10 text-red-500 flex items-center justify-center shrink-0">
+                <ShieldAlert className="h-5 w-5" />
               </div>
-              <span className="font-bold text-sm sm:text-base">Allergies & Warnings</span>
+              <span className="font-bold text-sm">Allergies & Warnings</span>
             </div>
           </AccordionTrigger>
           <AccordionContent className="text-muted-foreground pb-4 flex flex-wrap gap-2">
@@ -55,10 +55,10 @@ const AccordionInfoWidget = () => {
         <AccordionItem value="item-3" className="bg-background/40 border border-border/40 rounded-2xl px-4 data-[state=open]:bg-background transition-colors shadow-sm">
           <AccordionTrigger className="hover:no-underline hover:text-primary transition-colors py-4">
             <div className="flex items-center gap-3">
-              <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg sm:rounded-xl bg-purple-500/10 text-purple-500 flex items-center justify-center shrink-0">
-                <HeartPulse className="h-4 w-4 sm:h-5 sm:w-5" />
+              <div className="h-10 w-10 rounded-xl bg-purple-500/10 text-purple-500 flex items-center justify-center shrink-0">
+                <HeartPulse className="h-5 w-5" />
               </div>
-              <span className="font-bold text-sm sm:text-base">Current Medications</span>
+              <span className="font-bold text-sm">Current Medications</span>
             </div>
           </AccordionTrigger>
           <AccordionContent className="text-muted-foreground pb-4 space-y-2 flex flex-col items-start">
@@ -71,10 +71,10 @@ const AccordionInfoWidget = () => {
         <AccordionItem value="item-4" className="bg-background/40 border border-border/40 rounded-2xl px-4 data-[state=open]:bg-background transition-colors shadow-sm">
           <AccordionTrigger className="hover:no-underline hover:text-primary transition-colors py-4">
             <div className="flex items-center gap-3">
-              <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg sm:rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center shrink-0">
-                <UserCircle className="h-4 w-4 sm:h-5 sm:w-5" />
+              <div className="h-10 w-10 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center shrink-0">
+                <UserCircle className="h-5 w-5" />
               </div>
-              <span className="font-bold text-sm sm:text-base">Emergency Contact</span>
+              <span className="font-bold text-sm">Emergency Contact</span>
             </div>
           </AccordionTrigger>
           <AccordionContent className="text-muted-foreground pb-2">

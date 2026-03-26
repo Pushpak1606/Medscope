@@ -1,54 +1,50 @@
-import { Stethoscope, Video, Calendar, ArrowRight } from "lucide-react";
+import { Stethoscope, Video, Calendar, ArrowRight, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const ConsultationWidget = () => {
   return (
-    <div className="h-full flex flex-col rounded-[2.5rem] bg-card shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-6 sm:p-8 hover:shadow-md transition-shadow relative overflow-hidden group">
-      {/* Solid top accent bar */}
-      <div className="absolute top-0 left-0 right-0 h-2 bg-emerald-400"></div>
+    <div className="h-full flex flex-col rounded-[2.5rem] bg-card p-6 sm:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-border/50 relative overflow-hidden group">
+      {/* Subtle ambient light */}
+      <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 blur-[40px] rounded-full pointer-events-none transition-transform duration-700 group-hover:scale-150"></div>
       
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-8 relative">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
-            <Stethoscope className="h-5 w-5" />
+          <div className="h-10 w-10 text-emerald-500 flex items-center justify-center shrink-0">
+            <Stethoscope className="h-6 w-6" />
           </div>
           <div>
-            <h3 className="font-bold text-foreground">Consultations</h3>
-            <p className="text-xs text-muted-foreground font-medium">1 Upcoming</p>
+            <h3 className="font-extrabold text-xl text-foreground tracking-tight">Consultations</h3>
+            <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">1 Upcoming</p>
           </div>
         </div>
-        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
+        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground">
           <ArrowRight className="h-4 w-4" />
         </Button>
       </div>
 
-      <div className="flex-1 flex flex-col justify-center">
-        <div className="p-4 rounded-3xl bg-background border border-border/30 shadow-sm relative overflow-hidden">
-          <div className="absolute top-0 right-0 p-3 opacity-10 pointer-events-none">
-            <Stethoscope className="h-16 w-16" />
-          </div>
-          
-          <div className="flex items-center gap-4 mb-4">
-            <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-full overflow-hidden bg-muted shrink-0">
-              <img src="https://api.dicebear.com/7.x/notionists/svg?seed=DrJane" alt="Doctor" className="h-full w-full object-cover" />
+      <div className="flex-1 flex flex-col justify-center relative">
+        <div className="p-5 sm:p-6 rounded-3xl bg-background/50 border border-border/50 shadow-sm relative overflow-hidden backdrop-blur-sm transition-all hover:bg-background/80 group/card">
+          <div className="flex items-center gap-5 mb-5">
+            <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-2xl overflow-hidden bg-muted shrink-0 shadow-sm border border-border/50">
+              <img src="https://api.dicebear.com/7.x/notionists/svg?seed=DrJane" alt="Dr. Jane Smith" className="h-full w-full object-cover bg-emerald-50/50" />
             </div>
-            <div>
-              <h4 className="font-bold text-foreground text-sm sm:text-base">Dr. Jane Smith</h4>
-              <p className="text-xs sm:text-sm text-muted-foreground">General Practitioner</p>
+            <div className="flex-1 min-w-0">
+              <h4 className="font-bold text-foreground text-lg sm:text-xl truncate">Dr. Jane Smith</h4>
+              <p className="text-sm text-muted-foreground font-medium truncate">General Practitioner</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-4 text-xs font-semibold text-muted-foreground mb-5 px-1">
-            <div className="flex items-center gap-1.5 bg-background px-2.5 py-1 rounded-md border border-border/50 shadow-sm">
-              <Calendar className="h-3.5 w-3.5 text-primary" /> Fri, 26 Oct
+          <div className="flex items-center gap-3 text-sm font-semibold text-muted-foreground mb-6">
+            <div className="flex items-center gap-2 bg-background px-3 py-1.5 rounded-xl border border-border/50 shadow-sm">
+              <Calendar className="h-4 w-4 text-primary" /> Fri, 26 Oct
             </div>
-            <div className="flex items-center gap-1.5 bg-background px-2.5 py-1 rounded-md border border-border/50 shadow-sm">
-              <Video className="h-3.5 w-3.5 text-blue-500" /> 4:00 PM
+            <div className="flex items-center gap-2 bg-background px-3 py-1.5 rounded-xl border border-border/50 shadow-sm">
+              <Clock className="h-4 w-4 text-emerald-500" /> 4:00 PM
             </div>
           </div>
 
-          <Button className="w-full h-12 sm:h-14 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm sm:text-base shadow-md shadow-emerald-500/20 transition-all border-0 hover:scale-[1.02] active:scale-95">
-            <Video className="mr-2 h-4 w-4 sm:h-5 sm:w-5" /> Join Call
+          <Button className="w-full h-14 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-base shadow-[0_8px_20px_rgba(5,150,105,0.25)] transition-all border-0 hover:scale-[1.02] active:scale-95 group-hover/card:shadow-[0_8px_30px_rgba(5,150,105,0.35)]">
+            <Video className="mr-2 h-5 w-5" /> Join Call
           </Button>
         </div>
       </div>

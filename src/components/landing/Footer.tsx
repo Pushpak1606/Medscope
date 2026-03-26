@@ -1,4 +1,5 @@
-import { Activity, Heart } from "lucide-react";
+import { Heart } from "lucide-react";
+import MedscopeLogo from "@/components/ui/MedscopeLogo";
 import { Link } from "react-router-dom";
 
 const links = {
@@ -32,7 +33,7 @@ const Footer = () => (
         <div className="md:col-span-2 lg:pr-12">
           <Link to="/" className="inline-flex items-center gap-2 font-heading text-xl font-bold text-foreground transition-opacity hover:opacity-90">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm">
-              <Activity className="h-5 w-5" />
+              <MedscopeLogo className="h-5 w-5" />
             </div>
             <span>Medscope</span>
           </Link>
@@ -77,7 +78,7 @@ const Footer = () => (
         <div>
           <Link to="/" className="inline-flex items-center gap-2 font-heading text-xl font-bold text-foreground transition-opacity hover:opacity-90">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-sm">
-              <Activity className="h-5 w-5" />
+              <MedscopeLogo className="h-5 w-5" />
             </div>
             <span>Medscope</span>
           </Link>

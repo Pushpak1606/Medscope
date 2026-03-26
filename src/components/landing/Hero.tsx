@@ -4,6 +4,7 @@ import { ArrowRight, Pill, Video, ShieldCheck, Activity, Star } from "lucide-rea
 import { motion } from "framer-motion";
 import { InfiniteGrid } from "@/components/ui/the-infinite-grid";
 import AnimatedBackground from "@/components/ui/animated-background";
+import MedscopeLogo from "@/components/ui/MedscopeLogo";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -135,7 +136,7 @@ const Hero = () => (
               style={{ animationDelay: "3s" }}
             >
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-violet-500/10 text-violet-500">
-                <Activity className="h-6 w-6" />
+                <MedscopeLogo className="h-6 w-6" />
               </div>
               <div>
                 <p className="text-sm font-bold text-foreground">Wellness Streak</p>

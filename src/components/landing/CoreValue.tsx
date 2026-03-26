@@ -1,4 +1,4 @@
-import { Activity } from "lucide-react";
+import MedscopeLogo from "@/components/ui/MedscopeLogo";
 import { motion } from "framer-motion";
 
 const CoreValue = () => (
@@ -11,7 +11,7 @@ const CoreValue = () => (
         transition={{ duration: 0.5 }}
       >
         <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
-          <Activity className="h-7 w-7 text-primary" />
+          <MedscopeLogo className="h-7 w-7" />
         </div>
         <p className="text-xs font-semibold uppercase tracking-widest text-primary">AI Support</p>
         <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">

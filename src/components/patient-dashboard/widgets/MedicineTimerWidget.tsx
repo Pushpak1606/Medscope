@@ -38,14 +38,14 @@ const MedicineTimerWidget = () => {
   
   return (
     <div className="h-full flex flex-col items-center justify-center rounded-[2.5rem] bg-card shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-6 sm:p-8 relative overflow-hidden text-center group">
-      <div className={`absolute top-0 left-0 right-0 h-2 opacity-80 ${upcomingMed ? upcomingMed.bg.replace('/10', '') : 'bg-primary'}`}></div>
+      <div className={`absolute top-0 left-0 right-0 h-1.5 opacity-80 ${upcomingMed ? upcomingMed.bg.replace('/10', '') : 'bg-primary'}`}></div>
       <div className="absolute top-0 right-0 h-full w-full bg-[radial-gradient(circle_at_top_right,rgba(var(--primary),0.05),transparent_60%)] pointer-events-none"></div>
 
       <div className="flex items-center justify-between w-full mb-1">
-        <h3 className="font-bold text-foreground text-left">Next Reminder</h3>
-        <Link to="/patient/reminders" className="text-[10px] font-bold text-primary hover:underline uppercase tracking-wider bg-primary/10 px-2 py-0.5 rounded-full">View All</Link>
+        <h3 className="font-bold text-foreground text-left text-base">Next Reminder</h3>
+        <Link to="/patient/reminders" className="text-[10px] font-bold text-primary hover:underline uppercase tracking-wider bg-primary/10 px-2 py-0.5 rounded-full shrink-0">View All</Link>
       </div>
-      <p className="text-xs text-muted-foreground font-medium mb-6 w-full text-left">
+      <p className="text-xs text-muted-foreground font-medium mb-4 w-full text-left">
         {upcomingMed ? (isMedicine ? "Time until next dose" : `Upcoming ${upcomingMed.type.toLowerCase()}`) : "Schedule is clear"}
       </p>
 

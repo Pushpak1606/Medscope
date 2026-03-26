@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useTheme } from "@/components/theme-provider";
@@ -23,7 +23,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { 
   Bell, Shield, Monitor, MessageSquare, 
   Activity, User, Moon, Sun, Laptop, 
-  CheckCircle, ChevronRight, AlertTriangle,
+  CheckCircle, ChevronRight, ChevronLeft, AlertTriangle,
   LayoutGrid, GripVertical, Eye, EyeOff, RotateCcw
 } from "lucide-react";
 
@@ -58,6 +58,16 @@ const PatientSettings = () => {
   const { theme, setTheme } = useTheme();
   const { profile, updateProfile, widgetOrder, setWidgetOrder } = usePatient();
   const [activeTab, setActiveTab] = useState("appearance");
+  const settingsScrollRef = useRef<HTMLDivElement>(null);
+
+  const scrollSettings = (direction: "left" | "right") => {
+    if (settingsScrollRef.current) {
+      settingsScrollRef.current.scrollBy({
+        left: direction === "left" ? -150 : 150,
+        behavior: "smooth"
+      });
+    }
+  };
   const [isSaving, setIsSaving] = useState(false);
   const [savedStatus, setSavedStatus] = useState(false);
   const displayName = profile.fullName?.split(" ")[0] || "Patient";
@@ -165,9 +175,20 @@ const PatientSettings = () => {
           <motion.div 
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="w-full md:w-64 shrink-0 overflow-x-auto pb-2 md:pb-0 hide-scrollbar"
+            className="w-full md:w-64 shrink-0 pb-2 md:pb-0 relative group/nav"
           >
-            <div className="flex md:flex-col gap-2 min-w-max md:min-w-0">
+            {/* Left Arrow (mobile only) */}
+            <button 
+              onClick={() => scrollSettings('left')}
+              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 h-8 w-8 rounded-full bg-background/80 backdrop-blur-sm border border-border/50 shadow-sm flex items-center justify-center text-muted-foreground hover:text-foreground opacity-0 group-hover/nav:opacity-100 transition-opacity -ml-3 md:hidden"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+
+            <div 
+              ref={settingsScrollRef}
+              className="flex md:flex-col gap-2 min-w-max md:min-w-0 overflow-x-auto hide-scrollbar scroll-smooth"
+            >
               {TABS.map((tab) => (
                 <button
                   key={tab.id}
@@ -184,6 +205,14 @@ const PatientSettings = () => {
                 </button>
               ))}
             </div>
+
+            {/* Right Arrow (mobile only) */}
+            <button 
+              onClick={() => scrollSettings('right')}
+              className="absolute right-0 top-1/2 -translate-y-1/2 z-10 h-8 w-8 rounded-full bg-background/80 backdrop-blur-sm border border-border/50 shadow-sm flex items-center justify-center text-muted-foreground hover:text-foreground opacity-0 group-hover/nav:opacity-100 transition-opacity -mr-3 md:hidden"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
           </motion.div>
 
           {/* Settings Content Area */}
