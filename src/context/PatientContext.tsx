@@ -34,6 +34,14 @@ export interface PatientPreferences {
   };
 }
 
+export interface MoodLog {
+  id: string;
+  date: string;
+  mood: string;
+  score: number;
+  note?: string;
+}
+
 export interface PatientProfile {
   // Basic
   fullName?: string;
@@ -73,6 +81,8 @@ export interface PatientProfile {
   // Meta
   profileCompleteness?: number;
   preferences?: PatientPreferences;
+  moodLogs?: MoodLog[];
+  savedQuotes?: string[];
 }
 
 export type ReminderType = "All" | "Medicines" | "Meals" | "Water" | "Appointments" | "Wellness";
@@ -102,6 +112,8 @@ interface PatientContextType {
   markReminderDone: (id: string) => void;
   snoozeReminder: (id: string) => void;
   deleteReminder: (id: string) => void;
+  addMoodLog: (log: Omit<MoodLog, "id">) => void;
+  toggleQuoteFavorite: (quoteId: string) => void;
 }
 
 const PatientContext = createContext<PatientContextType | undefined>(undefined);
@@ -119,9 +131,27 @@ export const PatientProvider = ({ children }: { children: ReactNode }) => {
   const [profile, setProfileState] = useState<PatientProfile>(() => {
     try {
       const stored = secureStorage.getItem<PatientProfile>(PROFILE_KEY);
-      return stored || { preferences: DEFAULT_PREFERENCES };
+      const defaultState: PatientProfile = { 
+        preferences: DEFAULT_PREFERENCES,
+        moodLogs: [
+          { id: "m1", date: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(), mood: "Good", score: 4 },
+          { id: "m2", date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(), mood: "Okay", score: 3 },
+          { id: "m3", date: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(), mood: "Great", score: 5 },
+          { id: "m4", date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(), mood: "Rough", score: 2 },
+          { id: "m5", date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), mood: "Good", score: 4 },
+          { id: "m6", date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(), mood: "Great", score: 5 },
+        ],
+        savedQuotes: ["q-1", "q-3"]
+      };
+      
+      if (stored) {
+        if (!stored.moodLogs) stored.moodLogs = defaultState.moodLogs;
+        if (!stored.savedQuotes) stored.savedQuotes = defaultState.savedQuotes;
+        return stored;
+      }
+      return defaultState;
     } catch {
-      return { preferences: DEFAULT_PREFERENCES };
+      return { preferences: DEFAULT_PREFERENCES, moodLogs: [], savedQuotes: [] };
     }
   });
 
@@ -229,11 +259,33 @@ export const PatientProvider = ({ children }: { children: ReactNode }) => {
     setReminders(prev => prev.filter(r => r.id !== id));
   };
 
+  const addMoodLog = (log: Omit<MoodLog, "id">) => {
+    setProfileState((prev) => {
+      const newLog = { ...log, id: Math.random().toString(36).substring(2, 9) };
+      const existingLogs = prev.moodLogs || [];
+      return { ...prev, moodLogs: [...existingLogs, newLog] };
+    });
+  };
+
+  const toggleQuoteFavorite = (quoteId: string) => {
+    setProfileState((prev) => {
+      const existing = prev.savedQuotes || [];
+      const isSaved = existing.includes(quoteId);
+      return {
+        ...prev,
+        savedQuotes: isSaved
+          ? existing.filter(q => q !== quoteId)
+          : [...existing, quoteId]
+      };
+    });
+  };
+
   return (
     <PatientContext.Provider value={{ 
       profile, setProfile, updateProfile, 
       widgetOrder, setWidgetOrder,
-      reminders, addReminder, editReminder, markReminderDone, snoozeReminder, deleteReminder
+      reminders, addReminder, editReminder, markReminderDone, snoozeReminder, deleteReminder,
+      addMoodLog, toggleQuoteFavorite
     }}>
       {children}
     </PatientContext.Provider>

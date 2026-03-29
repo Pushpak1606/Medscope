@@ -1,4 +1,4 @@
-import { FileText, Camera, PhoneCall, BotMessageSquare, Sparkles, FileScan, Activity } from "lucide-react";
+import { FileText, Camera, PhoneCall, BotMessageSquare, Sparkles, FileScan, Activity, Dumbbell } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   Dialog,
@@ -7,6 +7,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { DietWorkoutModal } from "../shared/DietWorkoutModal";
 
 const SMART_ACTIONS = [
   { 
@@ -43,15 +44,16 @@ const SMART_ACTIONS = [
     isDialog: false
   },
   { 
-    href: "/patient/emergency", 
-    icon: PhoneCall, 
-    label: "Emergency SOS", 
-    desc: "Get help immediately",
-    color: "text-red-500", 
-    bg: "bg-red-500/10", 
-    border: "border-red-500/20",
-    glow: "group-hover/card:shadow-[0_0_30px_rgba(239,68,68,0.15)]",
-    isDialog: false
+    href: "#", 
+    icon: Dumbbell, 
+    label: "Diet & Workout", 
+    desc: "Generate custom plans",
+    color: "text-emerald-500", 
+    bg: "bg-emerald-500/10", 
+    border: "border-emerald-500/20",
+    glow: "group-hover/card:shadow-[0_0_30px_rgba(16,185,129,0.15)]",
+    isDialog: true,
+    dialogType: 'diet-workout'
   },
 ];
 
@@ -91,6 +93,15 @@ const QuickActionsWidget = () => {
           const cardClasses = `group/card relative flex flex-col p-4 sm:p-5 rounded-3xl bg-card border border-border/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-300 hover:-translate-y-1 ${action.glow} min-w-[160px] sm:min-w-0 snap-start shrink-0 overflow-hidden text-left`;
 
           if (action.isDialog) {
+            if (action.dialogType === 'diet-workout') {
+              return (
+                <DietWorkoutModal 
+                  key={i} 
+                  trigger={<button className={cardClasses}>{renderCardContent(action)}</button>} 
+                />
+              );
+            }
+
             return (
               <Dialog key={i}>
                 <DialogTrigger className={cardClasses}>

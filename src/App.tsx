@@ -26,6 +26,7 @@ import EmergencyPage from "./pages/patient/EmergencyPage.tsx";
 import RecordsPage from "./pages/patient/RecordsPage.tsx";
 import RemindersPage from "./pages/patient/RemindersPage.tsx";
 import ConsultationsPage from "./pages/patient/ConsultationsPage.tsx";
+import WellnessPage from "./pages/patient/WellnessPage.tsx";
 import ScrollToTop from "@/components/ScrollToTop";
 
 const queryClient = new QueryClient();
@@ -70,6 +71,7 @@ const App = () => (
           <Route path="/patient/records" element={<RecordsPage />} />
           <Route path="/patient/reminders" element={<RemindersPage />} />
           <Route path="/patient/consultations" element={<ConsultationsPage />} />
+          <Route path="/patient/wellness" element={<WellnessPage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

@@ -1,4 +1,4 @@
-import { Home, ClipboardList, Calendar, BookOpen, Users } from "lucide-react";
+import { Home, ClipboardList, Calendar, Users, Brain } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
@@ -6,7 +6,7 @@ const NAV_ITEMS = [
   { icon: Home, label: "Home", path: "/patient/dashboard" },
   { icon: ClipboardList, label: "Reminders", path: "/patient/reminders" },
   { icon: Calendar, label: "Consult", path: "/patient/consultations" },
-  { icon: BookOpen, label: "Journal", path: "/patient/journal" },
+  { icon: Brain, label: "Wellness", path: "/patient/wellness" },
   { icon: Users, label: "Community", path: "/patient/community" },
 ];
 
@@ -18,6 +18,7 @@ const MobileNavDock = () => {
       <div className="mx-auto max-w-md h-16 bg-card/90 backdrop-blur-xl border border-border/50 rounded-2xl shadow-[0_-5px_20px_-10px_rgba(0,0,0,0.1)] flex items-center justify-around px-2">
         {NAV_ITEMS.map((item) => {
           const isActive = location.pathname === item.path;
+          const isWellness = item.label === "Wellness";
           
           const NavItemContent = (
             <>
@@ -27,7 +28,7 @@ const MobileNavDock = () => {
               <div className="relative">
                 <item.icon
                   className={cn(
-                    "h-5 w-5 transition-all duration-300",
+                    "h-5 w-5 transition-all duration-300 relative z-10",
                     isActive
                       ? "text-primary scale-110 drop-shadow-[0_2px_8px_rgba(var(--primary),0.5)]"
                       : "text-muted-foreground group-hover:text-foreground"
@@ -37,7 +38,7 @@ const MobileNavDock = () => {
               </div>
               <span
                 className={cn(
-                  "text-[10px] font-semibold transition-colors leading-none",
+                  "text-[10px] font-semibold transition-colors leading-none relative z-10 mt-1",
                   isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
                 )}
               >

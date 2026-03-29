@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Bell, Search, User, Settings, LogOut } from "lucide-react";
+import { Bell, Search, User, Settings, LogOut, Brain } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -52,6 +52,8 @@ const DashboardHeader = ({ profile }: DashboardHeaderProps) => {
         <nav className="hidden lg:flex items-center justify-center gap-1 p-1 bg-background/40 backdrop-blur-md rounded-2xl border border-border/50 mx-auto">
           {NAV_LINKS.map((link) => {
             const isActive = location.pathname.includes(link.path);
+            const isWellness = link.label === "Wellness";
+            
             return (
               <Link
                 key={link.label}
@@ -63,7 +65,17 @@ const DashboardHeader = ({ profile }: DashboardHeaderProps) => {
                     : "text-muted-foreground hover:bg-muted hover:text-foreground"
                 )}
               >
-                {link.label}
+                <div className="flex items-center gap-1.5 md:gap-2">
+                  {isWellness && (
+                    <div className={cn(
+                      "h-5 w-5 sm:h-6 sm:w-6 rounded-md flex items-center justify-center shrink-0 transition-colors",
+                      isActive ? "bg-white/20 text-white" : "bg-pink-500/10 text-pink-500"
+                    )}>
+                      <Brain className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                    </div>
+                  )}
+                  <span>{link.label}</span>
+                </div>
               </Link>
             );
           })}
