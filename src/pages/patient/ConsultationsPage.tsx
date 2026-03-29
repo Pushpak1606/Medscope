@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Calendar, Clock, Video, Phone, MessageSquare, ChevronRight, User, FileText, Star, Clock10, X, CalendarSearch, CheckCircle2 } from "lucide-react";
 import PatientPageLayout from "@/components/patient-dashboard/shared/PatientPageLayout";
+import PageHeader from "@/components/patient-dashboard/shared/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -66,14 +67,10 @@ export default function ConsultationsPage() {
         
         {/* TOP LAYER: Hero & Summary Metrics */}
         <motion.div variants={fadeInOptions} className="flex flex-col gap-4 relative">
-          <div className="flex flex-col gap-1">
-            <h1 className="font-heading font-extrabold text-3xl md:text-4xl text-foreground tracking-tight">
-              Consultations
-            </h1>
-            <p className="text-muted-foreground font-medium text-sm md:text-base">
-              Manage your upcoming appointments and medical history
-            </p>
-          </div>
+          <PageHeader 
+            title="Consultations" 
+            subtitle="Manage your upcoming appointments and medical history" 
+          />
 
           <div className="grid grid-cols-3 gap-3 flex-wrap sm:gap-4 mt-2">
             <div className="bg-card/40 border border-border/50 rounded-2xl p-4 flex flex-col items-center justify-center backdrop-blur-md shadow-sm">

@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { GlowingEffect } from "@/components/ui/glowing-effect";
 import { cn } from "@/lib/utils";
 import AnimatedBackground from "@/components/ui/animated-background";
+import { LiquidGlass } from "@liquidglass/react";
 
 const roles = [
   {
@@ -38,8 +39,12 @@ const SelectRole = () => (
     <AnimatedBackground variant="default" className="opacity-40 z-0" />
 
     <div className="relative z-10 w-full max-w-4xl flex flex-col items-center">
-      <Link to="/" className="mb-8 inline-flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">
-        <ArrowLeft className="h-4 w-4" /> Back to home
+      <Link to="/" className="mb-4 inline-block transition-colors hover:text-foreground liquid-glass-wrapper">
+        <LiquidGlass>
+          <div className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-foreground bg-transparent">
+            <ArrowLeft className="h-4 w-4" /> Back to home
+          </div>
+        </LiquidGlass>
       </Link>
       
       <Link to="/" className="mb-4 text-2xl font-extrabold font-heading text-foreground tracking-tight">

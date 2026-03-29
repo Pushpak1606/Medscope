@@ -1,3 +1,4 @@
+import { LiquidGlass } from "@liquidglass/react";
 import { ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -11,12 +12,13 @@ interface PageHeaderProps {
 const PageHeader = ({ title, subtitle, backHref = "/patient/dashboard", backLabel = "Back" }: PageHeaderProps) => {
   return (
     <div className="flex flex-col mb-8 gap-2">
-      <Link 
-        to={backHref}
-        className="inline-flex items-center text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors mb-2 w-fit"
-      >
-        <ArrowLeft className="h-4 w-4 mr-1.5" />
-        {backLabel}
+      <Link to={backHref} className="w-fit mb-4 liquid-glass-wrapper">
+        <LiquidGlass>
+          <div className="flex items-center px-4 py-2 text-sm font-semibold text-foreground bg-transparent">
+            <ArrowLeft className="h-4 w-4 mr-1.5" />
+            {backLabel}
+          </div>
+        </LiquidGlass>
       </Link>
       <h1 className="text-3xl sm:text-4xl font-extrabold font-heading text-foreground tracking-tight">
         {title}

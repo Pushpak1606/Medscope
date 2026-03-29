@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { usePatient, PatientProfile } from "@/context/PatientContext";
 import { ChevronLeft, CheckCircle, UserCircle, Activity, Heart, ShieldAlert } from "lucide-react";
 import AnimatedBackground from "@/components/ui/animated-background";
+import { LiquidGlass } from "@liquidglass/react";
 import DashboardHeader from "@/components/patient-dashboard/DashboardHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -92,8 +93,12 @@ const EditProfile = () => {
 
       <div className="relative z-10 w-full max-w-4xl flex flex-col px-4 sm:px-8 py-8 md:py-10 min-h-screen gap-8">
         <div className="flex items-center justify-between">
-          <Button variant="ghost" onClick={() => navigate("/patient/profile")} className="rounded-xl font-bold -ml-4">
-             <ChevronLeft className="mr-2 h-4 w-4" /> Back to Profile
+          <Button variant="ghost" onClick={() => navigate("/patient/profile")} className="rounded-xl font-bold -ml-4 p-0 h-auto hover:bg-transparent liquid-glass-wrapper">
+             <LiquidGlass>
+               <div className="flex items-center gap-2 px-4 py-2 bg-transparent text-foreground">
+                 <ChevronLeft className="h-4 w-4" /> Back to Profile
+               </div>
+             </LiquidGlass>
           </Button>
           <Button 
             onClick={handleSave} 

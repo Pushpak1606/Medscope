@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import PatientPageLayout from "@/components/patient-dashboard/shared/PatientPageLayout";
 import PageHeader from "@/components/patient-dashboard/shared/PageHeader";
 import GlassCard from "@/components/patient-dashboard/shared/GlassCard";
@@ -8,6 +8,16 @@ import { Pill, Utensils, Droplets, Calendar, Brain, Clock, CheckCircle2, Chevron
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { usePatient, ReminderType, Reminder } from "@/context/PatientContext";
+
+const fadeInOptions = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.5 },
+};
+
+const staggerContainer = {
+  animate: { transition: { staggerChildren: 0.1 } }
+};
 
 const ICON_MAP: Record<string, any> = {
   Pill,
@@ -32,7 +42,6 @@ const FILTER_CHIPS: ReminderType[] = ["All", "Medicines", "Meals", "Water", "App
 const RemindersPage = () => {
   const { reminders, addReminder, editReminder, deleteReminder, snoozeReminder, markReminderDone } = usePatient();
   const [activeFilter, setActiveFilter] = useState<ReminderType>("All");
-  const [isLoading, setIsLoading] = useState(true);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const scroll = (direction: "left" | "right") => {
@@ -43,11 +52,6 @@ const RemindersPage = () => {
       });
     }
   };
-
-  useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 800);
-    return () => clearTimeout(timer);
-  }, []);
   
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -134,21 +138,21 @@ const RemindersPage = () => {
   return (
     <PatientPageLayout className="pb-32 sm:pb-12">
       <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
+        className="w-full flex flex-col gap-0"
+        initial="initial"
+        animate="animate"
+        variants={staggerContainer}
       >
-        <PageHeader
-          title="Reminders"
-          subtitle="Manage your daily health routines, medications, and wellness goals."
-        />
-      </motion.div>
+        <motion.div variants={fadeInOptions}>
+          <PageHeader
+            title="Reminders"
+            subtitle="Manage your daily health routines, medications, and wellness goals."
+          />
+        </motion.div>
 
       {/* Top Summary Cards */}
       <motion.div
-        initial={{ opacity: 0, y: 15 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.1 }}
+        variants={fadeInOptions}
         className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6 mt-4"
       >
         <GlassCard className="p-5 flex items-center justify-between border-l-4 border-l-primary/50 relative overflow-hidden">
@@ -187,9 +191,7 @@ const RemindersPage = () => {
       </motion.div>
 
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
+        variants={fadeInOptions}
         className="grid grid-cols-1 lg:grid-cols-12 gap-6"
       >
         
@@ -237,32 +239,21 @@ const RemindersPage = () => {
             </div>
 
             {/* Reminder List */}
-            <div className="space-y-4">
-              {isLoading ? (
-                Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center p-4 rounded-3xl border border-border/40 bg-card">
-                     <div className="flex items-start sm:items-center gap-4 w-full sm:w-auto">
-                        <div className="h-14 w-14 shrink-0 rounded-[1.25rem] bg-muted animate-pulse"></div>
-                        <div className="flex-1 space-y-2">
-                           <div className="h-5 w-32 bg-muted animate-pulse rounded"></div>
-                           <div className="h-4 w-24 bg-muted animate-pulse rounded"></div>
-                        </div>
-                     </div>
-                     <div className="flex w-full sm:w-auto items-center gap-2 mt-2 sm:mt-0 pt-3 sm:pt-0 sm:border-0 border-t border-border/30">
-                        <div className="h-10 w-24 bg-muted animate-pulse rounded-2xl hidden sm:block"></div>
-                        <div className="h-10 w-full sm:w-28 bg-muted animate-pulse rounded-2xl"></div>
-                     </div>
-                  </div>
-                ))
-              ) : filteredReminders.length > 0 ? (
-                filteredReminders.map((reminder) => (
-                  <div 
-                    key={reminder.id} 
-                    className={cn(
-                      "group relative flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center p-4 rounded-3xl border transition-all duration-300",
-                      reminder.status === "completed" ? "bg-muted/30 border-transparent opacity-75" : "bg-card border-border/40 hover:shadow-md hover:border-border/80"
-                    )}
-                  >
+            <div className="flex flex-col gap-4">
+              <AnimatePresence mode="popLayout">
+                {filteredReminders.length > 0 ? (
+                  filteredReminders.map((reminder) => (
+                    <motion.div
+                      layout
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
+                      key={reminder.id} 
+                      className={cn(
+                        "group relative flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center p-4 rounded-3xl border transition-all duration-300",
+                        reminder.status === "completed" ? "bg-muted/30 border-transparent opacity-75" : "bg-card border-border/40 hover:shadow-md hover:border-border/80"
+                      )}
+                    >
                     
                     {/* Left Info */}
                     <div className="flex items-start sm:items-center gap-4 w-full sm:w-auto">
@@ -343,20 +334,26 @@ const RemindersPage = () => {
                       )}
                     </div>
 
-                  </div>
-                ))
-              ) : (
-                <div className="flex flex-col items-center justify-center py-16 px-4 text-center rounded-3xl border border-dashed border-border/50 bg-muted/10">
-                  <div className="h-16 w-16 mb-4 rounded-full bg-muted flex items-center justify-center text-muted-foreground">
-                    <BellOff className="h-8 w-8" />
-                  </div>
-                  <h3 className="text-lg font-bold text-foreground mb-1">No upcoming reminders</h3>
-                  <p className="text-sm text-muted-foreground mb-6 max-w-sm">You've completely cleared your schedule. Take a breather or add a new routine.</p>
-                  <LiquidGlassButton className="px-6" onClick={openAdd}>
-                    <Plus className="mr-2 h-5 w-5" /> Create Reminder
-                  </LiquidGlassButton>
-                </div>
-              )}
+                    </motion.div>
+                  ))
+                ) : (
+                  <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="flex flex-col items-center justify-center py-16 px-4 text-center rounded-3xl border border-dashed border-border/50 bg-muted/10"
+                  >
+                    <div className="h-16 w-16 mb-4 rounded-full bg-muted flex items-center justify-center text-muted-foreground">
+                      <BellOff className="h-8 w-8" />
+                    </div>
+                    <h3 className="text-lg font-bold text-foreground mb-1">No upcoming reminders</h3>
+                    <p className="text-sm text-muted-foreground mb-6 max-w-sm">You've completely cleared your schedule. Take a breather or add a new routine.</p>
+                    <LiquidGlassButton className="px-6" onClick={openAdd}>
+                      <Plus className="mr-2 h-5 w-5" /> Create Reminder
+                    </LiquidGlassButton>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
           </GlassCard>
@@ -402,6 +399,7 @@ const RemindersPage = () => {
           </div>
         </div>
 
+      </motion.div>
       </motion.div>
 
       {/* Mobile Floating Action Button */}

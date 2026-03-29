@@ -151,4 +151,18 @@
     border-radius: inherit;
     background: linear-gradient(135deg, hsl(var(--primary) / 0.5), transparent, hsl(var(--primary) / 0.1));
   }
+
+  /* LiquidGlass Overrides for Medscope theme */
+  .dark .liquid-glass-wrapper > div {
+    background-color: rgba(15, 23, 42, 0.4) !important; /* matches card/40 */
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1), 0 4px 12px rgba(0, 0, 0, 0.5) !important;
+    backdrop-filter: blur(12px) !important; /* override excessive contrast algorithm */
+  }
+  
+  .liquid-glass-wrapper > div {
+    background-color: rgba(255, 255, 255, 0.4) !important; 
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.05) !important;
+    backdrop-filter: blur(12px) !important; /* overide excessive contrast algorithm */
+    border-radius: 9999px !important; /* pill shape for the back button */
+  }
 }

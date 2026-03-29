@@ -1,8 +1,8 @@
-import { ReactNode, ButtonHTMLAttributes } from "react";
+import { ReactNode } from "react";
 import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
+import { HTMLMotionProps, motion } from "framer-motion";
 
-interface LiquidGlassButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+interface LiquidGlassButtonProps extends HTMLMotionProps<"button"> {
   children: ReactNode;
   className?: string;
   variant?: "primary" | "secondary" | "danger" | "success";

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft, CheckCircle, ChevronLeft, ChevronRight, Loader2, Stethoscope } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { LiquidGlass } from "@liquidglass/react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import AnimatedBackground from "@/components/ui/animated-background";
@@ -108,8 +109,12 @@ const DoctorOnboardingPage = () => {
 
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
-          <Link to="/" className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-all hover:-translate-x-1">
-            <ArrowLeft className="h-4 w-4" /> Back
+          <Link to="/" className="inline-block transition-all hover:-translate-x-1 liquid-glass-wrapper">
+            <LiquidGlass>
+              <div className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-foreground bg-transparent hover:text-foreground">
+                <ArrowLeft className="h-4 w-4" /> Back
+              </div>
+            </LiquidGlass>
           </Link>
           <div className="inline-flex items-center gap-2 font-heading text-lg font-bold text-foreground">
             <div className="flex h-6 w-6 items-center justify-center rounded-md bg-violet-600 text-white shadow-sm">
