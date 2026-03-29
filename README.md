@@ -1,179 +1,156 @@
 <div align="center">
-  <br />
-    <a href="https://github.com/your-username/medscope" target="_blank">
-      <!-- Replace with your actual logo URL if you have one, or delete this line -->
-      <img src="public/logo-placeholder.png" alt="Medscope Logo" width="100">
-    </a>
-  <br />
-
-  <h1>Medscope</h1>
-
-  <h3>The Next-Generation AI-Powered Healthcare Ecosystem</h3>
-
-  <p>
-    Bridging the gap between <b>Physical Consultation</b> and <b>Mental Health Support</b> through intelligent design.
-  </p>
+  <img src="public/favicon.ico" alt="Medscope Logo" width="120" height="120" style="border-radius: 24px; box-shadow: 0 8px 24px rgba(0,0,0,0.12);" />
+  <br/>
+  <h1>🌟 Medscope</h1>
+  <p><b>The Premium, AI-Powered Healthcare & Wellness Platform</b></p>
+  <p>Smarter care for patients and doctors. Bridging the gap between <b>Physical Health</b> and <b>Mental Wellbeing</b> through immersive, intelligent design.</p>
 
   <p align="center">
-    <img src="https://img.shields.io/badge/Next.js-14-black?style=for-the-badge&logo=next.js" alt="Next.js" />
-    <img src="https://img.shields.io/badge/TypeScript-Blue?style=for-the-badge&logo=typescript" alt="TypeScript" />
-    <img src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css" alt="Tailwind CSS" />
-    <img src="https://img.shields.io/badge/shadcn%2Fui-000000?style=for-the-badge&logo=shadcnui" alt="shadcn/ui" />
-    <img src="https://img.shields.io/badge/AI_Integration-Planned-orange?style=for-the-badge" alt="AI" />
+    <img src="https://img.shields.io/badge/React-18-blue?style=for-the-badge&logo=react" alt="React" />
+    <img src="https://img.shields.io/badge/Vite-5-646CFF?style=for-the-badge&logo=vite" alt="Vite" />
+    <img src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
+    <img src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind CSS" />
+    <img src="https://img.shields.io/badge/Framer_Motion-black?style=for-the-badge&logo=framer" alt="Framer Motion" />
+    <img src="https://img.shields.io/badge/shadcn%2Fui-black?style=for-the-badge&logo=shadcnui&logoColor=white" alt="shadcn/ui" />
+  </p>
+  <p align="center">
+    <img src="https://img.shields.io/badge/State-React_Query-FF4154?style=for-the-badge&logo=reactquery&logoColor=white" alt="React Query" />
+    <img src="https://img.shields.io/badge/Security-AES--256-green?style=for-the-badge&logo=letsencrypt" alt="AES 256" />
+    <img src="https://img.shields.io/badge/Testing-Vitest_&_Playwright-729B1B?style=for-the-badge&logo=vitest&logoColor=white" alt="Testing" />
+    <img src="https://img.shields.io/badge/3D-Three.js_&_Spline-black?style=for-the-badge&logo=three.js&logoColor=white" alt="Three.js" />
   </p>
 </div>
 
 <br />
 
-## 📋 Table of Contents
-
-- [Introduction](#-introduction)
-- [The Problem & Solution](#-the-problem--solution)
-- [System Workflow](#-system-workflow)
+## 📖 Table of Contents
+- [Project Overview](#-project-overview)
 - [Key Features](#-key-features)
-- [UI/UX Design Philosophy](#-uiux-design-philosophy)
-- [Tech Stack](#-tech-stack)
+- [Architecture & Tech Stack](#-architecture--tech-stack)
+- [UI/UX Psychology & Design Philosophy](#-uiux-psychology--design-philosophy)
+- [Security & Encryption](#-security--encryption)
 - [Installation & Setup](#-installation--setup)
-- [Roadmap](#-roadmap)
+- [Testing](#-testing)
 
 ---
 
-## 🚀 Introduction
+## 🧭 Project Overview
 
-**Medscope** is a comprehensive medical assistance platform designed to streamline the interaction between patients and doctors while providing robust, AI-driven personal health management.
+**Medscope** is a premium, AI-powered healthcare web application designed to serve **both patients and doctors**. The platform provides intelligent medicine analysis via prescription scanning, live multi-modal consultations, mental wellness tracking, smart reminders, health records management, and a robust emergency services system.
 
-Unlike traditional telemedicine apps, Medscope treats **Mental Health** with the same priority as **Physical Health**, offering distinct pathways for both, powered by an intelligent dashboard that adapts to the user's specific needs.
-
-> **Status:** B.Tech Final Year Project (Frontend MVP Completed)
-
----
-
-## 💡 The Problem & Solution
-
-| The Problem | The Medscope Solution |
-| :--- | :--- |
-| **Fragmented Care:** Patients struggle to manage prescriptions, appointments, and mental wellness in one place. | **Unified Dashboard:** A Bento-grid style hub that organizes medicines, consultations, and journals intelligently. |
-| **Generic Advice:** Health apps often provide one-size-fits-all suggestions. | **AI-Driven Personalization:** Onboarding data tailors reminders, nutrition, and exercise specifically to the user's condition. |
-| **Mental Health Stigma:** Mental wellness is often an afterthought or difficult to access. | **Dedicated Pathway:** A specific flow for mental health including mood logging, AI companionship, and community support. |
-
----
-
-## 🔄 System Workflow
-
-The platform operates on a dual-user architecture:
-
-### 🧑‍🦰 Patient Workflow
-1.  **Onboarding:** Users complete a detailed health profile (Physical & Mental context).
-2.  **Personalized Dashboard:** The UI rearranges itself based on user priorities (e.g., highlighting Medicine Reminders vs. Mood Logs).
-3.  **Pathways:**
-    *   *Physical:* Scan Rx -> AI Analysis -> Dosage Reminders -> Doctor Consult.
-    *   *Mental:* Mood Tracking -> AI Chatbot -> Wellness Suggestions -> Community Groups.
-
-### 👨‍⚕️ Doctor Workflow
-1.  **Professional Profile:** Setup specialization, availability, and consultation modes.
-2.  **AI Assistant:** Receives AI-summarized patient history and prescription suggestions.
-3.  **Management:** Handles appointments, patient records, and assistant doctor allocation.
+Featuring a **fully responsive, dark/light themed** interface with modern glassmorphism aesthetics, smooth `Framer Motion` animations, and a "bento-box" layout, the application adapts elegantly across mobile, tablet, and desktop viewports.
 
 ---
 
 ## ✨ Key Features
 
-### 🏥 For Patients
-*   **AI Medicine Assistant (Scan Rx):** Upload prescription photos to automatically extract dosage, timing, and medicine type (Ayurvedic/Allopathy).
-*   **Smart Reminders:** Intelligent notifications for medicines and meals based on your routine.
-*   **Emergency Mode:** One-tap access to emergency contacts, ambulance services, and critical health data.
-*   **Mood Logger:** A "Liquid Glass" interface for tracking emotional well-being over time.
-*   **Secure Records:** Encrypted storage for lab reports and history.
+### 🧑‍🦰 Patient Workflow
+*   🤖 **AI-Powered Tools:** Utilize **Scan Rx** to automatically read prescription photos (dosages, timings, and medicine types) and converse with the **Ask AI** health assistant for immediate health guidance.
+*   🧠 **Mental Wellness Hub:** Full-featured mood tracking with interactive logging, immersive calming exercises, and wellness trend visualization.
+*   ⏰ **Smart Reminders Vault:** Full CRUD reminder manager across 6 categories (Medicines, Meals, Water, Appointments, Wellness). Features intelligent snoozing and real-time dashboard syncing.
+*   🤝 **Multi-Modal Consultations:** Browse available doctors and join live rooms via Video, Audio, Chat, or book In-Clinic appointments.
+*   🚨 **Emergency Mode:** Persistent Floating Action Button (FAB) for instant access to emergency SOS, life-saving contacts, and critical health data.
+*   📊 **Dashboard Bento-Grid:** An 11-widget interactive dashboard containing health progress, daily timeline tasks, and quick actions, with customizable Drag & Drop functionality.
 
-### 🩺 For Doctors
-*   **Smart Patient Insights:** AI-driven summary of patient symptoms before the call.
-*   **Schedule Management:** Drag-and-drop appointment handling.
-*   **Assistant Doctor Protocol:** Delegate tasks to support staff when unavailable.
-
----
-
-## 🎨 UI/UX Design Philosophy
-
-Medscope is built with a **"Premium Healthcare-Tech"** aesthetic. We moved away from sterile, clinical designs to create an experience that feels alive and supportive.
-
-*   **Bento Grid Layouts:** Modular, responsive dashboards that present complex data cleanly.
-*   **Liquid Glass Effect:** Primary actions (like *Scan Rx* or *Emergency*) feature a premium, translucent glassmorphism effect to guide user attention.
-*   **Mobile-First Architecture:** Fully optimized for touch devices with sticky bottom navigation and stacked card layouts.
-*   **Ambient Motion:** Subtle moving gradients and glow effects to reduce anxiety and create a calming atmosphere.
+### 👨‍⚕️ Doctor Workflow
+*   🏥 **Professional Dashboard:** Complete schedule management, specializations, and patient queues.
+*   💡 **Smart Patient Insights:** Receive automated, summarized insights of patient symptoms ahead of consultations.
+*   🛡️ **Assistant Protocol:** Securely delegate administrative tasks to support staff when required.
 
 ---
 
-## 🛠 Tech Stack
+## 🛠️ Architecture & Tech Stack
 
-| Domain | Technologies |
+| Layer | Technologies Used |
 | :--- | :--- |
-| **Framework** | Next.js 14 (App Router) |
-| **Language** | TypeScript |
-| **Styling** | Tailwind CSS, CSS Modules |
-| **Components** | shadcn/ui, Radix UI |
-| **Icons** | Lucide React |
-| **Animation** | Framer Motion |
-| **Theme** | next-themes (Dark/Light Mode) |
+| **Frameworks** | React 18, Vite 5 (SWC), TypeScript |
+| **Routing & Forms** | React Router DOM v6, React Hook Form, Zod |
+| **Styling & UI** | TailwindCSS 3, ShadCN/UI (58+ accessible primitives), Radix UI |
+| **Animation & 3D** | Framer Motion, Three.js, @splinetool/react-spline |
+| **State Management** | React Context API, TanStack React Query |
+| **Data Viz & Utilities** | Recharts, Lucide React (Icons), Sonner (Toasts), date-fns, Embla Carousel |
 
 ---
 
-## 📸 Screenshots
+## 🧠 UI/UX Psychology & Design Philosophy
 
-*(Place your screenshots in a `public/screenshots` folder)*
+Medscope adopts a **"Premium Healthcare-Tech"** aesthetic driven by established psychological principles to make healthcare management feel engaging and trustworthy.
 
-| **Landing Page** | **Patient Dashboard** |
-|:---:|:---:|
-| <img src="public/screenshots/landing.png" alt="Landing" width="400"> | <img src="public/screenshots/dashboard.png" alt="Dashboard" width="400"> |
+*   **Aesthetic-Usability Effect:** Glassmorphism (`@liquidglass/react`), smooth gradients, and subtle glows create a premium, trustworthy impression. Deep Navy dark mode reduces OLED strain while maintaining a clinical atmosphere. 
+*   **Hick's & Fitts's Laws:** The bento-grid dashboard uses a clear visual hierarchy (F-pattern), minimizing choice overload. Mobile-first design ensures large, thumb-friendly touch targets with a dedicated bottom navigation dock.
+*   **Zeigarnik Effect:** Profile completeness trackers and the Daily Tasks timeline build a sense of progression and accomplishment.
+*   **Gestalt Principles:** Visually cohesive `.gradient-border` and `.glow-primary` utility classes group related content perfectly within frosted-glass boundaries.
+*   **Micro-Animations:** Fluid staggered reveals, pulsing live indicators, and Spline 3D ambient backgrounds make the application feel active and alive.
 
-| **AI Scan Rx** | **Mood Logger** |
-|:---:|:---:|
-| <img src="public/screenshots/scan.png" alt="Scan" width="400"> | <img src="public/screenshots/mood.png" alt="Mood" width="400"> |
+---
+
+## 🔐 Security & Encryption
+
+Medical data requires the highest level of security. Medscope uses **AES-256 Encrypted Storage** (`CryptoJS`) for all Personal Health Information (PHI). 
+
+*   All client-side health data is **encrypted before being written** to `localStorage`.
+*   Encryption relies on secure key management (`VITE_SECURE_STORAGE_KEY`).
+*   The application enforces Strict HTTP Security Headers.
 
 ---
 
 ## ⚡ Installation & Setup
 
-1.  **Clone the repository**
-    ```bash
-    git clone https://github.com/your-username/medscope.git
-    cd medscope
-    ```
+### Prerequisites
+*   **Node.js** ≥ 18
+*   **npm**, **yarn**, or **bun**
 
-2.  **Install dependencies**
-    ```bash
-    npm install
-    # or
-    yarn install
-    ```
+### Quick Start
 
-3.  **Run the development server**
-    ```bash
-    npm run dev
-    ```
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/Pushpak1606/Medscope.git
+   cd medscope
+   ```
 
-4.  **Open the app**
-    Visit `http://localhost:3000` to view the application.
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Configure Environment Variables**
+   Create a `.env` file in the root directory:
+   ```env
+   VITE_SECURE_STORAGE_KEY=your-secret-encryption-key
+   ```
+
+4. **Start the development server**
+   ```bash
+   npm run dev
+   ```
+   *Visit `http://localhost:8080` to experience Medscope.*
 
 ---
 
-## 🛣 Roadmap
+## 🧪 Testing
 
-- [x] **Phase 1: UI/UX & Frontend Architecture** (Completed)
-    - Landing, Auth, Onboarding, Dashboard, Quick Actions.
-- [ ] **Phase 2: Backend Integration**
-    - Database setup (PostgreSQL/MongoDB).
-    - Auth integration (NextAuth/Clerk).
-- [ ] **Phase 3: AI Integration**
-    - Connecting OpenAI/Gemini API for the Chatbot and Medicine Scanner.
-- [ ] **Phase 4: Real-time Features**
-    - WebRTC for Video Consultations.
-    - Socket.io for Chat.
+Medscope implements a rigorous testing strategy to ensure reliability:
+
+*   **Unit & Component Testing (Vitest)**
+    ```bash
+    npm run test          # Run all tests once
+    npm run test:watch    # Watch mode
+    ```
+*   **End-to-End browser Tests (Playwright)**
+    ```bash
+    npx playwright test
+    ```
 
 ---
 
 ## 🤝 Contributors
 
-*   **Pushpak Patil** - *Frontend Architect & UI Designer*
+*   **Pushpak Patil** - *Frontend Architect & UI/UX Designer*
 *   **Bhavy Dave** - *Backend Architect*
 
 ---
+
+<br/>
+<div align="center">
+  <p><b>Built with ❤️ by the Medscope Team</b></p>
+</div>
