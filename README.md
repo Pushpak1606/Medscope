@@ -174,5 +174,6 @@ Medscope is built with a **"Premium Healthcare-Tech"** aesthetic. We moved away 
 ## 🤝 Contributors
 
 *   **Pushpak Patil** - *Frontend Architect & UI Designer*
+*   **Bhavy Dave**
 
 ---
