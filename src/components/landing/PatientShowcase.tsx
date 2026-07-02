@@ -1,6 +1,7 @@
 import { Stethoscope, Brain, ArrowRight, Pill, Salad, MessageCircle, BookOpen, Users as UsersIcon, BellRing } from "lucide-react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import BorderGlow from "@/components/ui/BorderGlow";
 
 const physicalSteps = [
   { icon: Pill, text: "Upload medicine photos for AI analysis" },
@@ -58,47 +59,63 @@ const PatientShowcase = () => (
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.6 }}
-          className="group relative overflow-hidden rounded-3xl border border-border/60 bg-card p-8 md:p-10 shadow-sm transition-shadow hover:shadow-xl hover:shadow-primary/5"
+          className="group relative overflow-hidden rounded-3xl border border-border/60 bg-card shadow-sm transition-shadow hover:shadow-xl hover:shadow-primary/5 flex"
         >
-          <div className="absolute left-0 top-0 h-1.5 w-full bg-gradient-to-r from-primary to-blue-400" />
-          
-          <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center">
-            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-inner">
-              <Stethoscope className="h-7 w-7" />
-            </div>
-            <div>
-              <h3 className="text-2xl font-bold text-foreground">Physical Care Pathway</h3>
-              <p className="text-sm text-muted-foreground mt-1">
-                Manage your physical health with AI-powered support.
-              </p>
-            </div>
-          </div>
-
-          <motion.div 
-            variants={listVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            className="relative mt-8 space-y-6 before:absolute before:inset-y-2 before:left-[15px] before:w-[2px] before:bg-border/60"
+          <BorderGlow
+            edgeSensitivity={30}
+            glowColor="220 80 65"
+            backgroundColor="hsl(var(--card))"
+            borderRadius={24}
+            glowRadius={40}
+            glowIntensity={0.8}
+            coneSpread={25}
+            animated={false}
+            colors={['#3b82f6', '#60a5fa', '#93c5fd']}
+            fillOpacity={0.15}
+            className="w-full h-full"
           >
-            {physicalSteps.map((s, i) => (
-              <motion.div variants={itemVariants} key={s.text} className="relative flex items-start gap-5">
-                <div className="relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-[3px] border-card bg-primary text-xs font-bold text-primary-foreground shadow-sm">
-                  0{i + 1}
-                </div>
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <s.icon className="h-4 w-4 text-primary" />
-                    <span className="font-semibold text-foreground text-sm">{s.text}</span>
+            <div className="p-8 md:p-10 relative flex h-full flex-col justify-between min-h-[480px]">
+              <div>
+                <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center">
+                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-inner">
+                    <Stethoscope className="h-7 w-7" />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold text-foreground">Physical Care Pathway</h3>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Manage your physical health with AI-powered support.
+                    </p>
                   </div>
                 </div>
-              </motion.div>
-            ))}
-          </motion.div>
-          
-          <Link to="/patient/login" className="mt-10 inline-flex items-center gap-2 text-sm font-semibold text-primary transition-colors hover:text-primary/80 group-hover:underline">
-            Explore physical care features <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-          </Link>
+
+                <motion.div 
+                  variants={listVariants}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true }}
+                  className="relative mt-8 space-y-6 before:absolute before:inset-y-2 before:left-[15px] before:w-[2px] before:bg-border/60"
+                >
+                  {physicalSteps.map((s, i) => (
+                    <motion.div variants={itemVariants} key={s.text} className="relative flex items-start gap-5">
+                      <div className="relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-[3px] border-card bg-primary text-xs font-bold text-primary-foreground shadow-sm">
+                        0{i + 1}
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <s.icon className="h-4 w-4 text-primary" />
+                          <span className="font-semibold text-foreground text-sm">{s.text}</span>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </motion.div>
+              </div>
+              
+              <Link to="/patient/login" className="mt-10 inline-flex items-center gap-2 text-sm font-semibold text-primary transition-colors hover:text-primary/80 group-hover:underline">
+                Explore physical care features <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </Link>
+            </div>
+          </BorderGlow>
         </motion.div>
 
         {/* Mental Pathway Card */}
@@ -107,47 +124,63 @@ const PatientShowcase = () => (
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="group relative overflow-hidden rounded-3xl border border-border/60 bg-card p-8 md:p-10 shadow-sm transition-shadow hover:shadow-xl hover:shadow-violet-500/5"
+          className="group relative overflow-hidden rounded-3xl border border-border/60 bg-card shadow-sm transition-shadow hover:shadow-xl hover:shadow-violet-500/5 flex"
         >
-          <div className="absolute left-0 top-0 h-1.5 w-full bg-gradient-to-r from-violet-500 to-fuchsia-400" />
-          
-          <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center">
-            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-violet-500/10 text-violet-500 shadow-inner">
-              <Brain className="h-7 w-7" />
-            </div>
-            <div>
-              <h3 className="text-2xl font-bold text-foreground">Mental Health Pathway</h3>
-              <p className="text-sm text-muted-foreground mt-1">
-                AI-guided mental wellness and professional support.
-              </p>
-            </div>
-          </div>
-
-          <motion.div 
-            variants={listVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            className="relative mt-8 space-y-6 before:absolute before:inset-y-2 before:left-[15px] before:w-[2px] before:bg-border/60"
+          <BorderGlow
+            edgeSensitivity={30}
+            glowColor="260 80 50"
+            backgroundColor="hsl(var(--card))"
+            borderRadius={24}
+            glowRadius={40}
+            glowIntensity={0.8}
+            coneSpread={25}
+            animated={false}
+            colors={['#8b5cf6', '#a78bfa', '#c084fc']}
+            fillOpacity={0.15}
+            className="w-full h-full"
           >
-            {mentalSteps.map((s, i) => (
-              <motion.div variants={itemVariants} key={s.text} className="relative flex items-start gap-5">
-                <div className="relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-[3px] border-card bg-violet-500 text-xs font-bold text-white shadow-sm">
-                  0{i + 1}
-                </div>
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <s.icon className="h-4 w-4 text-violet-500" />
-                    <span className="font-semibold text-foreground text-sm">{s.text}</span>
+            <div className="p-8 md:p-10 relative flex h-full flex-col justify-between min-h-[480px]">
+              <div>
+                <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center">
+                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-violet-500/10 text-violet-500 shadow-inner">
+                    <Brain className="h-7 w-7" />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold text-foreground">Mental Health Pathway</h3>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      AI-guided mental wellness and professional support.
+                    </p>
                   </div>
                 </div>
-              </motion.div>
-            ))}
-          </motion.div>
 
-          <Link to="/patient/login" className="mt-10 inline-flex items-center gap-2 text-sm font-semibold text-violet-600 transition-colors hover:text-violet-500 group-hover:underline dark:text-violet-400 dark:hover:text-violet-300">
-            Explore mental wellness features <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-          </Link>
+                <motion.div 
+                  variants={listVariants}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true }}
+                  className="relative mt-8 space-y-6 before:absolute before:inset-y-2 before:left-[15px] before:w-[2px] before:bg-border/60"
+                >
+                  {mentalSteps.map((s, i) => (
+                    <motion.div variants={itemVariants} key={s.text} className="relative flex items-start gap-5">
+                      <div className="relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-[3px] border-card bg-violet-500 text-xs font-bold text-white shadow-sm">
+                        0{i + 1}
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <s.icon className="h-4 w-4 text-violet-500" />
+                          <span className="font-semibold text-foreground text-sm">{s.text}</span>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </motion.div>
+              </div>
+
+              <Link to="/patient/login" className="mt-10 inline-flex items-center gap-2 text-sm font-semibold text-violet-600 transition-colors hover:text-violet-500 group-hover:underline dark:text-violet-400 dark:hover:text-violet-300">
+                Explore mental wellness features <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </Link>
+            </div>
+          </BorderGlow>
         </motion.div>
       </div>
     </div>

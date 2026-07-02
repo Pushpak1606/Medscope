@@ -82,7 +82,7 @@ const MentalWellnessWidget = () => {
 
       <div className="space-y-3 flex-1 flex flex-col justify-end">
         <Button 
-          onClick={(e) => e.stopPropagation()}
+          onClick={(e) => { e.stopPropagation(); navigate('/patient/journal'); }}
           className="w-full justify-start h-12 rounded-xl bg-background border border-border/30 hover:bg-pink-500/10 hover:text-pink-600 hover:border-pink-500/30 text-foreground transition-all shadow-sm group/btn"
         >
           <Edit3 className="mr-3 h-4 w-4 text-muted-foreground group-hover/btn:text-pink-500" />
@@ -90,7 +90,7 @@ const MentalWellnessWidget = () => {
         </Button>
         
         <Button 
-          onClick={(e) => e.stopPropagation()}
+          onClick={(e) => { e.stopPropagation(); navigate('/patient/ai-companion'); }}
           className="w-full justify-start h-12 rounded-xl bg-background border border-border/30 hover:bg-purple-500/10 hover:text-purple-600 hover:border-purple-500/30 text-foreground transition-all shadow-sm group/btn"
         >
           <HeartHandshake className="mr-3 h-4 w-4 text-muted-foreground group-hover/btn:text-purple-500" />

@@ -1,6 +1,6 @@
 import React from "react";
 import { ScanSearch, Video, BellRing, Brain, Users } from "lucide-react";
-import { GlowingEffect } from "@/components/ui/glowing-effect";
+import BorderGlow from "@/components/ui/BorderGlow";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 
@@ -73,18 +73,22 @@ const GridItem = ({ area, icon, title, description }: GridItemProps) => {
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-50px" }}
-      className={cn("min-h-[14rem] list-none", area)}
+      className={cn("min-h-[14rem] list-none flex", area)}
     >
-      <div className="relative h-full rounded-[1.25rem] border border-border/50 p-2 md:rounded-[1.5rem] md:p-3 group">
-        <GlowingEffect
-          spread={40}
-          glow={true}
-          disabled={false}
-          proximity={64}
-          inactiveZone={0.01}
-          borderWidth={2}
-        />
-        <div className="relative flex h-full flex-col justify-between gap-6 overflow-hidden rounded-xl border border-border/50 bg-card/80 backdrop-blur-sm p-6 shadow-sm transition-all duration-300 md:p-6 group-hover:bg-card">
+      <BorderGlow
+        edgeSensitivity={30}
+        glowColor="220 80 65"
+        backgroundColor="hsl(var(--card))"
+        borderRadius={24}
+        glowRadius={40}
+        glowIntensity={1.0}
+        coneSpread={25}
+        animated={false}
+        colors={['#3b82f6', '#8b5cf6', '#06b6d4']}
+        fillOpacity={0.25}
+        className="w-full h-full"
+      >
+        <div className="relative flex h-full flex-col justify-between gap-6 p-6 md:p-8">
           <div className="relative flex flex-1 flex-col justify-between gap-3">
             <div className="w-fit rounded-xl border border-border/50 bg-primary/10 p-2.5 shadow-inner">
               {icon}
@@ -99,7 +103,7 @@ const GridItem = ({ area, icon, title, description }: GridItemProps) => {
             </div>
           </div>
         </div>
-      </div>
+      </BorderGlow>
     </motion.li>
   );
 };

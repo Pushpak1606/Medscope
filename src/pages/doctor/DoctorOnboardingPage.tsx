@@ -103,7 +103,6 @@ const DoctorOnboardingPage = () => {
     <div className="min-h-screen bg-surface relative flex flex-col items-center py-6 px-4 sm:px-6 lg:py-12 overflow-hidden">
       {/* Background Ambience — doctor violet variant */}
       <AnimatedBackground variant="doctor" className="opacity-40" />
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none z-0"></div>
 
       <div className="relative z-10 w-full max-w-2xl flex flex-col min-h-[calc(100vh-3rem)]">
 

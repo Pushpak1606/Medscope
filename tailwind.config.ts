@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+const { default: flattenColorPalette } = require("tailwindcss/lib/util/flattenColorPalette");
 
 export default {
   darkMode: ["class"],
@@ -14,8 +15,8 @@ export default {
     },
     extend: {
       fontFamily: {
-        heading: ['"Satoshi"', 'system-ui', '-apple-system', 'sans-serif'],
-        body: ['"Inter"', 'system-ui', '-apple-system', 'sans-serif'],
+        heading: ['"Geist Sans"', 'system-ui', '-apple-system', 'sans-serif'],
+        body: ['"Geist Sans"', 'system-ui', '-apple-system', 'sans-serif'],
       },
       colors: {
         "color-1": "hsl(var(--color-1))",
@@ -79,6 +80,10 @@ export default {
         sm: "calc(var(--radius) - 4px)",
       },
       keyframes: {
+        aurora: {
+          from: { backgroundPosition: "50% 50%, 50% 50%" },
+          to: { backgroundPosition: "350% 50%, 350% 50%" },
+        },
         rainbow: {
           "0%": { "background-position": "0%" },
           "100%": { "background-position": "200%" },
@@ -119,6 +124,7 @@ export default {
         },
       },
       animation: {
+        aurora: "aurora 60s linear infinite",
         rainbow: "rainbow var(--speed, 2s) infinite linear",
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
@@ -131,5 +137,17 @@ export default {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [require("tailwindcss-animate"), addVariablesForColors],
 } satisfies Config;
+
+// This plugin adds each Tailwind color as a global CSS variable, e.g. var(--gray-200).
+function addVariablesForColors({ addBase, theme }: any) {
+  let allColors = flattenColorPalette(theme("colors"));
+  let newVars = Object.fromEntries(
+    Object.entries(allColors).map(([key, val]) => [`--${key}`, val])
+  );
+
+  addBase({
+    ":root": newVars,
+  });
+}

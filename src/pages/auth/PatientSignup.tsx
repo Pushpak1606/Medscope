@@ -89,7 +89,6 @@ const PatientSignup = () => {
   if (isSuccess) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-background p-6 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none z-0"></div>
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] sm:w-[500px] h-[300px] bg-primary/20 blur-[100px] pointer-events-none rounded-full"></div>
         
         <motion.div

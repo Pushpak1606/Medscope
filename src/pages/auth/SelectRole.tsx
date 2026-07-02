@@ -33,9 +33,6 @@ const roles = [
 
 const SelectRole = () => (
   <div className="min-h-screen bg-surface relative flex flex-col items-center justify-center px-4 py-12 overflow-hidden">
-    {/* Subtle grid background */}
-    <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none z-0"></div>
-    
     <AnimatedBackground variant="default" className="opacity-40 z-0" />
 
     <div className="relative z-10 w-full max-w-4xl flex flex-col items-center">

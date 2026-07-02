@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/theme-provider";
 import { PatientProvider } from "@/context/PatientContext";
 import { ConsultationProvider } from "@/context/ConsultationContext";
+import { ChatHistoryProvider } from "@/context/ChatHistoryContext";
 import Index from "./pages/Index.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import SelectRole from "./pages/auth/SelectRole.tsx";
@@ -27,6 +28,10 @@ import RecordsPage from "./pages/patient/RecordsPage.tsx";
 import RemindersPage from "./pages/patient/RemindersPage.tsx";
 import ConsultationsPage from "./pages/patient/ConsultationsPage.tsx";
 import WellnessPage from "./pages/patient/WellnessPage.tsx";
+import JournalPage from "./pages/patient/JournalPage.tsx";
+import AICompanionPage from "./pages/patient/AICompanionPage.tsx";
+import CommunityPage from "./pages/patient/CommunityPage.tsx";
+import CommunityGroupPage from "./pages/patient/CommunityGroupPage.tsx";
 import ScrollToTop from "@/components/ScrollToTop";
 
 const queryClient = new QueryClient();
@@ -51,6 +56,7 @@ const App = () => (
         <ScrollToTop />
         <PatientProvider>
         <ConsultationProvider>
+        <ChatHistoryProvider>
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/auth/select-role" element={<SelectRole />} />
@@ -72,9 +78,14 @@ const App = () => (
           <Route path="/patient/reminders" element={<RemindersPage />} />
           <Route path="/patient/consultations" element={<ConsultationsPage />} />
           <Route path="/patient/wellness" element={<WellnessPage />} />
+          <Route path="/patient/journal" element={<JournalPage />} />
+          <Route path="/patient/ai-companion" element={<AICompanionPage />} />
+          <Route path="/patient/community" element={<CommunityPage />} />
+          <Route path="/patient/community/:id" element={<CommunityGroupPage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
+        </ChatHistoryProvider>
         </ConsultationProvider>
         </PatientProvider>
       </BrowserRouter>

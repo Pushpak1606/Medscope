@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { usePatient, MoodLog } from "@/context/PatientContext";
 import PageHeader from "@/components/patient-dashboard/shared/PageHeader";
 import { motion, AnimatePresence } from "framer-motion";
@@ -266,18 +267,18 @@ export default function WellnessPage() {
           </h3>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {[
-              { title: "Journal", desc: "Write your thoughts", icon: BookOpen, color: "text-amber-500", bg: "bg-amber-500/10", border: "border-amber-500/20", hover: "hover:border-amber-500/50" },
-              { title: "AI Companion", desc: "Chat securely", icon: MessageCircle, color: "text-indigo-500", bg: "bg-indigo-500/10", border: "border-indigo-500/20", hover: "hover:border-indigo-500/50" },
-              { title: "Community", desc: "Connect with others", icon: Users, color: "text-cyan-500", bg: "bg-cyan-500/10", border: "border-cyan-500/20", hover: "hover:border-cyan-500/50" },
-              { title: "Consultation", desc: "Talk to a pro", icon: Calendar, color: "text-emerald-500", bg: "bg-emerald-500/10", border: "border-emerald-500/20", hover: "hover:border-emerald-500/50" }
+              { title: "Journal", desc: "Write your thoughts", icon: BookOpen, color: "text-amber-500", bg: "bg-amber-500/10", border: "border-amber-500/20", hover: "hover:border-amber-500/50", path: "/patient/journal" },
+              { title: "AI Companion", desc: "Chat securely", icon: MessageCircle, color: "text-indigo-500", bg: "bg-indigo-500/10", border: "border-indigo-500/20", hover: "hover:border-indigo-500/50", path: "/patient/ai-companion" },
+              { title: "Community", desc: "Connect with others", icon: Users, color: "text-cyan-500", bg: "bg-cyan-500/10", border: "border-cyan-500/20", hover: "hover:border-cyan-500/50", path: "/patient/community" },
+              { title: "Consultation", desc: "Talk to a pro", icon: Calendar, color: "text-emerald-500", bg: "bg-emerald-500/10", border: "border-emerald-500/20", hover: "hover:border-emerald-500/50", path: "/patient/consultations" }
             ].map((action, i) => (
-              <div key={i} className={`flex flex-col items-center justify-center p-6 rounded-3xl bg-card border ${action.border} ${action.hover} transition-all cursor-pointer group hover:-translate-y-1 shadow-sm`}>
+              <Link key={i} to={action.path} className={`flex flex-col items-center justify-center p-6 rounded-3xl bg-card border ${action.border} ${action.hover} transition-all cursor-pointer group hover:-translate-y-1 shadow-sm`}>
                 <div className={`${action.bg} ${action.color} p-4 rounded-2xl mb-4 group-hover:scale-110 transition-transform`}>
                   <action.icon className="w-6 h-6" />
                 </div>
                 <h4 className="font-bold text-foreground text-center mb-1">{action.title}</h4>
                 <p className="text-xs text-muted-foreground text-center">{action.desc}</p>
-              </div>
+              </Link>
             ))}
           </div>
         </section>

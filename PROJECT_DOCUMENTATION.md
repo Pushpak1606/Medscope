@@ -65,7 +65,7 @@ The application features a **fully responsive, dark/light themed** interface wit
 | **Server State** | TanStack React Query | Async state management and caching |
 | **Testing** | Vitest + Playwright | Unit tests (Vitest) and E2E browser tests (Playwright) |
 | **Linting** | ESLint 9 | Code quality and consistency enforcement |
-| **Fonts** | Satoshi (headings) + Inter (body) | Premium, modern typography via Fontshare & Google Fonts |
+| **Fonts** | Geist Sans (headings + body) | Premium, modern typography via Fontsource jsDelivr CDN |
 
 ---
 
@@ -440,8 +440,8 @@ All colors are defined as HSL values in CSS custom properties (`index.css`), ena
 | `--destructive` | `0 84% 60%` (red) | `0 65% 50%` (muted red) |
 
 ### Typography System
-- **Headings**: `Satoshi` (Fontshare) — Variable weight 300–900, geometric sans-serif
-- **Body Text**: `Inter` (Google Fonts) — Variable weight 300–900, optimized for screens
+- **Headings**: `Geist Sans` (Fontsource) — Variable/standard weight 100–900, modern geometric sans-serif
+- **Body Text**: `Geist Sans` (Fontsource) — Variable/standard weight 100–900, modern geometric sans-serif
 
 ### Border Radius
 Global `--radius: 1.5rem` for a soft, pill-like aesthetic across all components.
@@ -585,7 +585,7 @@ npm run test:watch    # Run in watch mode
 ```bash
 npx playwright test   # Run E2E browser tests
 ```
-
+    
 **Test configuration:**
 - Vitest uses `jsdom` environment for DOM simulation
 - Playwright configured for cross-browser E2E testing

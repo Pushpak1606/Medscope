@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { secureStorage } from "@/lib/secureStorage";
+import { CommunityGroup, MOCK_GROUPS } from "@/lib/communityMockData";
 
 // ─── Default widget order (center column of dashboard) ───
 export const DEFAULT_WIDGET_ORDER = [
@@ -40,6 +41,15 @@ export interface MoodLog {
   mood: string;
   score: number;
   note?: string;
+}
+
+export interface JournalEntry {
+  id: string;
+  date: string;
+  title: string;
+  content: string;
+  mood?: string;
+  tags?: string[];
 }
 
 export interface PatientProfile {
@@ -83,6 +93,7 @@ export interface PatientProfile {
   preferences?: PatientPreferences;
   moodLogs?: MoodLog[];
   savedQuotes?: string[];
+  journalEntries?: JournalEntry[];
 }
 
 export type ReminderType = "All" | "Medicines" | "Meals" | "Water" | "Appointments" | "Wellness";
@@ -114,6 +125,17 @@ interface PatientContextType {
   deleteReminder: (id: string) => void;
   addMoodLog: (log: Omit<MoodLog, "id">) => void;
   toggleQuoteFavorite: (quoteId: string) => void;
+  journalEntries: JournalEntry[];
+  addJournalEntry: (entry: Omit<JournalEntry, "id">) => void;
+  updateJournalEntry: (id: string, updates: Partial<JournalEntry>) => void;
+  deleteJournalEntry: (id: string) => void;
+  
+  // Community
+  joinedGroups: string[];
+  joinGroup: (id: string) => void;
+  leaveGroup: (id: string) => void;
+  groups: CommunityGroup[];
+  createGroup: (group: Omit<CommunityGroup, "id" | "members" | "onlineCount">) => void;
 }
 
 const PatientContext = createContext<PatientContextType | undefined>(undefined);
@@ -280,12 +302,90 @@ export const PatientProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
+  // --- Journal ---
+  const [journalEntries, setJournalEntries] = useState<JournalEntry[]>(() => {
+    try {
+      const stored = secureStorage.getItem<JournalEntry[]>("medscope-journal");
+      if (stored && stored.length > 0) return stored;
+      return [
+        { id: "j1", date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), title: "Feeling grateful today", content: "Had a really productive therapy session. Learning to appreciate the small wins.", mood: "Good", tags: ["gratitude", "progress"] },
+        { id: "j2", date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(), title: "Rough morning", content: "Woke up feeling anxious. Tried the breathing exercise and it helped a little.", mood: "Rough", tags: ["anxiety"] },
+      ];
+    } catch { return []; }
+  });
+
+  useEffect(() => {
+    secureStorage.setItem("medscope-journal", journalEntries);
+  }, [journalEntries]);
+
+  // --- Community ---
+  const [joinedGroups, setJoinedGroups] = useState<string[]>(() => {
+    try {
+      const stored = secureStorage.getItem<string[]>("medscope-community");
+      if (stored && Array.isArray(stored)) return stored;
+      return ["g1", "g2"]; // some default mock groups
+    } catch { return []; }
+  });
+
+  useEffect(() => {
+    secureStorage.setItem("medscope-community", joinedGroups);
+  }, [joinedGroups]);
+
+  const [groups, setGroups] = useState<CommunityGroup[]>(() => {
+    try {
+      const stored = secureStorage.getItem<CommunityGroup[]>("medscope-community-groups");
+      if (stored && Array.isArray(stored)) return stored;
+      return MOCK_GROUPS;
+    } catch { return MOCK_GROUPS; }
+  });
+
+  useEffect(() => {
+    secureStorage.setItem("medscope-community-groups", groups);
+  }, [groups]);
+
+  const joinGroup = (id: string) => {
+    setJoinedGroups(prev => prev.includes(id) ? prev : [...prev, id]);
+  };
+
+  const leaveGroup = (id: string) => {
+    setJoinedGroups(prev => prev.filter(gId => gId !== id));
+  };
+
+  const createGroup = (newGroupData: Omit<CommunityGroup, "id" | "members" | "onlineCount">) => {
+    const newId = `g_${Math.random().toString(36).substring(2, 9)}`;
+    const newGroup: CommunityGroup = {
+      ...newGroupData,
+      id: newId,
+      members: 1,
+      onlineCount: 1,
+    };
+    setGroups(prev => [...prev, newGroup]);
+    setJoinedGroups(prev => [...prev, newId]);
+  };
+
+
+  const addJournalEntry = (entry: Omit<JournalEntry, "id">) => {
+    const newEntry = { ...entry, id: Math.random().toString(36).substring(2, 9) };
+    setJournalEntries(prev => [newEntry, ...prev]);
+  };
+
+  const updateJournalEntry = (id: string, updates: Partial<JournalEntry>) => {
+    setJournalEntries(prev => prev.map(e => e.id === id ? { ...e, ...updates } : e));
+  };
+
+  const deleteJournalEntry = (id: string) => {
+    setJournalEntries(prev => prev.filter(e => e.id !== id));
+  };
+
   return (
     <PatientContext.Provider value={{ 
       profile, setProfile, updateProfile, 
       widgetOrder, setWidgetOrder,
       reminders, addReminder, editReminder, markReminderDone, snoozeReminder, deleteReminder,
-      addMoodLog, toggleQuoteFavorite
+      addMoodLog, toggleQuoteFavorite,
+      journalEntries, addJournalEntry, updateJournalEntry, deleteJournalEntry,
+      joinedGroups, joinGroup, leaveGroup,
+      groups, createGroup
     }}>
       {children}
     </PatientContext.Provider>

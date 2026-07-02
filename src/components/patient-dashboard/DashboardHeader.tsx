@@ -21,12 +21,12 @@ const NAV_LINKS = [
   { label: "Reminders", path: "/patient/reminders" },
   { label: "Consultations", path: "/patient/consultations" },
   { label: "Wellness", path: "/patient/wellness" },
-  { label: "Journal", path: "/patient/journal" },
   { label: "Community", path: "/patient/community" },
 ];
 
 interface DashboardHeaderProps {
   profile: any;
+  hideGreeting?: boolean;
 }
 
 const DashboardHeader = ({ profile }: DashboardHeaderProps) => {
