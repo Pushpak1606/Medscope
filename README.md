@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="public/favicon.ico" alt="Medscope Logo" width="120" height="120" style="border-radius: 24px; box-shadow: 0 8px 24px rgba(0,0,0,0.12);" />
+  <img src="public/medscope-favicon.svg" alt="Medscope Logo" width="120" height="120" style="border-radius: 24px; box-shadow: 0 8px 24px rgba(0,0,0,0.12);" />
   <br/>
   <h1>🌟 Medscope</h1>
   <p><b>The Premium, AI-Powered Healthcare & Wellness Platform</b></p>
