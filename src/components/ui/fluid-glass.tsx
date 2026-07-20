@@ -1,4 +1,3 @@
-/* eslint-disable react/no-unknown-property */
 import * as THREE from 'three';
 import { useRef, useState, useEffect, memo, Suspense } from 'react';
 import { Canvas, createPortal, useFrame, useThree } from '@react-three/fiber';

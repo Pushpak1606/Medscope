@@ -102,12 +102,27 @@
 
 @layer base {
   * {
-    @apply border-border;
+    @apply border-border select-none;
     scrollbar-width: none; /* Firefox */
     -ms-overflow-style: none; /* IE/Edge */
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
   }
   *::-webkit-scrollbar {
     display: none; /* Chrome, Safari, Opera */
+  }
+  img {
+    -webkit-user-drag: none;
+    user-drag: none;
+    pointer-events: none;
+  }
+  input, textarea {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
   }
   html {
     scroll-behavior: smooth;

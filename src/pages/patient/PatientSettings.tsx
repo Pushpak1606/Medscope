@@ -1,13 +1,18 @@
-import { useState, useRef } from "react";
-import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "@/components/theme-provider";
 import { usePatient, DEFAULT_WIDGET_ORDER, WidgetConfig } from "@/context/PatientContext";
+import PatientPageLayout from "@/components/patient-dashboard/shared/PatientPageLayout";
+import PageHeader from "@/components/patient-dashboard/shared/PageHeader";
+import GlassCard from "@/components/patient-dashboard/shared/GlassCard";
 import {
   DndContext,
   closestCenter,
   KeyboardSensor,
   PointerSensor,
+  MouseSensor,
+  TouchSensor,
   useSensor,
   useSensors,
   DragEndEvent,
@@ -23,13 +28,11 @@ import { CSS } from "@dnd-kit/utilities";
 import { 
   Bell, Shield, Monitor, MessageSquare, 
   Activity, User, Moon, Sun, Laptop, 
-  CheckCircle, ChevronRight, ChevronLeft, AlertTriangle,
-  LayoutGrid, GripVertical, Eye, EyeOff, RotateCcw
+  CheckCircle, ChevronRight, AlertTriangle,
+  LayoutGrid, GripVertical, Eye, EyeOff, RotateCcw,
+  SlidersHorizontal, Check, X, Save, AlertCircle,
+  ChevronUp, ChevronDown
 } from "lucide-react";
-
-import AnimatedBackground from "@/components/ui/animated-background";
-import DashboardHeader from "@/components/patient-dashboard/DashboardHeader";
-import MobileNavDock from "@/components/patient-dashboard/MobileNavDock";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -43,42 +46,49 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 const TABS = [
-  { id: "appearance", label: "Appearance", icon: Monitor },
-  { id: "layout", label: "Dashboard Layout", icon: LayoutGrid },
-  { id: "notifications", label: "Notifications", icon: Bell },
-  { id: "privacy", label: "Privacy & Security", icon: Shield },
-  { id: "consultation", label: "Consultation", icon: MessageSquare },
-  { id: "health", label: "Health Preferences", icon: Activity },
-  { id: "account", label: "Account", icon: User },
+  { id: "appearance", label: "Appearance", icon: Monitor, desc: "Theme & typography preferences" },
+  { id: "layout", label: "Dashboard Layout", icon: LayoutGrid, desc: "Drag & drop widget arrangement" },
+  { id: "notifications", label: "Notifications", icon: Bell, desc: "Alerts, reminders & delivery channels" },
+  { id: "privacy", label: "Privacy & Security", icon: Shield, desc: "2FA, AI analysis & data security" },
+  { id: "consultation", label: "Consultation", icon: MessageSquare, desc: "Video modes & doctor preferences" },
+  { id: "health", label: "Health Preferences", icon: Activity, desc: "Physical vs mental care focus" },
+  { id: "account", label: "Account", icon: User, desc: "Personal info & medical export" },
 ];
 
 const PatientSettings = () => {
+  const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
   const { profile, updateProfile, widgetOrder, setWidgetOrder } = usePatient();
   const [activeTab, setActiveTab] = useState("appearance");
-  const settingsScrollRef = useRef<HTMLDivElement>(null);
+  const [isBurgerMenuOpen, setIsBurgerMenuOpen] = useState(false);
 
-  const scrollSettings = (direction: "left" | "right") => {
-    if (settingsScrollRef.current) {
-      settingsScrollRef.current.scrollBy({
-        left: direction === "left" ? -150 : 150,
-        behavior: "smooth"
-      });
-    }
-  };
   const [isSaving, setIsSaving] = useState(false);
   const [savedStatus, setSavedStatus] = useState(false);
-  const displayName = profile.fullName?.split(" ")[0] || "Patient";
-  
-  // Buffered Appearance State (Applies only on Save)
+  const [isDirty, setIsDirty] = useState(false);
+
+  // Unsaved Changes Navigation Modal state
+  const [showLeaveModal, setShowLeaveModal] = useState(false);
+  const [pendingTargetUrl, setPendingTargetUrl] = useState<string | null>(null);
+
+  // Buffered Appearance State
   const [appearanceData, setAppearanceData] = useState({
     theme: theme,
     fontSize: localStorage.getItem("medscope-font-size") || "default"
   });
   
-  // Local state for account text inputs so we can save them on button click
+  // Buffered Account State
   const [accountData, setAccountData] = useState({
     fullName: profile.fullName || "",
     email: profile.email || "",
@@ -86,12 +96,48 @@ const PatientSettings = () => {
     city: profile.city || ""
   });
 
+  // Warn user before closing window/tab if there are unsaved changes
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isDirty) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [isDirty]);
+
+  // Intercept internal link clicks to warn on unsaved changes
+  useEffect(() => {
+    const handleLinkClick = (e: MouseEvent) => {
+      if (!isDirty) return;
+      const target = (e.target as HTMLElement).closest("a");
+      if (target && target.href && !target.href.includes("/patient/settings")) {
+        const urlObj = new URL(target.href);
+        if (urlObj.origin === window.location.origin) {
+          e.preventDefault();
+          e.stopPropagation();
+          setPendingTargetUrl(urlObj.pathname);
+          setShowLeaveModal(true);
+        }
+      }
+    };
+    document.addEventListener("click", handleLinkClick, true);
+    return () => document.removeEventListener("click", handleLinkClick, true);
+  }, [isDirty]);
+
+  const markDirty = () => {
+    if (!isDirty) setIsDirty(true);
+  };
+
   const handleSave = () => {
     setIsSaving(true);
-    // Save settings that were buffered
+    
+    // Apply Theme
     setTheme(appearanceData.theme as "light"|"dark"|"system");
     
-    // Commit Font Size
+    // Apply Font Size
     localStorage.setItem("medscope-font-size", appearanceData.fontSize);
     if (appearanceData.fontSize === "large") {
       document.documentElement.classList.add("font-large");
@@ -99,22 +145,41 @@ const PatientSettings = () => {
       document.documentElement.classList.remove("font-large");
     }
 
-    // Commit Profile edits
+    // Apply Profile & Preferences
     updateProfile({
       fullName: accountData.fullName,
       email: accountData.email,
       phone: accountData.phone,
       city: accountData.city
     });
-    
+
     setTimeout(() => {
       setIsSaving(false);
+      setIsDirty(false);
       setSavedStatus(true);
+      toast.success("Settings saved and updated across Medscope!");
       setTimeout(() => setSavedStatus(false), 3000);
-    }, 600);
+
+      if (pendingTargetUrl) {
+        setShowLeaveModal(false);
+        navigate(pendingTargetUrl);
+        setPendingTargetUrl(null);
+      }
+    }, 500);
+  };
+
+  const handleDiscardAndProceed = () => {
+    setIsDirty(false);
+    setShowLeaveModal(false);
+    toast.info("Unsaved changes discarded.");
+    if (pendingTargetUrl) {
+      navigate(pendingTargetUrl);
+      setPendingTargetUrl(null);
+    }
   };
 
   const updatePrefs = (category: "notifications"| "privacy" | "consultation", key: string, value: any) => {
+    markDirty();
     const currentPrefs = profile.preferences!;
     updateProfile({
       preferences: {
@@ -127,480 +192,578 @@ const PatientSettings = () => {
     });
   };
 
-  // Widget reorder helpers
   const toggleWidgetVisibility = (index: number) => {
+    markDirty();
     const newOrder = [...widgetOrder];
     newOrder[index] = { ...newOrder[index], visible: !newOrder[index].visible };
     setWidgetOrder(newOrder);
   };
 
-  const resetWidgetOrder = () => {
-    setWidgetOrder([...DEFAULT_WIDGET_ORDER]);
+  const moveWidgetUp = (index: number) => {
+    if (index <= 0) return;
+    markDirty();
+    const updated = arrayMove(widgetOrder, index, index - 1);
+    setWidgetOrder(updated);
+    toast.success(`Moved "${widgetOrder[index].label}" up!`);
   };
 
-  // Drag and drop
+  const moveWidgetDown = (index: number) => {
+    if (index >= widgetOrder.length - 1) return;
+    markDirty();
+    const updated = arrayMove(widgetOrder, index, index + 1);
+    setWidgetOrder(updated);
+    toast.success(`Moved "${widgetOrder[index].label}" down!`);
+  };
+
+  const resetWidgetOrder = () => {
+    markDirty();
+    setWidgetOrder([...DEFAULT_WIDGET_ORDER]);
+    toast.success("Reset layout to default!");
+  };
+
+  // DnD Sensors
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(PointerSensor, { activationConstraint: { distance: 3 } }),
+    useSensor(MouseSensor, { activationConstraint: { distance: 3 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 100, tolerance: 5 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (over && active.id !== over.id) {
+      markDirty();
       const oldIndex = widgetOrder.findIndex((w) => w.id === active.id);
       const newIndex = widgetOrder.findIndex((w) => w.id === over.id);
-      setWidgetOrder(arrayMove(widgetOrder, oldIndex, newIndex));
+      const updated = arrayMove(widgetOrder, oldIndex, newIndex);
+      setWidgetOrder(updated);
     }
   };
 
+  const currentTabObj = TABS.find((t) => t.id === activeTab) || TABS[0];
+  const ActiveIcon = currentTabObj.icon;
+
+  const RenderSaveSectionBar = () => (
+    <div className="pt-6 border-t border-border/40 flex items-center justify-between gap-4 flex-wrap">
+      <div className="flex items-center gap-2">
+        {isDirty ? (
+          <span className="text-xs text-amber-400 font-bold flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20">
+            <AlertCircle className="w-3.5 h-3.5" />
+            <span>Unsaved Changes</span>
+          </span>
+        ) : savedStatus ? (
+          <span className="text-xs text-emerald-400 font-bold flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+            <CheckCircle className="w-3.5 h-3.5" />
+            <span>All Changes Saved</span>
+          </span>
+        ) : (
+          <span className="text-xs text-muted-foreground font-medium">
+            Changes will apply immediately after saving.
+          </span>
+        )}
+      </div>
+
+      <Button
+        onClick={handleSave}
+        disabled={isSaving}
+        className={cn(
+          "h-11 px-6 rounded-2xl font-bold text-xs sm:text-sm gap-2 shadow-lg transition-all duration-300",
+          isDirty 
+            ? "bg-primary hover:bg-primary/90 text-primary-foreground shadow-primary/20 animate-pulse"
+            : "bg-primary/90 hover:bg-primary text-primary-foreground"
+        )}
+      >
+        <Save className="w-4 h-4" />
+        <span>{isSaving ? "Saving..." : savedStatus ? "Saved!" : "Save Changes"}</span>
+      </Button>
+    </div>
+  );
+
   return (
-    <div className="min-h-screen bg-surface relative flex justify-center pb-24 sm:pb-8 overflow-x-hidden">
-      <AnimatedBackground variant="patient" className="opacity-30 fixed inset-0 pointer-events-none" />
-
-      <div className="relative z-10 w-full max-w-[1400px] flex flex-col px-4 sm:px-8 py-8 md:py-10 min-h-screen gap-8">
-        <DashboardHeader profile={{ name: displayName, profileCompleteness: profile.profileCompleteness }} />
-
-        <motion.div
-           initial={{ opacity: 0, y: -10 }}
-           animate={{ opacity: 1, y: 0 }}
+    <PatientPageLayout className="w-full">
+      <div className="w-full space-y-6 lg:space-y-8 pb-12">
+        
+        {/* --- PAGE HEADER --- */}
+        <PageHeader
+          title="Patient Settings"
+          subtitle="Customize your portal preferences, theme appearance, and security options."
         >
-          <h1 className="text-3xl font-extrabold font-heading text-foreground tracking-tight mb-2">Settings</h1>
-          <p className="text-muted-foreground font-medium">Manage your portal preferences and account settings.</p>
-        </motion.div>
-
-        <div className="flex flex-col md:flex-row gap-8 mt-4">
-          
-          {/* Settings Sidebar Navigation */}
-          <motion.div 
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="w-full md:w-64 shrink-0 pb-2 md:pb-0 relative group/nav"
+          <Button 
+            onClick={handleSave} 
+            disabled={isSaving}
+            className="rounded-full shadow-lg shadow-primary/20 bg-primary text-primary-foreground hover:bg-primary/90 font-bold px-6 h-10 text-xs sm:text-sm"
           >
-            {/* Left Arrow (mobile only) */}
-            <button 
-              onClick={() => scrollSettings('left')}
-              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 h-8 w-8 rounded-full bg-background/80 backdrop-blur-sm border border-border/50 shadow-sm flex items-center justify-center text-muted-foreground hover:text-foreground opacity-0 group-hover/nav:opacity-100 transition-opacity -ml-3 md:hidden"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </button>
+            {isSaving ? "Saving..." : savedStatus ? <span className="flex items-center gap-1.5"><CheckCircle className="h-4 w-4 text-emerald-300" /> Saved!</span> : "Save Changes"}
+          </Button>
+        </PageHeader>
 
-            <div 
-              ref={settingsScrollRef}
-              className="flex md:flex-col gap-2 min-w-max md:min-w-0 overflow-x-auto hide-scrollbar scroll-smooth"
+        {/* --- SETTINGS BURGER MENU NAV BAR --- */}
+        <div className="relative z-20 space-y-3">
+          <div className="flex items-center justify-between p-3.5 sm:p-4 rounded-2xl bg-card/60 backdrop-blur-xl border border-border/50 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-xl bg-primary/10 text-primary">
+                <ActiveIcon className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block">
+                  Current Section
+                </span>
+                <h3 className="text-sm sm:text-base font-extrabold text-foreground flex items-center gap-2">
+                  <span>{currentTabObj.label}</span>
+                  <span className="hidden sm:inline text-xs text-muted-foreground font-normal">• {currentTabObj.desc}</span>
+                </h3>
+              </div>
+            </div>
+
+            <Button
+              onClick={() => setIsBurgerMenuOpen(!isBurgerMenuOpen)}
+              variant="outline"
+              className={cn(
+                "h-10 px-4 rounded-xl border-primary/30 text-primary font-bold text-xs gap-2 transition-all duration-300 shadow-sm",
+                isBurgerMenuOpen ? "bg-primary text-primary-foreground border-primary" : "bg-primary/10 hover:bg-primary/20"
+              )}
             >
-              {TABS.map((tab) => (
+              {isBurgerMenuOpen ? <X className="w-4 h-4" /> : <SlidersHorizontal className="w-4 h-4" />}
+              <span>{isBurgerMenuOpen ? "Close Menu" : "Sections Menu"}</span>
+            </Button>
+          </div>
+
+          <AnimatePresence>
+            {isBurgerMenuOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: -10, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -10, scale: 0.98 }}
+                transition={{ duration: 0.25, ease: "easeOut" }}
+                className="w-full p-4 sm:p-6 rounded-3xl bg-card/75 backdrop-blur-2xl border border-border/60 shadow-2xl space-y-3 relative z-30"
+              >
+                <div className="flex items-center justify-between px-2 pb-2 border-b border-border/40">
+                  <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                    <SlidersHorizontal className="w-4 h-4 text-primary" />
+                    <span>Select Settings Section</span>
+                  </span>
+                  <button 
+                    onClick={() => setIsBurgerMenuOpen(false)} 
+                    className="text-xs font-semibold text-muted-foreground hover:text-foreground p-1"
+                  >
+                    Close [✕]
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 pt-2">
+                  {TABS.map((tab) => {
+                    const TabIcon = tab.icon;
+                    const isActive = activeTab === tab.id;
+                    return (
+                      <button
+                        key={tab.id}
+                        onClick={() => {
+                          setActiveTab(tab.id);
+                          setIsBurgerMenuOpen(false);
+                        }}
+                        className={cn(
+                          "flex items-center gap-3 p-3.5 rounded-2xl text-xs font-bold transition-all text-left border group",
+                          isActive
+                            ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20 scale-[1.01]"
+                            : "bg-card/40 border-border/40 text-foreground/80 hover:bg-card/90 hover:border-primary/40"
+                        )}
+                      >
+                        <div className={cn(
+                          "p-2.5 rounded-xl transition-colors",
+                          isActive ? "bg-white/20 text-white" : "bg-primary/10 text-primary group-hover:bg-primary/20"
+                        )}>
+                          <TabIcon className="w-4 h-4" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-bold truncate">{tab.label}</h4>
+                          <p className={cn("text-[10px] truncate font-normal", isActive ? "text-primary-foreground/80" : "text-muted-foreground")}>
+                            {tab.desc}
+                          </p>
+                        </div>
+                        {isActive && <Check className="w-4 h-4 text-white shrink-0" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* --- MAIN SETTINGS CONTENT AREA --- */}
+        <div className="flex flex-col md:flex-row gap-8">
+          
+          {/* Desktop Left Sidebar Tabs */}
+          <GlassCard className="hidden md:flex flex-col gap-1.5 w-64 shrink-0 p-3 h-fit bg-card/60 backdrop-blur-xl border-border/50">
+            {TABS.map((tab) => {
+              const TabIcon = tab.icon;
+              const isActive = activeTab === tab.id;
+              return (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${
-                    activeTab === tab.id 
-                      ? "bg-primary text-primary-foreground shadow-md shadow-primary/20" 
-                      : "text-muted-foreground hover:bg-muted/80 hover:text-foreground"
-                  }`}
+                  className={cn(
+                    "flex items-center gap-3 px-3.5 py-3 rounded-xl text-xs font-bold transition-all text-left",
+                    isActive
+                      ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  )}
                 >
-                  <tab.icon className="h-4 w-4" />
-                  {tab.label}
-                  {activeTab === tab.id && <ChevronRight className="h-4 w-4 ml-auto hidden md:block opacity-50" />}
+                  <TabIcon className="w-4 h-4 shrink-0" />
+                  <span className="flex-1 truncate">{tab.label}</span>
+                  {isActive && <ChevronRight className="w-4 h-4 opacity-70" />}
                 </button>
-              ))}
-            </div>
+              );
+            })}
+          </GlassCard>
 
-            {/* Right Arrow (mobile only) */}
-            <button 
-              onClick={() => scrollSettings('right')}
-              className="absolute right-0 top-1/2 -translate-y-1/2 z-10 h-8 w-8 rounded-full bg-background/80 backdrop-blur-sm border border-border/50 shadow-sm flex items-center justify-center text-muted-foreground hover:text-foreground opacity-0 group-hover/nav:opacity-100 transition-opacity -mr-3 md:hidden"
+          {/* Right Section Panel */}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.25 }}
+              className="flex-1"
             >
-              <ChevronRight className="h-4 w-4" />
-            </button>
-          </motion.div>
-
-          {/* Settings Content Area */}
-          <motion.div 
-            key={activeTab}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-            className="flex-1 bg-card/80 backdrop-blur-xl border border-border/50 rounded-[2rem] p-6 sm:p-10 shadow-sm relative overflow-hidden"
-          >
-            {/* Top Glow */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-20 bg-primary/10 blur-[50px] pointer-events-none"></div>
-
-            <div className="flex items-center justify-between mb-8 pb-4 border-b border-border/50">
-              <h2 className="text-2xl font-bold font-heading text-foreground">
-                {TABS.find(t => t.id === activeTab)?.label}
-              </h2>
-              
-              <Button 
-                onClick={handleSave} 
-                disabled={isSaving}
-                className="rounded-xl shadow-sm bg-primary text-primary-foreground hover:bg-primary/90 font-bold px-6"
-              >
-                {isSaving ? "Saving..." : savedStatus ? <span className="flex items-center gap-1.5"><CheckCircle className="h-4 w-4" /> Saved</span> : "Save Changes"}
-              </Button>
-            </div>
-
-            <div className="max-w-3xl space-y-8 pb-10">
-              
-              {/* --- APPEARANCE TAB --- */}
-              {activeTab === "appearance" && (
-                <div className="space-y-6">
+              <GlassCard className="p-6 sm:p-10 bg-card/60 backdrop-blur-xl border-border/50 relative overflow-hidden space-y-8">
+                
+                <div className="flex items-center justify-between pb-4 border-b border-border/40">
                   <div>
-                    <h3 className="text-lg font-bold text-foreground mb-4">Theme</h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                      <button 
-                        onClick={() => setAppearanceData({...appearanceData, theme: "light"})}
-                        className={`flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all gap-3 ${appearanceData.theme === "light" ? "border-primary bg-primary/5 shadow-md scale-[1.02]" : "border-border/50 hover:border-border bg-background"}`}
-                      >
-                        <Sun className={`h-8 w-8 ${appearanceData.theme === "light" ? "text-primary" : "text-muted-foreground"}`} />
-                        <span className="font-semibold text-sm">Light</span>
-                      </button>
-                      <button 
-                         onClick={() => setAppearanceData({...appearanceData, theme: "dark"})}
-                        className={`flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all gap-3 ${appearanceData.theme === "dark" ? "border-primary bg-primary/5 shadow-md scale-[1.02]" : "border-border/50 hover:border-border bg-background"}`}
-                      >
-                        <Moon className={`h-8 w-8 ${appearanceData.theme === "dark" ? "text-primary" : "text-muted-foreground"}`} />
-                        <span className="font-semibold text-sm">Dark</span>
-                      </button>
-                      <button 
-                        onClick={() => setAppearanceData({...appearanceData, theme: "system"})}
-                        className={`flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all gap-3 ${appearanceData.theme === "system" ? "border-primary bg-primary/5 shadow-md scale-[1.02]" : "border-border/50 hover:border-border bg-background"}`}
-                      >
-                        <Laptop className={`h-8 w-8 ${appearanceData.theme === "system" ? "text-primary" : "text-muted-foreground"}`} />
-                        <span className="font-semibold text-sm">System</span>
-                      </button>
-                    </div>
-                  </div>
-                  <Separator className="bg-border/50" />
-                  <div>
-                    <h3 className="text-lg font-bold text-foreground mb-4">Font Size</h3>
-                    <Select 
-                      value={appearanceData.fontSize} 
-                      onValueChange={(val) => setAppearanceData({...appearanceData, fontSize: val})}
-                    >
-                      <SelectTrigger className="w-[200px] rounded-xl h-11 bg-background select-none outline-none focus:ring-1 focus:ring-primary shadow-sm border-border/60">
-                        <SelectValue placeholder="Select size" />
-                      </SelectTrigger>
-                      <SelectContent className="rounded-xl border-border/50 shadow-lg">
-                        <SelectItem value="default" className="rounded-lg cursor-pointer">Default</SelectItem>
-                        <SelectItem value="large" className="rounded-lg cursor-pointer">Large (Accessibility)</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <h2 className="text-xl sm:text-2xl font-extrabold font-heading text-foreground flex items-center gap-2">
+                      <ActiveIcon className="w-6 h-6 text-primary" />
+                      <span>{currentTabObj.label}</span>
+                    </h2>
+                    <p className="text-xs sm:text-sm text-muted-foreground mt-1">{currentTabObj.desc}</p>
                   </div>
                 </div>
-              )}
 
-              {/* --- DASHBOARD LAYOUT TAB --- */}
-              {activeTab === "layout" && (
-                <div className="space-y-6">
-                  <p className="text-sm text-muted-foreground">
-                    Drag widgets to rearrange your dashboard layout. Toggle the eye icon to show/hide a widget. Changes are applied instantly.
-                  </p>
+                <div className="max-w-3xl space-y-8">
+                  
+                  {/* --- APPEARANCE TAB --- */}
+                  {activeTab === "appearance" && (
+                    <div className="space-y-6">
+                      <div>
+                        <h3 className="text-base font-bold text-foreground mb-4">Color Theme</h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                          <button 
+                            onClick={() => { setAppearanceData({...appearanceData, theme: "light"}); markDirty(); }}
+                            className={cn(
+                              "flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all gap-3",
+                              appearanceData.theme === "light" ? "border-primary bg-primary/10 shadow-md" : "border-border/50 hover:border-border bg-card/40"
+                            )}
+                          >
+                            <Sun className={cn("h-7 w-7", appearanceData.theme === "light" ? "text-primary" : "text-muted-foreground")} />
+                            <span className="font-bold text-xs">Light Mode</span>
+                          </button>
+                          <button 
+                            onClick={() => { setAppearanceData({...appearanceData, theme: "dark"}); markDirty(); }}
+                            className={cn(
+                              "flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all gap-3",
+                              appearanceData.theme === "dark" ? "border-primary bg-primary/10 shadow-md" : "border-border/50 hover:border-border bg-card/40"
+                            )}
+                          >
+                            <Moon className={cn("h-7 w-7", appearanceData.theme === "dark" ? "text-primary" : "text-muted-foreground")} />
+                            <span className="font-bold text-xs">Dark Mode (Default)</span>
+                          </button>
+                          <button 
+                            onClick={() => { setAppearanceData({...appearanceData, theme: "system"}); markDirty(); }}
+                            className={cn(
+                              "flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all gap-3",
+                              appearanceData.theme === "system" ? "border-primary bg-primary/10 shadow-md" : "border-border/50 hover:border-border bg-card/40"
+                            )}
+                          >
+                            <Laptop className={cn("h-7 w-7", appearanceData.theme === "system" ? "text-primary" : "text-muted-foreground")} />
+                            <span className="font-bold text-xs">System Synchronized</span>
+                          </button>
+                        </div>
+                      </div>
+                      <Separator className="bg-border/40" />
+                      <div>
+                        <h3 className="text-base font-bold text-foreground mb-3">Font Scale</h3>
+                        <Select 
+                          value={appearanceData.fontSize} 
+                          onValueChange={(val) => { setAppearanceData({...appearanceData, fontSize: val}); markDirty(); }}
+                        >
+                          <SelectTrigger className="w-[220px] rounded-xl h-11 bg-card border-border/60 font-semibold text-xs">
+                            <SelectValue placeholder="Select size" />
+                          </SelectTrigger>
+                          <SelectContent className="rounded-xl border-border/50">
+                            <SelectItem value="default" className="rounded-lg cursor-pointer">Default (100%)</SelectItem>
+                            <SelectItem value="large" className="rounded-lg cursor-pointer">Large (110% Accessibility)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  )}
 
-                  <DndContext
-                    sensors={sensors}
-                    collisionDetection={closestCenter}
-                    onDragEnd={handleDragEnd}
-                  >
-                    <SortableContext
-                      items={widgetOrder.map((w) => w.id)}
-                      strategy={verticalListSortingStrategy}
-                    >
-                      <div className="space-y-3">
-                        {widgetOrder.map((widget, index) => (
-                          <SortableWidgetItem
-                            key={widget.id}
-                            widget={widget}
-                            index={index}
-                            onToggleVisibility={() => toggleWidgetVisibility(index)}
-                          />
-                        ))}
+                  {/* --- DASHBOARD LAYOUT TAB --- */}
+                  {activeTab === "layout" && (
+                    <div className="space-y-6">
+                      <div className="p-4 rounded-2xl bg-primary/10 border border-primary/20 space-y-1">
+                        <h4 className="font-bold text-xs text-primary flex items-center gap-1.5">
+                          <GripVertical className="w-4 h-4" />
+                          <span>Drag Handle or Use Up/Down Buttons to Rearrange</span>
+                        </h4>
+                        <p className="text-xs text-muted-foreground">
+                          Hold the drag handle or click the Up/Down arrows to reorder dashboard widgets. Toggle the eye icon to show or hide widgets.
+                        </p>
                       </div>
-                    </SortableContext>
-                  </DndContext>
 
-                  <Separator className="bg-border/50" />
+                      <DndContext
+                        sensors={sensors}
+                        collisionDetection={closestCenter}
+                        onDragEnd={handleDragEnd}
+                      >
+                        <SortableContext
+                          items={widgetOrder.map((w) => w.id)}
+                          strategy={verticalListSortingStrategy}
+                        >
+                          <div className="space-y-3">
+                            {widgetOrder.map((widget, index) => (
+                              <SortableWidgetItem
+                                key={widget.id}
+                                widget={widget}
+                                index={index}
+                                totalCount={widgetOrder.length}
+                                onToggleVisibility={() => toggleWidgetVisibility(index)}
+                                onMoveUp={() => moveWidgetUp(index)}
+                                onMoveDown={() => moveWidgetDown(index)}
+                              />
+                            ))}
+                          </div>
+                        </SortableContext>
+                      </DndContext>
 
-                  <Button
-                    variant="outline"
-                    onClick={resetWidgetOrder}
-                    className="rounded-xl border-border/60 hover:bg-muted font-bold h-11"
-                  >
-                    <RotateCcw className="mr-2 h-4 w-4" /> Reset to Default Layout
-                  </Button>
-                </div>
-              )}
+                      <Separator className="bg-border/40" />
 
-              {/* --- NOTIFICATIONS TAB --- */}
-              {activeTab === "notifications" && (
-                <div className="space-y-6">
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between p-4 rounded-2xl bg-muted/30 border border-border/50">
-                      <div className="space-y-0.5">
-                        <Label className="text-base font-bold">Medicine Reminders</Label>
-                        <p className="text-sm text-muted-foreground">Receive alerts when it's time to take your medication.</p>
-                      </div>
-                      <Switch 
-                        checked={profile.preferences?.notifications.medicine}
-                        onCheckedChange={(val) => updatePrefs("notifications", "medicine", val)}
-                        className="data-[state=checked]:bg-primary" 
-                      />
-                    </div>
-                    <div className="flex items-center justify-between p-4 rounded-2xl bg-muted/30 border border-border/50">
-                      <div className="space-y-0.5">
-                        <Label className="text-base font-bold">Appointment Alerts</Label>
-                        <p className="text-sm text-muted-foreground">Get notified before upcoming consultations.</p>
-                      </div>
-                      <Switch 
-                        checked={profile.preferences?.notifications.appointments}
-                        onCheckedChange={(val) => updatePrefs("notifications", "appointments", val)}
-                        className="data-[state=checked]:bg-primary" 
-                      />
-                    </div>
-                    <div className="flex items-center justify-between p-4 rounded-2xl bg-muted/30 border border-border/50">
-                      <div className="space-y-0.5">
-                        <Label className="text-base font-bold">Wellness Tips</Label>
-                        <p className="text-sm text-muted-foreground">Daily AI-generated advice based on your profile.</p>
-                      </div>
-                      <Switch 
-                         checked={profile.preferences?.notifications.wellness}
-                         onCheckedChange={(val) => updatePrefs("notifications", "wellness", val)}
-                         className="data-[state=checked]:bg-primary" 
-                      />
-                    </div>
-                  </div>
-                  <Separator className="bg-border/50" />
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-bold text-foreground">Delivery Methods</h3>
-                    <div className="flex items-center justify-between">
-                      <Label className="text-sm font-bold">Email Notifications</Label>
-                      <Switch 
-                         checked={profile.preferences?.notifications.email}
-                         onCheckedChange={(val) => updatePrefs("notifications", "email", val)}
-                         className="data-[state=checked]:bg-primary" 
-                      />
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <Label className="text-sm font-bold">SMS Notifications</Label>
-                      <Switch 
-                         checked={profile.preferences?.notifications.sms}
-                         onCheckedChange={(val) => updatePrefs("notifications", "sms", val)}
-                         className="data-[state=checked]:bg-primary" 
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* --- PRIVACY TAB --- */}
-              {activeTab === "privacy" && (
-                <div className="space-y-6">
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-bold text-foreground">Security</h3>
-                    <div className="flex items-center justify-between p-4 rounded-2xl bg-muted/30 border border-border/50">
-                      <div className="space-y-0.5">
-                        <Label className="text-base font-bold">Two-Factor Authentication (2FA)</Label>
-                        <p className="text-sm text-muted-foreground">Add an extra layer of security to your account.</p>
-                      </div>
-                      <Switch 
-                        checked={profile.preferences?.privacy.twoFactor}
-                        onCheckedChange={(val) => updatePrefs("privacy", "twoFactor", val)}
-                        className="data-[state=checked]:bg-primary" 
-                      />
-                    </div>
-                    <Button variant="outline" className="rounded-xl border-border/60 hover:bg-muted font-bold h-11">
-                      Change Password
-                    </Button>
-                  </div>
-                  <Separator className="bg-border/50" />
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-bold text-foreground">Data Privacy</h3>
-                    <div className="flex items-center justify-between p-4 rounded-2xl bg-muted/30 border border-border/50">
-                      <div className="space-y-0.5">
-                        <Label className="text-base font-bold">AI Health Suggestions</Label>
-                        <p className="text-sm text-muted-foreground">Allow Medscope AI to analyze your data securely to provide insights.</p>
-                      </div>
-                      <Switch 
-                         checked={profile.preferences?.privacy.aiAnalysis}
-                         onCheckedChange={(val) => updatePrefs("privacy", "aiAnalysis", val)}
-                         className="data-[state=checked]:bg-primary" 
-                      />
-                    </div>
-                  </div>
-                  <Separator className="bg-border/50" />
-                  <div className="space-y-4 pt-2">
-                    <div className="p-5 rounded-2xl border border-red-500/20 bg-red-500/5">
-                      <h3 className="text-lg font-bold text-red-500 flex items-center gap-2 mb-2">
-                        <AlertTriangle className="h-5 w-5" /> Danger Zone
-                      </h3>
-                      <p className="text-sm text-muted-foreground mb-4">
-                        Permanently delete your account and all associated health data. This action cannot be undone.
-                      </p>
-                      <Button variant="destructive" className="rounded-xl font-bold bg-red-600 hover:bg-red-700">
-                        Delete Account
+                      <Button
+                        variant="outline"
+                        onClick={resetWidgetOrder}
+                        className="rounded-xl border-border/60 hover:bg-muted font-bold text-xs h-10"
+                      >
+                        <RotateCcw className="mr-2 h-4 w-4" /> Reset Default Order
                       </Button>
                     </div>
-                  </div>
+                  )}
+
+                  {/* --- NOTIFICATIONS TAB --- */}
+                  {activeTab === "notifications" && (
+                    <div className="space-y-6">
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between p-4 rounded-2xl bg-card/40 border border-border/40">
+                          <div className="space-y-0.5">
+                            <Label className="text-sm font-bold">Medicine Reminders</Label>
+                            <p className="text-xs text-muted-foreground">Alerts when it's time to take prescribed medications.</p>
+                          </div>
+                          <Switch 
+                            checked={profile.preferences?.notifications.medicine}
+                            onCheckedChange={(val) => updatePrefs("notifications", "medicine", val)}
+                            className="data-[state=checked]:bg-primary" 
+                          />
+                        </div>
+                        <div className="flex items-center justify-between p-4 rounded-2xl bg-card/40 border border-border/40">
+                          <div className="space-y-0.5">
+                            <Label className="text-sm font-bold">Appointment Alerts</Label>
+                            <p className="text-xs text-muted-foreground">Notifications prior to live consultations.</p>
+                          </div>
+                          <Switch 
+                            checked={profile.preferences?.notifications.appointments}
+                            onCheckedChange={(val) => updatePrefs("notifications", "appointments", val)}
+                            className="data-[state=checked]:bg-primary" 
+                          />
+                        </div>
+                        <div className="flex items-center justify-between p-4 rounded-2xl bg-card/40 border border-border/40">
+                          <div className="space-y-0.5">
+                            <Label className="text-sm font-bold">Wellness Recommendations</Label>
+                            <p className="text-xs text-muted-foreground">Daily AI suggestions based on your health logs.</p>
+                          </div>
+                          <Switch 
+                            checked={profile.preferences?.notifications.wellness}
+                            onCheckedChange={(val) => updatePrefs("notifications", "wellness", val)}
+                            className="data-[state=checked]:bg-primary" 
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* --- PRIVACY TAB --- */}
+                  {activeTab === "privacy" && (
+                    <div className="space-y-6">
+                      <div className="space-y-4">
+                        <h3 className="text-sm font-bold text-foreground uppercase tracking-wider">Security</h3>
+                        <div className="flex items-center justify-between p-4 rounded-2xl bg-card/40 border border-border/40">
+                          <div className="space-y-0.5">
+                            <Label className="text-sm font-bold">Two-Factor Authentication (2FA)</Label>
+                            <p className="text-xs text-muted-foreground">Add an extra verification step during login.</p>
+                          </div>
+                          <Switch 
+                            checked={profile.preferences?.privacy.twoFactor}
+                            onCheckedChange={(val) => updatePrefs("privacy", "twoFactor", val)}
+                            className="data-[state=checked]:bg-primary" 
+                          />
+                        </div>
+                      </div>
+                      <Separator className="bg-border/40" />
+                      <div className="p-5 rounded-2xl border border-red-500/20 bg-red-500/5 space-y-3">
+                        <h3 className="text-sm font-bold text-red-500 flex items-center gap-2">
+                          <AlertTriangle className="h-4 w-4" /> Danger Zone
+                        </h3>
+                        <p className="text-xs text-muted-foreground">
+                          Permanently delete your account and encrypted medical history.
+                        </p>
+                        <Button variant="destructive" size="sm" className="rounded-xl font-bold text-xs bg-red-600 hover:bg-red-700">
+                          Delete Account
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* --- CONSULTATION TAB --- */}
+                  {activeTab === "consultation" && (
+                    <div className="space-y-6">
+                      <div className="grid gap-6 sm:grid-cols-2">
+                        <div className="space-y-2">
+                          <Label className="font-semibold text-xs">Default Mode</Label>
+                          <Select 
+                            value={profile.preferences?.consultation.defaultMode}
+                            onValueChange={(val) => updatePrefs("consultation", "defaultMode", val)}
+                          >
+                            <SelectTrigger className="w-full rounded-xl bg-card border-border/60 h-10 text-xs">
+                              <SelectValue placeholder="Select" />
+                            </SelectTrigger>
+                            <SelectContent className="rounded-xl">
+                              <SelectItem value="video" className="rounded-lg">Video Call</SelectItem>
+                              <SelectItem value="audio" className="rounded-lg">Voice Call</SelectItem>
+                              <SelectItem value="chat" className="rounded-lg">Text Chat</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* --- HEALTH TAB --- */}
+                  {activeTab === "health" && (
+                    <div className="space-y-6">
+                      <div className="space-y-2">
+                        <Label className="font-semibold text-xs">Primary Health Focus</Label>
+                        <Select 
+                          value={profile.healthFocus || "both"}
+                          onValueChange={(val) => { updateProfile({ healthFocus: val }); markDirty(); }}
+                        >
+                          <SelectTrigger className="w-full sm:w-[260px] rounded-xl bg-card border-border/60 h-10 text-xs">
+                            <SelectValue placeholder="Select focus" />
+                          </SelectTrigger>
+                          <SelectContent className="rounded-xl">
+                            <SelectItem value="physical" className="rounded-lg">Physical Care</SelectItem>
+                            <SelectItem value="mental" className="rounded-lg">Mental Wellness</SelectItem>
+                            <SelectItem value="both" className="rounded-lg">Balanced (Both)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* --- ACCOUNT TAB --- */}
+                  {activeTab === "account" && (
+                    <div className="space-y-6">
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <div className="space-y-2">
+                          <Label className="font-semibold text-xs">Full Name</Label>
+                          <Input 
+                            value={accountData.fullName} 
+                            onChange={(e) => { setAccountData({...accountData, fullName: e.target.value}); markDirty(); }}
+                            className="bg-card rounded-xl h-10 text-xs" 
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="font-semibold text-xs">Email Address</Label>
+                          <Input 
+                            value={accountData.email} 
+                            onChange={(e) => { setAccountData({...accountData, email: e.target.value}); markDirty(); }}
+                            className="bg-card rounded-xl h-10 text-xs" 
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="font-semibold text-xs">Phone</Label>
+                          <Input 
+                            value={accountData.phone} 
+                            onChange={(e) => { setAccountData({...accountData, phone: e.target.value}); markDirty(); }}
+                            className="bg-card rounded-xl h-10 text-xs" 
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="font-semibold text-xs">City</Label>
+                          <Input 
+                            value={accountData.city} 
+                            onChange={(e) => { setAccountData({...accountData, city: e.target.value}); markDirty(); }}
+                            className="bg-card rounded-xl h-10 text-xs" 
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                 </div>
-              )}
 
-              {/* --- CONSULTATION TAB --- */}
-              {activeTab === "consultation" && (
-                <div className="space-y-6">
-                  <div className="grid gap-6 sm:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label className="font-semibold text-foreground">Default Consultation Mode</Label>
-                      <Select 
-                        value={profile.preferences?.consultation.defaultMode}
-                        onValueChange={(val) => updatePrefs("consultation", "defaultMode", val)}
-                      >
-                        <SelectTrigger className="w-full rounded-xl bg-background border-border/60 h-11">
-                          <SelectValue placeholder="Select" />
-                        </SelectTrigger>
-                        <SelectContent className="rounded-xl">
-                          <SelectItem value="video" className="rounded-lg">Video Call</SelectItem>
-                          <SelectItem value="audio" className="rounded-lg">Voice Call</SelectItem>
-                          <SelectItem value="chat" className="rounded-lg">Text Chat</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="font-semibold text-foreground">Reminder Timing</Label>
-                      <Select 
-                        value={profile.preferences?.consultation.reminderTiming}
-                        onValueChange={(val) => updatePrefs("consultation", "reminderTiming", val)}
-                      >
-                        <SelectTrigger className="w-full rounded-xl bg-background border-border/60 h-11">
-                          <SelectValue placeholder="Select" />
-                        </SelectTrigger>
-                        <SelectContent className="rounded-xl">
-                          <SelectItem value="5" className="rounded-lg">5 minutes before</SelectItem>
-                          <SelectItem value="15" className="rounded-lg">15 minutes before</SelectItem>
-                          <SelectItem value="30" className="rounded-lg">30 minutes before</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="font-semibold text-foreground">Preferred Doctor Gender</Label>
-                      <Select 
-                        value={profile.preferences?.consultation.preferredGender}
-                        onValueChange={(val) => updatePrefs("consultation", "preferredGender", val)}
-                      >
-                        <SelectTrigger className="w-full rounded-xl bg-background border-border/60 h-11">
-                          <SelectValue placeholder="Select" />
-                        </SelectTrigger>
-                        <SelectContent className="rounded-xl">
-                          <SelectItem value="any" className="rounded-lg">No Preference</SelectItem>
-                          <SelectItem value="female" className="rounded-lg">Female</SelectItem>
-                          <SelectItem value="male" className="rounded-lg">Male</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                </div>
-              )}
+                <RenderSaveSectionBar />
 
-              {/* --- HEALTH TAB --- */}
-              {activeTab === "health" && (
-                <div className="space-y-6">
-                  <div className="space-y-2">
-                    <Label className="font-semibold text-foreground">Current Health Focus</Label>
-                    <Select 
-                       value={profile.healthFocus || "both"}
-                       onValueChange={(val) => updateProfile({ healthFocus: val })}
-                    >
-                      <SelectTrigger className="w-full sm:w-[300px] rounded-xl bg-background border-border/60 h-11">
-                        <SelectValue placeholder="Select focus" />
-                      </SelectTrigger>
-                      <SelectContent className="rounded-xl">
-                        <SelectItem value="physical" className="rounded-lg">Physical Care</SelectItem>
-                        <SelectItem value="mental" className="rounded-lg">Mental Wellness</SelectItem>
-                        <SelectItem value="both" className="rounded-lg">Balanced (Both)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <p className="text-xs text-muted-foreground mt-1">This determines how your dashboard is automatically organized.</p>
-                  </div>
-                </div>
-              )}
+              </GlassCard>
+            </motion.div>
+          </AnimatePresence>
 
-              {/* --- ACCOUNT TAB --- */}
-              {activeTab === "account" && (
-                <div className="space-y-6">
-                  <div className="grid gap-6 sm:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label className="font-semibold">Full Name</Label>
-                      <Input 
-                        value={accountData.fullName} 
-                        onChange={(e) => setAccountData({...accountData, fullName: e.target.value})}
-                        className="bg-background rounded-xl h-11" 
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="font-semibold">Email Address</Label>
-                      <Input 
-                        value={accountData.email} 
-                        onChange={(e) => setAccountData({...accountData, email: e.target.value})}
-                        className="bg-background rounded-xl h-11" 
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="font-semibold">Phone Number</Label>
-                      <Input 
-                        value={accountData.phone} 
-                        onChange={(e) => setAccountData({...accountData, phone: e.target.value})}
-                        className="bg-background rounded-xl h-11" 
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="font-semibold">City</Label>
-                      <Input 
-                        value={accountData.city} 
-                        onChange={(e) => setAccountData({...accountData, city: e.target.value})}
-                        className="bg-background rounded-xl h-11" 
-                      />
-                    </div>
-                  </div>
-
-                  <Separator className="bg-border/50" />
-
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-bold text-foreground">Data Export</h3>
-                    <Button variant="outline" className="rounded-xl border-border/60 hover:bg-muted font-bold h-11">
-                      Download My Medical Records (PDF)
-                    </Button>
-                  </div>
-
-                  <Separator className="bg-border/50" />
-
-                  <div className="pt-4">
-                    <Button variant="outline" className="w-full sm:w-auto px-8 rounded-xl border-border/60 hover:bg-muted text-foreground font-bold h-12 flex items-center gap-2">
-                       <LogOut className="h-4 w-4" /> Sign Out
-                    </Button>
-                  </div>
-                </div>
-              )}
-
-            </div>
-          </motion.div>
         </div>
+
       </div>
 
-      <MobileNavDock />
-    </div>
+      {/* --- UNSAVED CHANGES CONFIRMATION MODAL DIALOG --- */}
+      <Dialog open={showLeaveModal} onOpenChange={setShowLeaveModal}>
+        <DialogContent className="sm:max-w-[440px] rounded-3xl bg-card/95 backdrop-blur-2xl border-border/60 shadow-2xl">
+          <DialogHeader className="space-y-2">
+            <DialogTitle className="text-xl font-extrabold flex items-center gap-2 text-amber-400">
+              <AlertCircle className="w-5 h-5" />
+              <span>Unsaved Changes</span>
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground leading-relaxed">
+              You have modified settings that haven't been saved yet. Would you like to save your changes before leaving this page?
+            </DialogDescription>
+          </DialogHeader>
+
+          <DialogFooter className="flex flex-col sm:flex-row gap-2 pt-4">
+            <Button
+              variant="outline"
+              onClick={handleDiscardAndProceed}
+              className="rounded-xl border-destructive/40 text-destructive hover:bg-destructive/10 font-bold text-xs h-10"
+            >
+              Discard Changes
+            </Button>
+            <Button
+              onClick={handleSave}
+              className="rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs h-10 gap-1.5 shadow-md shadow-primary/20"
+            >
+              <Save className="w-4 h-4" />
+              <span>Save & Proceed</span>
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </PatientPageLayout>
   );
 };
-
-// Quick helper icon for signout
-const LogOut = ({ className }: { className?: string }) => (
-  <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
-)
 
 interface SortableItemProps {
   widget: WidgetConfig;
   index: number;
+  totalCount: number;
   onToggleVisibility: () => void;
+  onMoveUp: () => void;
+  onMoveDown: () => void;
 }
 
-const SortableWidgetItem = ({ widget, index, onToggleVisibility }: SortableItemProps) => {
+const SortableWidgetItem = ({ widget, index, totalCount, onToggleVisibility, onMoveUp, onMoveDown }: SortableItemProps) => {
   const {
     attributes,
     listeners,
@@ -613,52 +776,74 @@ const SortableWidgetItem = ({ widget, index, onToggleVisibility }: SortableItemP
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    zIndex: isDragging ? 1 : 0,
   };
 
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className={`flex items-center gap-4 p-4 rounded-2xl border transition-colors relative ${
-        isDragging ? "bg-muted/50 border-primary/50 shadow-md" : 
-        widget.visible 
-          ? "bg-muted/30 border-border/50" 
-          : "bg-muted/10 border-border/30 opacity-60"
-      }`}
+      className={cn(
+        "flex items-center gap-3 p-3.5 rounded-2xl border transition-all relative select-none group",
+        isDragging 
+          ? "bg-primary/20 border-primary shadow-2xl scale-[1.02] z-50 ring-2 ring-primary/40 text-primary" 
+          : widget.visible 
+            ? "bg-card/60 backdrop-blur-md border-border/50 hover:border-primary/40 hover:bg-card/90" 
+            : "bg-muted/10 border-border/30 opacity-60"
+      )}
     >
-      {/* Drag handle */}
+      {/* Explicit Drag Handle */}
       <button
         type="button"
-        aria-label="Drag to reorder widget"
-        className="text-muted-foreground hover:text-foreground cursor-grab active:cursor-grabbing p-1 -ml-2 rounded-md hover:bg-muted/50 transition-colors"
+        aria-label="Drag to reorder"
+        className="cursor-grab active:cursor-grabbing p-1.5 rounded-lg hover:bg-muted/80 text-muted-foreground hover:text-primary transition-colors shrink-0 touch-none"
         {...attributes}
         {...listeners}
       >
         <GripVertical className="h-5 w-5" />
       </button>
 
-      {/* Position number */}
-      <div className="h-8 w-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0">
+      {/* Position Badge */}
+      <div className="h-7 w-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-xs shrink-0">
         {index + 1}
       </div>
 
-      {/* Widget name */}
-      <span className={`flex-1 font-semibold text-sm ${widget.visible ? "text-foreground" : "text-muted-foreground"}`}>
+      {/* Widget Label */}
+      <span className={cn("flex-1 font-bold text-xs truncate", widget.visible ? "text-foreground" : "text-muted-foreground")}>
         {widget.label}
       </span>
 
-      {/* Controls */}
-      <div className="flex items-center gap-1.5 ml-auto relative z-10 pointer-events-auto">
+      {/* Direct Action Controls: Up, Down, Visibility */}
+      <div className="flex items-center gap-1 ml-auto shrink-0">
         <Button
           variant="ghost"
           size="icon"
-          aria-label={widget.visible ? "Hide widget" : "Show widget"}
-          onPointerDown={(e) => e.stopPropagation()}
-          className={`h-8 w-8 rounded-lg ${widget.visible ? "hover:bg-red-500/10 text-foreground" : "hover:bg-green-500/10 text-muted-foreground"}`}
+          disabled={index === 0}
+          title="Move Up"
+          className="h-7 w-7 rounded-lg hover:bg-primary/10 text-muted-foreground hover:text-primary disabled:opacity-30"
+          onClick={onMoveUp}
+        >
+          <ChevronUp className="h-4 w-4" />
+        </Button>
+
+        <Button
+          variant="ghost"
+          size="icon"
+          disabled={index === totalCount - 1}
+          title="Move Down"
+          className="h-7 w-7 rounded-lg hover:bg-primary/10 text-muted-foreground hover:text-primary disabled:opacity-30"
+          onClick={onMoveDown}
+        >
+          <ChevronDown className="h-4 w-4" />
+        </Button>
+
+        <Button
+          variant="ghost"
+          size="icon"
+          title={widget.visible ? "Hide widget" : "Show widget"}
+          className={cn("h-7 w-7 rounded-lg", widget.visible ? "hover:bg-red-500/10 text-foreground" : "hover:bg-green-500/10 text-muted-foreground")}
           onClick={onToggleVisibility}
         >
-          {widget.visible ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+          {widget.visible ? <Eye className="h-4 w-4 text-emerald-400" /> : <EyeOff className="h-4 w-4 text-muted-foreground" />}
         </Button>
       </div>
     </div>

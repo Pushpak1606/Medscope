@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { usePatient, PatientProfile } from "@/context/PatientContext";
-import { ChevronLeft, CheckCircle, UserCircle, Activity, Heart, ShieldAlert } from "lucide-react";
-import AnimatedBackground from "@/components/ui/animated-background";
-import { LiquidGlass } from "@liquidglass/react";
-import DashboardHeader from "@/components/patient-dashboard/DashboardHeader";
+import { usePatient, PatientProfile, calculateProfileCompleteness } from "@/context/PatientContext";
+import PatientPageLayout from "@/components/patient-dashboard/shared/PatientPageLayout";
+import PageHeader from "@/components/patient-dashboard/shared/PageHeader";
+import GlassCard from "@/components/patient-dashboard/shared/GlassCard";
+import { CheckCircle, UserCircle, Activity, Heart, ShieldAlert, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,12 +18,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
 
 const EditProfile = () => {
   const { profile, updateProfile } = usePatient();
   const navigate = useNavigate();
   const [isSaving, setIsSaving] = useState(false);
-  const [savedStatus, setSavedStatus] = useState(false);
 
   // Local drafted state
   const [draft, setDraft] = useState<PatientProfile>({
@@ -47,233 +47,151 @@ const EditProfile = () => {
     alcohol: profile.alcohol || false,
     emergencyName: profile.emergencyName || "",
     emergencyPhone: profile.emergencyPhone || "",
+    city: profile.city || ""
   });
 
   const handleChange = (field: keyof PatientProfile, value: any) => {
     setDraft(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleConditionsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Convert comma string to array
-    const arr = e.target.value.split(",").map(s => s.trim()).filter(Boolean);
-    setDraft(prev => ({ ...prev, conditions: arr }));
-  };
-
-  const calculateCompleteness = (data: PatientProfile) => {
-    const fields = ['fullName', 'age', 'gender', 'bloodGroup', 'height', 'weight', 'activityLevel', 'sleepQuality', 'waterIntake', 'diet', 'emergencyName', 'emergencyPhone'];
-    let filled = 0;
-    fields.forEach(field => {
-      //@ts-ignore
-      if (data[field] && String(data[field]).length > 0) filled++;
-    });
-    return Math.round((filled / fields.length) * 100);
-  };
-
   const handleSave = () => {
     setIsSaving(true);
-    const newCompleteness = calculateCompleteness(draft);
+    const newCompleteness = calculateProfileCompleteness(draft);
     
-    // Auto-commit to global state
     updateProfile({ ...draft, profileCompleteness: newCompleteness });
 
     setTimeout(() => {
       setIsSaving(false);
-      setSavedStatus(true);
-      setTimeout(() => {
-         setSavedStatus(false);
-         navigate("/patient/profile");
-      }, 1000);
-    }, 800);
+      toast.success("Profile saved and updated across Medscope!");
+      navigate("/patient/profile");
+    }, 600);
   };
 
   return (
-    <div className="min-h-screen bg-surface relative flex justify-center pb-24 sm:pb-8 overflow-x-hidden">
-      <AnimatedBackground variant="patient" className="opacity-30 fixed inset-0 pointer-events-none" />
-
-      <div className="relative z-10 w-full max-w-4xl flex flex-col px-4 sm:px-8 py-8 md:py-10 min-h-screen gap-8">
-        <div className="flex items-center justify-between">
-          <Button variant="ghost" onClick={() => navigate("/patient/profile")} className="rounded-xl font-bold -ml-4 p-0 h-auto hover:bg-transparent liquid-glass-wrapper">
-             <LiquidGlass>
-               <div className="flex items-center gap-2 px-4 py-2 bg-transparent text-foreground">
-                 <ChevronLeft className="h-4 w-4" /> Back to Profile
-               </div>
-             </LiquidGlass>
-          </Button>
+    <PatientPageLayout className="w-full">
+      <div className="w-full space-y-6 lg:space-y-8 pb-12">
+        
+        {/* --- PAGE HEADER --- */}
+        <PageHeader
+          title="Edit Medical Profile"
+          subtitle="Update your vitals, conditions, lifestyle habits, and emergency contacts."
+        >
           <Button 
             onClick={handleSave} 
             disabled={isSaving}
-            className="rounded-xl shadow-sm bg-primary text-primary-foreground hover:bg-primary/90 font-bold px-6"
+            className="rounded-full shadow-lg shadow-primary/20 bg-primary text-primary-foreground hover:bg-primary/90 font-bold px-6 h-10 text-xs sm:text-sm gap-2"
           >
-            {isSaving ? "Saving..." : savedStatus ? <span className="flex items-center gap-1.5"><CheckCircle className="h-4 w-4" /> Saved</span> : "Save Profile"}
+            <Save className="w-4 h-4" />
+            <span>{isSaving ? "Saving..." : "Save Profile"}</span>
           </Button>
-        </div>
+        </PageHeader>
 
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
+        {/* --- FORM SECTIONS --- */}
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
           
-          {/* Section 1 */}
-          <div className="bg-card/80 backdrop-blur-xl border border-border/50 rounded-[2rem] p-6 sm:p-10 shadow-sm relative overflow-hidden">
-             <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 blur-[40px] rounded-full pointer-events-none"></div>
-             <h2 className="text-xl font-bold font-heading text-foreground mb-6 flex items-center gap-2">
-               <UserCircle className="text-primary h-6 w-6" /> Basic Information
-             </h2>
-             <div className="grid gap-6 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label className="font-semibold">Full Name</Label>
-                  <Input value={draft.fullName} onChange={(e) => handleChange("fullName", e.target.value)} className="bg-background rounded-xl h-11" />
-                </div>
-                <div className="space-y-2">
-                  <Label className="font-semibold">Age</Label>
-                  <Input value={draft.age} type="number" onChange={(e) => handleChange("age", e.target.value)} className="bg-background rounded-xl h-11" />
-                </div>
-                <div className="space-y-2">
-                  <Label className="font-semibold">Gender</Label>
-                  <Select value={draft.gender} onValueChange={(val) => handleChange("gender", val)}>
-                    <SelectTrigger className="w-full rounded-xl bg-background border-border/60 h-11">
-                      <SelectValue placeholder="Select" />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-xl">
-                      <SelectItem value="male" className="rounded-lg">Male</SelectItem>
-                      <SelectItem value="female" className="rounded-lg">Female</SelectItem>
-                      <SelectItem value="other" className="rounded-lg">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label className="font-semibold">Blood Group</Label>
-                  <Select value={draft.bloodGroup} onValueChange={(val) => handleChange("bloodGroup", val)}>
-                    <SelectTrigger className="w-full rounded-xl bg-background border-border/60 h-11">
-                      <SelectValue placeholder="Select" />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-xl">
-                      {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map(bg => (
-                        <SelectItem key={bg} value={bg} className="rounded-lg">{bg}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label className="font-semibold">Height (cm)</Label>
-                  <Input value={draft.height} type="number" onChange={(e) => handleChange("height", e.target.value)} className="bg-background rounded-xl h-11" />
-                </div>
-                <div className="space-y-2">
-                  <Label className="font-semibold">Weight (kg)</Label>
-                  <Input value={draft.weight} type="number" onChange={(e) => handleChange("weight", e.target.value)} className="bg-background rounded-xl h-11" />
-                </div>
-             </div>
-          </div>
+          {/* Section 1: Demographics */}
+          <GlassCard className="p-6 sm:p-8 space-y-6 bg-card/60 backdrop-blur-xl border-border/50">
+            <h3 className="text-base font-bold text-foreground flex items-center gap-2 border-b border-border/40 pb-3">
+              <UserCircle className="w-5 h-5 text-primary" />
+              <span>Demographics & Vitals</span>
+            </h3>
 
-          {/* Section 2 */}
-          <div className="bg-card/80 backdrop-blur-xl border border-border/50 rounded-[2rem] p-6 sm:p-10 shadow-sm relative overflow-hidden">
-             <h2 className="text-xl font-bold font-heading text-foreground mb-6 flex items-center gap-2">
-               <Activity className="text-blue-500 h-6 w-6" /> Medical History
-             </h2>
-             <div className="grid gap-6">
-                <div className="space-y-2">
-                  <Label className="font-semibold">Chronic Conditions (Comma separated)</Label>
-                  <Input value={draft.conditions?.join(", ")} onChange={handleConditionsChange} placeholder="Diabetes, Hypertension..." className="bg-background rounded-xl h-11" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
+              <div className="space-y-2">
+                <Label className="font-semibold">Full Name</Label>
+                <Input value={draft.fullName} onChange={e => handleChange("fullName", e.target.value)} className="bg-card rounded-xl h-10 text-xs" />
+              </div>
+              <div className="space-y-2">
+                <Label className="font-semibold">City</Label>
+                <Input value={draft.city} onChange={e => handleChange("city", e.target.value)} className="bg-card rounded-xl h-10 text-xs" />
+              </div>
+              <div className="space-y-2">
+                <Label className="font-semibold">Age</Label>
+                <Input value={draft.age} onChange={e => handleChange("age", e.target.value)} className="bg-card rounded-xl h-10 text-xs" />
+              </div>
+              <div className="space-y-2">
+                <Label className="font-semibold">Gender</Label>
+                <Select value={draft.gender} onValueChange={v => handleChange("gender", v)}>
+                  <SelectTrigger className="bg-card rounded-xl h-10 text-xs"><SelectValue placeholder="Select" /></SelectTrigger>
+                  <SelectContent className="rounded-xl">
+                    <SelectItem value="male">Male</SelectItem>
+                    <SelectItem value="female">Female</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label className="font-semibold">Blood Group</Label>
+                <Input value={draft.bloodGroup} onChange={e => handleChange("bloodGroup", e.target.value)} placeholder="e.g. O+" className="bg-card rounded-xl h-10 text-xs" />
+              </div>
+              <div className="space-y-2">
+                <Label className="font-semibold">Height (cm) / Weight (kg)</Label>
+                <div className="flex gap-2">
+                  <Input value={draft.height} onChange={e => handleChange("height", e.target.value)} placeholder="cm" className="bg-card rounded-xl h-10 text-xs" />
+                  <Input value={draft.weight} onChange={e => handleChange("weight", e.target.value)} placeholder="kg" className="bg-card rounded-xl h-10 text-xs" />
                 </div>
-                <div className="space-y-2">
-                  <Label className="font-semibold flex items-center gap-1"><ShieldAlert className="h-4 w-4 text-red-500"/> Allergies (Comma separated)</Label>
-                  <Input value={draft.allergies} onChange={(e) => handleChange("allergies", e.target.value)} placeholder="Peanuts, Penicillin..." className="bg-background rounded-xl h-11 border-red-500/30" />
-                </div>
-                <div className="space-y-2">
-                  <Label className="font-semibold">Current Medications (Comma separated)</Label>
-                  <Textarea value={draft.medications} onChange={(e) => handleChange("medications", e.target.value)} placeholder="Lisinopril 10mg, Metformin..." className="bg-background rounded-xl min-h-[100px]" />
-                </div>
-                <div className="space-y-2">
-                  <Label className="font-semibold">Past Surgeries</Label>
-                  <Input value={draft.surgeries} onChange={(e) => handleChange("surgeries", e.target.value)} className="bg-background rounded-xl h-11" />
-                </div>
-                <div className="space-y-2">
-                  <Label className="font-semibold">Family Medical History</Label>
-                  <Input value={draft.familyHistory} onChange={(e) => handleChange("familyHistory", e.target.value)} className="bg-background rounded-xl h-11" />
-                </div>
-             </div>
-          </div>
+              </div>
+            </div>
+          </GlassCard>
 
-          {/* Section 3 */}
-          <div className="bg-card/80 backdrop-blur-xl border border-border/50 rounded-[2rem] p-6 sm:p-10 shadow-sm relative overflow-hidden">
-             <h2 className="text-xl font-bold font-heading text-foreground mb-6 flex items-center gap-2">
-               <Heart className="text-pink-500 h-6 w-6" /> Lifestyle & Wellness
-             </h2>
-             <div className="grid gap-6 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label className="font-semibold">Activity Level</Label>
-                  <Select value={draft.activityLevel} onValueChange={(val) => handleChange("activityLevel", val)}>
-                    <SelectTrigger className="w-full rounded-xl bg-background border-border/60 h-11"><SelectValue placeholder="Select" /></SelectTrigger>
-                    <SelectContent className="rounded-xl">
-                      <SelectItem value="low" className="rounded-lg">Low (Sedentary)</SelectItem>
-                      <SelectItem value="moderate" className="rounded-lg">Moderate (3x/week)</SelectItem>
-                      <SelectItem value="active" className="rounded-lg">Active (5x/week)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label className="font-semibold">Sleep Quality</Label>
-                  <Select value={draft.sleepQuality} onValueChange={(val) => handleChange("sleepQuality", val)}>
-                    <SelectTrigger className="w-full rounded-xl bg-background border-border/60 h-11"><SelectValue placeholder="Select" /></SelectTrigger>
-                    <SelectContent className="rounded-xl">
-                      <SelectItem value="poor" className="rounded-lg">Poor</SelectItem>
-                      <SelectItem value="average" className="rounded-lg">Fair (6-7 hrs)</SelectItem>
-                      <SelectItem value="good" className="rounded-lg">Good (7+ hrs)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label className="font-semibold">Water Intake</Label>
-                  <Select value={draft.waterIntake} onValueChange={(val) => handleChange("waterIntake", val)}>
-                    <SelectTrigger className="w-full rounded-xl bg-background border-border/60 h-11"><SelectValue placeholder="Select" /></SelectTrigger>
-                    <SelectContent className="rounded-xl">
-                      <SelectItem value="less-4" className="rounded-lg">{"< 4 glasses"}</SelectItem>
-                      <SelectItem value="4-6" className="rounded-lg">4-6 glasses</SelectItem>
-                      <SelectItem value="6-8" className="rounded-lg">6-8 glasses</SelectItem>
-                      <SelectItem value="more-8" className="rounded-lg">8+ glasses</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label className="font-semibold">Diet Type</Label>
-                  <Select value={draft.diet} onValueChange={(val) => handleChange("diet", val)}>
-                    <SelectTrigger className="w-full rounded-xl bg-background border-border/60 h-11"><SelectValue placeholder="Select" /></SelectTrigger>
-                    <SelectContent className="rounded-xl">
-                      <SelectItem value="vegetarian" className="rounded-lg">Vegetarian</SelectItem>
-                      <SelectItem value="non-vegetarian" className="rounded-lg">Non-Vegetarian</SelectItem>
-                      <SelectItem value="vegan" className="rounded-lg">Vegan</SelectItem>
-                      <SelectItem value="mixed" className="rounded-lg">Mixed</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="flex items-center justify-between p-4 rounded-xl border border-border/50 bg-background/50">
-                  <Label className="font-semibold">Do you smoke?</Label>
-                  <Switch checked={draft.smokes} onCheckedChange={(val) => handleChange("smokes", val)} className="data-[state=checked]:bg-orange-500" />
-                </div>
-                <div className="flex items-center justify-between p-4 rounded-xl border border-border/50 bg-background/50">
-                  <Label className="font-semibold">Do you consume alcohol?</Label>
-                  <Switch checked={draft.alcohol} onCheckedChange={(val) => handleChange("alcohol", val)} className="data-[state=checked]:bg-orange-500" />
-                </div>
-             </div>
-          </div>
+          {/* Section 2: Health Conditions */}
+          <GlassCard className="p-6 sm:p-8 space-y-6 bg-card/60 backdrop-blur-xl border-border/50">
+            <h3 className="text-base font-bold text-foreground flex items-center gap-2 border-b border-border/40 pb-3">
+              <Activity className="w-5 h-5 text-emerald-400" />
+              <span>Medical History & Allergies</span>
+            </h3>
 
-          {/* Section 4 */}
-          <div className="bg-card/80 backdrop-blur-xl border border-red-500/20 rounded-[2rem] p-6 sm:p-10 shadow-sm relative overflow-hidden">
-             <h2 className="text-xl font-bold font-heading text-red-500 mb-6 flex items-center gap-2">
-               <ShieldAlert className="text-red-500 h-6 w-6" /> Emergency Contact
-             </h2>
-             <div className="grid gap-6 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label className="font-semibold">Emergency Contact Name</Label>
-                  <Input value={draft.emergencyName} onChange={(e) => handleChange("emergencyName", e.target.value)} className="bg-background rounded-xl h-11 border-red-500/30" />
-                </div>
-                <div className="space-y-2">
-                  <Label className="font-semibold">Emergency Phone Number</Label>
-                  <Input value={draft.emergencyPhone} onChange={(e) => handleChange("emergencyPhone", e.target.value)} className="bg-background rounded-xl h-11 border-red-500/30" />
-                </div>
-             </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+              <div className="space-y-2">
+                <Label className="font-semibold">Known Conditions (comma separated)</Label>
+                <Input 
+                  value={draft.conditions?.join(", ")} 
+                  onChange={e => handleChange("conditions", e.target.value.split(",").map(s => s.trim()).filter(Boolean))} 
+                  placeholder="e.g. Asthma, Hypertension" 
+                  className="bg-card rounded-xl h-10 text-xs" 
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="font-semibold">Allergies (comma separated)</Label>
+                <Input value={draft.allergies} onChange={e => handleChange("allergies", e.target.value)} placeholder="e.g. Penicillin, Peanuts" className="bg-card rounded-xl h-10 text-xs" />
+              </div>
+              <div className="space-y-2 sm:col-span-2">
+                <Label className="font-semibold">Current Medications</Label>
+                <Textarea value={draft.medications} onChange={e => handleChange("medications", e.target.value)} placeholder="List any daily prescriptions..." className="bg-card rounded-xl text-xs min-h-[80px]" />
+              </div>
+            </div>
+          </GlassCard>
+
+          {/* Section 3: Emergency & Lifestyle */}
+          <GlassCard className="p-6 sm:p-8 space-y-6 bg-card/60 backdrop-blur-xl border-border/50">
+            <h3 className="text-base font-bold text-foreground flex items-center gap-2 border-b border-border/40 pb-3">
+              <ShieldAlert className="w-5 h-5 text-rose-400" />
+              <span>Emergency Contact</span>
+            </h3>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+              <div className="space-y-2">
+                <Label className="font-semibold">Emergency Contact Name</Label>
+                <Input value={draft.emergencyName} onChange={e => handleChange("emergencyName", e.target.value)} className="bg-card rounded-xl h-10 text-xs" />
+              </div>
+              <div className="space-y-2">
+                <Label className="font-semibold">Emergency Contact Phone</Label>
+                <Input value={draft.emergencyPhone} onChange={e => handleChange("emergencyPhone", e.target.value)} className="bg-card rounded-xl h-10 text-xs" />
+              </div>
+            </div>
+          </GlassCard>
+
+          <div className="flex justify-end pt-4">
+            <Button onClick={handleSave} disabled={isSaving} className="h-11 px-8 rounded-full bg-primary font-bold text-xs sm:text-sm shadow-lg shadow-primary/20 gap-2">
+              <Save className="w-4 h-4" />
+              <span>{isSaving ? "Saving Profile..." : "Save Changes"}</span>
+            </Button>
           </div>
 
         </motion.div>
+
       </div>
-    </div>
+    </PatientPageLayout>
   );
 };
 

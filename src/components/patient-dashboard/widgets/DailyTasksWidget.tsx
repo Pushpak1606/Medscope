@@ -10,7 +10,7 @@ const ICON_MAP: Record<string, any> = {
 const parseTimeString = (timeStr: string) => {
   const match = timeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
   if (!match) return new Date().getTime(); // Fallback
-  let [, hrs, mins, period] = match;
+  const [, hrs, mins, period] = match;
   let hours = parseInt(hrs, 10);
   if (period.toUpperCase() === "PM" && hours < 12) hours += 12;
   if (period.toUpperCase() === "AM" && hours === 12) hours = 0;

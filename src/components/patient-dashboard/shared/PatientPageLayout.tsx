@@ -22,7 +22,7 @@ const PatientPageLayout = ({ children, className }: PatientPageLayoutProps) => {
         <DashboardHeader profile={profile} />
 
         {/* Page Content */}
-        <div className="w-full max-w-4xl mx-auto animate-fade-in-up">
+        <div className="w-full animate-fade-in-up flex-1">
           {children}
         </div>
       </main>
