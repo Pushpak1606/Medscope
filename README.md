@@ -2,8 +2,8 @@
   <img src="public/medscope-favicon.svg" alt="Medscope Logo" width="120" height="120" style="border-radius: 24px; box-shadow: 0 8px 24px rgba(0,0,0,0.12);" />
   <br/>
   <h1>🌟 Medscope</h1>
-  <p><b>The Premium, AI-Powered Healthcare & Wellness Platform</b></p>
-  <p>Smarter care for patients and doctors. Bridging the gap between <b>Physical Health</b> and <b>Mental Wellbeing</b> through immersive, intelligent design.</p>
+  <p><b>The Premium, AI-Powered Healthcare & Telehealth Platform</b></p>
+  <p>Smarter care for patients and doctors. Bridging the gap between <b>Physical Health</b>, <b>Telemedicine</b>, and <b>Mental Wellbeing</b> through immersive, intelligent design.</p>
 
   <p align="center">
     <img src="https://img.shields.io/badge/React-18-blue?style=for-the-badge&logo=react" alt="React" />
@@ -11,13 +11,13 @@
     <img src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
     <img src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind CSS" />
     <img src="https://img.shields.io/badge/Framer_Motion-black?style=for-the-badge&logo=framer" alt="Framer Motion" />
-    <img src="https://img.shields.io/badge/shadcn%2Fui-black?style=for-the-badge&logo=shadcnui&logoColor=white" alt="shadcn/ui" />
+    <img src="https://img.shields.io/badge/Radix_UI-black?style=for-the-badge&logo=radix-ui&logoColor=white" alt="Radix UI" />
   </p>
   <p align="center">
-    <img src="https://img.shields.io/badge/State-React_Query-FF4154?style=for-the-badge&logo=reactquery&logoColor=white" alt="React Query" />
     <img src="https://img.shields.io/badge/Security-AES--256-green?style=for-the-badge&logo=letsencrypt" alt="AES 256" />
-    <img src="https://img.shields.io/badge/Testing-Vitest_&_Playwright-729B1B?style=for-the-badge&logo=vitest&logoColor=white" alt="Testing" />
-    <img src="https://img.shields.io/badge/3D-Three.js_&_Spline-black?style=for-the-badge&logo=three.js&logoColor=white" alt="Three.js" />
+    <img src="https://img.shields.io/badge/State-React_Context_API-FF4154?style=for-the-badge&logo=react&logoColor=white" alt="React Context" />
+    <img src="https://img.shields.io/badge/Icons-Lucide_React-orange?style=for-the-badge&logo=lucide" alt="Lucide Icons" />
+    <img src="https://img.shields.io/badge/Build-TSC_0_Errors-brightgreen?style=for-the-badge" alt="Build Status" />
   </p>
 </div>
 
@@ -25,37 +25,110 @@
 
 ## 📖 Table of Contents
 - [Project Overview](#-project-overview)
-- [Key Features](#-key-features)
+- [Unified Consultation Room & Telehealth Lifecycle](#-unified-consultation-room--telehealth-lifecycle)
+- [Patient Portal Features](#-patient-portal-features)
+- [Doctor Workspace Infrastructure](#-doctor-workspace-infrastructure)
+- [System-Wide Design System & Dropdown Architecture](#-system-wide-design-system--dropdown-architecture)
 - [Architecture & Tech Stack](#-architecture--tech-stack)
-- [UI/UX Psychology & Design Philosophy](#-uiux-psychology--design-philosophy)
 - [Security & Encryption](#-security--encryption)
 - [Installation & Setup](#-installation--setup)
-- [Testing](#-testing)
+- [Contributors](#-contributors)
 
 ---
 
 ## 🧭 Project Overview
 
-**Medscope** is a premium, AI-powered healthcare web application designed to serve **both patients and doctors**. The platform provides intelligent medicine analysis via prescription scanning, live multi-modal consultations, mental wellness tracking, smart reminders, health records management, and a robust emergency services system.
-
-Featuring a **fully responsive, dark/light themed** interface with modern glassmorphism aesthetics, smooth `Framer Motion` animations, and a "bento-box" layout, the application adapts elegantly across mobile, tablet, and desktop viewports.
+**Medscope** is a production-grade, AI-powered healthcare SaaS platform engineered for **both Patients and Doctors**. Built with modern Glassmorphic UI aesthetics, real-time frontend synchronization, and strict HIPAA-grade design standards, Medscope unifies clinical telehealth, prescription management, patient telemetry, and mental wellness into one synchronized ecosystem.
 
 ---
 
-## ✨ Key Features
+## 📹 Unified Consultation Room & Telehealth Lifecycle
 
-### 🧑‍🦰 Patient Workflow
-*   🤖 **AI-Powered Tools:** Utilize **Scan Rx** to automatically read prescription photos (dosages, timings, and medicine types) and converse with the **Ask AI** health assistant for immediate health guidance.
-*   🧠 **Mental Wellness Hub:** Full-featured mood tracking with interactive logging, immersive calming exercises, and wellness trend visualization.
-*   ⏰ **Smart Reminders Vault:** Full CRUD reminder manager across 6 categories (Medicines, Meals, Water, Appointments, Wellness). Features intelligent snoozing and real-time dashboard syncing.
-*   🤝 **Multi-Modal Consultations:** Browse available doctors and join live rooms via Video, Audio, Chat, or book In-Clinic appointments.
-*   🚨 **Emergency Mode:** Persistent Floating Action Button (FAB) for instant access to emergency SOS, life-saving contacts, and critical health data.
-*   📊 **Dashboard Bento-Grid:** An 11-widget interactive dashboard containing health progress, daily timeline tasks, and quick actions, with customizable Drag & Drop functionality.
+The core of Medscope is a single, synchronized **Unified Consultation Room** (`UnifiedConsultationRoom.tsx`) shared across both Doctor and Patient roles with role-based permission control (*Doctor edits, Patient views & interacts*).
 
-### 👨‍⚕️ Doctor Workflow
-*   🏥 **Professional Dashboard:** Complete schedule management, specializations, and patient queues.
-*   💡 **Smart Patient Insights:** Receive automated, summarized insights of patient symptoms ahead of consultations.
-*   🛡️ **Assistant Protocol:** Securely delegate administrative tasks to support staff when required.
+### 🔄 4-Stage Telemedicine Lifecycle
+
+```
+┌─────────────────────────────────────────────────────────────────────────────────────────┐
+│ 1. Scheduled State                                                                     │
+│    • Video Window: HIDDEN                                                               │
+│    • Status: "Scheduled • Waiting for Doctor"                                           │
+│    • Patient Join Button: DISABLED ("Waiting for doctor...")                            │
+│    • Doctor Action: "Mark Doctor Available" trigger                                     │
+└───────────────────────────┬─────────────────────────────────────────────────────────────┘
+                            │ Doctor marks availability
+                            ▼
+┌─────────────────────────────────────────────────────────────────────────────────────────┐
+│ 2. Doctor Available State                                                               │
+│    • Video Window: HIDDEN                                                               │
+│    • Banner: "Doctor is available. Ready to join consultation."                         │
+│    • Join Button: ENABLED for both roles                                                │
+└───────────────────────────┬─────────────────────────────────────────────────────────────┘
+                            │ Doctor or Patient clicks "Join Consultation"
+                            ▼
+┌─────────────────────────────────────────────────────────────────────────────────────────┐
+│ 3. Consultation Live State                                                              │
+│    • Video Window: OPENS (1080p HD WebRTC Video Room with PiP & Controls)               │
+│    • Workspace: Real-Time Synced Prescription, Diet Plan, SOAP Notes, Reports & Timeline│
+│    • Action: Doctor clicks "End Consultation"                                           │
+└───────────────────────────┬─────────────────────────────────────────────────────────────┘
+                            │ Doctor ends session
+                            ▼
+┌─────────────────────────────────────────────────────────────────────────────────────────┐
+│ 4. Consultation Completed State                                                         │
+│    • Video Window: AUTOMATICALLY CLOSES & DISAPPEARS                                    │
+│    • Rejoin Prevention Lock: Completed consultations cannot reopen video stream         │
+│    • Automated Syncing Executed:                                                        │
+│      - Prescribed medicines auto-added to Patient Daily Reminders                       │
+│      - Diagnostic lab reports auto-synced to Patient Health Records                     │
+│      - Follow-up appointment auto-added to Patient Calendar                             │
+│    • Summary View Enabled: Includes "Export Consultation PDF" printing engine           │
+└─────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+### 📋 8 Integrated Consultation Sections
+1. **Consultation Header**: Live status beacon, appointment duration timer, session ID, and role indicators.
+2. **Video Meeting Area**: 1080p WebRTC stream canvas with Mic/Cam/Share Screen controls (active ONLY during live sessions).
+3. **Prescription Panel**: Real-time Rx authoring with AI interaction safety verification. Patient features **"Add to Reminders"** and **"Download Rx PDF"**.
+4. **Diet Plan Panel**: Breakfast, Lunch, Dinner, Snacks, Water Intake, and Restrictions. Patient features **"Save Diet Plan"** and **"Mark as Following Plan"**.
+5. **Doctor SOAP Notes**: Clinical Subjective, Objective, Assessment, and Plan fields with a **"Share Notes with Patient"** toggle.
+6. **Uploaded Reports**: Diagnostic lab results and telemetry PDF previews.
+7. **Follow-up Plan**: Scheduled review appointment picker with **"Add Follow-up to Calendar"**.
+8. **Clinical Activity Timeline**: Chronological event trace updated in real-time.
+
+---
+
+## 🧑‍🦰 Patient Portal Features
+
+*   📊 **Interactive Bento Dashboard**: Real-time health overview, vitals summary, and daily timeline tasks.
+*   🤖 **AI Scan Rx & Ask AI**: Automated OCR prescription reading and multi-modal AI health assistant.
+*   🧠 **Mental Wellness Hub**: Interactive mood tracking, calming exercises, and wellness trend analytics.
+*   ⏰ **Smart Reminders Vault**: Full CRUD reminder manager synced automatically with physician prescriptions.
+*   📑 **Health Records Vault**: Encrypted medical history, lab reports, and doctor-synced diagnostic telemetry.
+*   🚨 **Emergency SOS System**: Floating emergency action button with life-saving contacts and emergency triage.
+
+---
+
+## 👨‍⚕️ Doctor Workspace Infrastructure
+
+*   🏥 **Doctor Dashboard** (`/doctor/dashboard`): Urgency-prioritized patient queue, availability status widget, and live schedule timeline.
+*   🔍 **New Consultation Selection Engine** (`NewConsultationModal.tsx`): Search patients by Name, Medical ID (`PAT-101`), Phone, or Disease with automated session initialization.
+*   👨‍⚕️ **Patient Workspace** (`/doctor/patients/:id`): Unified medical timeline, clinical AI briefings, SOAP editor, and lab telemetry.
+*   📅 **Doctor Schedule & Calendar** (`/doctor/schedule`): Weekly overview, pending follow-ups, and today's appointment list.
+*   🗂️ **Patients Directory** (`/doctor/patients`): Global directory search, risk level filtering (*High Risk, Stable, Monitor*), and patient profiles.
+*   🤖 **Clinical AI Copilot** (`/doctor/clinical-ai`): Patient education material generator, treatment plan drafts, and specialist referral suggestions.
+*   💊 **Medicine Assistant** (`/doctor/medicine-assistant`): AI prescribing support, drug interaction checks, and final Rx preview.
+*   🌐 **Doctor Community & Moderation** (`/doctor/community`): Group moderation, flagged post review queue, practitioner announcements, and educational event management.
+*   ⚙️ **Doctor Settings** (`/doctor/settings`): Medical credentials, practice info, working hours, and privacy controls.
+
+---
+
+## 🎨 System-Wide Design System & Dropdown Architecture
+
+Medscope uses a unified **Glassmorphism Design System** featuring:
+- Frosted glass cards (`backdrop-blur-2xl bg-card/90 border-border/60`).
+- Vibrant curated gradients and dark/light theme CSS tokens.
+- **Custom Dropdown & Select Components**: 100% of standard raw HTML `<select>` tags are replaced with Radix-powered Glassmorphic components ([`select.tsx`](file:///c:/Users/htale/OneDrive/Desktop/Medscope/src/components/ui/select.tsx) and [`dropdown-menu.tsx`](file:///c:/Users/htale/OneDrive/Desktop/Medscope/src/components/ui/dropdown-menu.tsx)) featuring 2XL/3XL rounded borders, animated indicators, and glowing focus states.
 
 ---
 
@@ -63,49 +136,27 @@ Featuring a **fully responsive, dark/light themed** interface with modern glassm
 
 | Layer | Technologies Used |
 | :--- | :--- |
-| **Frameworks** | React 18, Vite 5 (SWC), TypeScript |
-| **Routing & Forms** | React Router DOM v6, React Hook Form, Zod |
-| **Styling & UI** | TailwindCSS 3, ShadCN/UI (58+ accessible primitives), Radix UI |
-| **Animation & 3D** | Framer Motion, Three.js, @splinetool/react-spline |
-| **State Management** | React Context API, TanStack React Query |
-| **Data Viz & Utilities** | Recharts, Lucide React (Icons), Sonner (Toasts), date-fns, Embla Carousel |
-
----
-
-## 🧠 UI/UX Psychology & Design Philosophy
-
-Medscope adopts a **"Premium Healthcare-Tech"** aesthetic driven by established psychological principles to make healthcare management feel engaging and trustworthy.
-
-*   **Aesthetic-Usability Effect:** Glassmorphism (`@liquidglass/react`), smooth gradients, and subtle glows create a premium, trustworthy impression. Deep Navy dark mode reduces OLED strain while maintaining a clinical atmosphere. 
-*   **Hick's & Fitts's Laws:** The bento-grid dashboard uses a clear visual hierarchy (F-pattern), minimizing choice overload. Mobile-first design ensures large, thumb-friendly touch targets with a dedicated bottom navigation dock.
-*   **Zeigarnik Effect:** Profile completeness trackers and the Daily Tasks timeline build a sense of progression and accomplishment.
-*   **Gestalt Principles:** Visually cohesive `.gradient-border` and `.glow-primary` utility classes group related content perfectly within frosted-glass boundaries.
-*   **Micro-Animations:** Fluid staggered reveals, pulsing live indicators, and Spline 3D ambient backgrounds make the application feel active and alive.
+| **Core Framework** | React 18, Vite 5, TypeScript |
+| **Routing & State** | React Router DOM v6, React Context API (`ConsultationContext`, `PatientContext`, `DoctorContext`) |
+| **Styling & Design** | TailwindCSS 3, Radix UI Primitives, Custom Glassmorphism System |
+| **Animation & Motion** | Framer Motion |
+| **Icons & Feedback** | Lucide React, Sonner (Toast notifications) |
+| **Code Quality** | Strict TypeScript (`npx tsc --noEmit` verified 0 errors) |
 
 ---
 
 ## 🔐 Security & Encryption
 
-Medical data requires the highest level of security. Medscope uses **AES-256 Encrypted Storage** (`CryptoJS`) for all Personal Health Information (PHI). 
-
-*   All client-side health data is **encrypted before being written** to `localStorage`.
-*   Encryption relies on secure key management (`VITE_SECURE_STORAGE_KEY`).
-*   The application enforces Strict HTTP Security Headers.
+Personal Health Information (PHI) is protected using **AES-256 Client-Side Encryption** (`secureStorage.ts`). Client data is encrypted before being saved to local storage, ensuring privacy and compliance.
 
 ---
 
 ## ⚡ Installation & Setup
 
-### Prerequisites
-*   **Node.js** ≥ 18
-*   **npm**, **yarn**, or **bun**
-
-### Quick Start
-
 1. **Clone the repository**
    ```bash
    git clone https://github.com/Pushpak1606/Medscope.git
-   cd medscope
+   cd Medscope
    ```
 
 2. **Install dependencies**
@@ -113,44 +164,26 @@ Medical data requires the highest level of security. Medscope uses **AES-256 Enc
    npm install
    ```
 
-3. **Configure Environment Variables**
-   Create a `.env` file in the root directory:
-   ```env
-   VITE_SECURE_STORAGE_KEY=your-secret-encryption-key
-   ```
-
-4. **Start the development server**
+3. **Start development server**
    ```bash
    npm run dev
    ```
-   *Visit `http://localhost:8080` to experience Medscope.*
+   *Open `http://localhost:5173` to experience Medscope.*
 
----
-
-## 🧪 Testing
-
-Medscope implements a rigorous testing strategy to ensure reliability:
-
-*   **Unit & Component Testing (Vitest)**
-    ```bash
-    npm run test          # Run all tests once
-    npm run test:watch    # Watch mode
-    ```
-*   **End-to-End browser Tests (Playwright)**
-    ```bash
-    npx playwright test
-    ```
+4. **Verify TypeScript build**
+   ```bash
+   npx tsc --noEmit
+   ```
 
 ---
 
 ## 🤝 Contributors
 
-*   **Pushpak Patil** - *Frontend Architect & UI/UX Designer*
+*   **Pushpak Patil** - *Lead Frontend Architect & UI/UX Designer*
 *   **Bhavy Dave** - *Backend Architect*
 
 ---
 
-<br/>
 <div align="center">
   <p><b>Built with ❤️ by the Medscope Team</b></p>
 </div>
