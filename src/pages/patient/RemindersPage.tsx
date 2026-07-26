@@ -4,6 +4,7 @@ import PatientPageLayout from "@/components/patient-dashboard/shared/PatientPage
 import PageHeader from "@/components/patient-dashboard/shared/PageHeader";
 import GlassCard from "@/components/patient-dashboard/shared/GlassCard";
 import LiquidGlassButton from "@/components/patient-dashboard/shared/LiquidGlassButton";
+import EmptyState from "@/components/patient-dashboard/shared/EmptyState";
 import { Pill, Utensils, Droplets, Calendar, Brain, Clock, CheckCircle2, ChevronRight, ChevronLeft, ChevronUp, ChevronDown, Plus, Flame, RefreshCcw, BellOff, X, Edit2, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -337,21 +338,13 @@ const RemindersPage = () => {
                     </motion.div>
                   ))
                 ) : (
-                  <motion.div 
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="flex flex-col items-center justify-center py-16 px-4 text-center rounded-3xl border border-dashed border-border/50 bg-muted/10"
-                  >
-                    <div className="h-16 w-16 mb-4 rounded-full bg-muted flex items-center justify-center text-muted-foreground">
-                      <BellOff className="h-8 w-8" />
-                    </div>
-                    <h3 className="text-lg font-bold text-foreground mb-1">No upcoming reminders</h3>
-                    <p className="text-sm text-muted-foreground mb-6 max-w-sm">You've completely cleared your schedule. Take a breather or add a new routine.</p>
-                    <LiquidGlassButton className="px-6" onClick={openAdd}>
-                      <Plus className="mr-2 h-5 w-5" /> Create Reminder
-                    </LiquidGlassButton>
-                  </motion.div>
+                  <EmptyState
+                    icon={BellOff}
+                    title="No upcoming reminders"
+                    description="You've completely cleared your schedule for this view. Take a breather or add a new routine."
+                    actionLabel="Add New Reminder"
+                    onAction={openAdd}
+                  />
                 )}
               </AnimatePresence>
             </div>

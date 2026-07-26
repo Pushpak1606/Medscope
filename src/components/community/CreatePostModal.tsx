@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { CommunityGroup } from "@/lib/communityMockData";
 import { AlertCircle, HelpCircle, PenTool, Sparkles, Tag, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface CreatePostModalProps {
   isOpen: boolean;
@@ -120,17 +121,18 @@ const CreatePostModal = ({
             <Label htmlFor="group-select" className="text-sm font-semibold flex items-center gap-1.5 text-foreground/90">
               <Users className="h-4 w-4 text-primary" /> Choose a Community
             </Label>
-            <select
-              id="group-select"
-              value={selectedGroupId}
-              onChange={(e) => setSelectedGroupId(e.target.value)}
-              className="w-full h-11 px-4 bg-background/50 hover:bg-background/80 focus:bg-background border border-border/60 hover:border-primary/50 focus:border-primary rounded-xl text-sm transition-all focus:outline-none focus:ring-2 focus:ring-primary/20 text-foreground cursor-pointer"
-            >
-              <option value="" disabled className="bg-card">Select a group...</option>
-              {groups.map(g => (
-                <option key={g.id} value={g.id} className="bg-card">m/{g.name} ({g.category})</option>
-              ))}
-            </select>
+            <Select value={selectedGroupId} onValueChange={setSelectedGroupId}>
+              <SelectTrigger id="group-select" className="w-full">
+                <SelectValue placeholder="Select a community group..." />
+              </SelectTrigger>
+              <SelectContent>
+                {groups.map((g) => (
+                  <SelectItem key={g.id} value={g.id}>
+                    m/{g.name} ({g.category})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Title */}

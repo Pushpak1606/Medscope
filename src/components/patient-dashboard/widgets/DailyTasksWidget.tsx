@@ -2,7 +2,7 @@ import { Check, CheckSquare, Circle, Play, X, Sun, Droplets, Dumbbell, Brain, Mo
 import { usePatient, ReminderType } from "@/context/PatientContext";
 import { Button } from "@/components/ui/button";
 
-const ICON_MAP: Record<string, any> = {
+const ICON_MAP: Record<string, React.ElementType> = {
   Sun, Droplets, Dumbbell, Brain, Moon, Stethoscope, Pill, Utensils, Calendar, Clock
 };
 

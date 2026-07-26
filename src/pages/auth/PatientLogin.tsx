@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { usePatient } from "@/context/PatientContext";
+import { toast } from "sonner";
 import { Mail, Lock, Eye, EyeOff, Pill, Bell, Video, Brain, Apple } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -82,13 +83,21 @@ const PatientLogin = () => {
               <Checkbox id="remember" className="rounded-md border-muted-foreground/30 data-[state=checked]:border-primary" />
               <Label htmlFor="remember" className="text-sm font-medium text-muted-foreground cursor-pointer select-none">Remember me</Label>
             </div>
-            <Link to="#" className="text-sm font-semibold text-primary hover:text-primary/80 transition-colors hover:underline underline-offset-4">Forgot password?</Link>
+            <button 
+              type="button"
+              onClick={() => toast.info("Password reset feature will be available once backend authentication is connected.")}
+              className="text-sm font-semibold text-primary hover:text-primary/80 transition-colors hover:underline underline-offset-4"
+            >
+              Forgot password?
+            </button>
           </div>
 
           <Button type="submit" size="lg" disabled={isLoggingIn} className="w-full h-12 mt-2 rounded-xl text-base font-bold shadow-lg shadow-primary/20 transition-all hover:-translate-y-0.5 hover:shadow-xl hover:shadow-primary/30">
             {isLoggingIn ? "Logging in..." : "Login to Dashboard"}
           </Button>
         </form>
+
+        {/* TODO (Backend Team): Replace local mock login handler with authentication endpoint */}
 
         <div className="flex items-center gap-4">
           <Separator className="flex-1" />

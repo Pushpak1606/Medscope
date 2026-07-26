@@ -5,7 +5,7 @@ import { usePatient } from "@/context/PatientContext";
 import { Sun, Moon, CloudSun, Sparkles, Check, Play, Pill, Utensils, Droplets, Calendar, Brain, CheckCircle2, Clock, X } from "lucide-react";
 import { toast } from "sonner";
 
-const TYPE_ICONS: Record<string, any> = {
+const TYPE_ICONS: Record<string, React.ElementType> = {
   Medicines: Pill,
   Meals: Utensils,
   Water: Droplets,

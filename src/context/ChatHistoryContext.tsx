@@ -1,6 +1,9 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
 import { secureStorage } from "@/lib/secureStorage";
 
+// TODO (Backend Team):
+// Replace local secureStorage chat history persistence with backend chat history database API endpoints.
+
 // ─── Types ───
 export interface ChatMessage {
   id: string;

@@ -30,7 +30,7 @@ const PatientDashboard = () => {
       <div className="relative z-10 w-full max-w-[1400px] flex flex-col px-4 sm:px-8 py-8 md:py-10 min-h-screen gap-8">
         
         {/* Header (Top Navigation) */}
-        <DashboardHeader profile={{ name: displayName, profileCompleteness: completeness }} />
+        <DashboardHeader profile={profile} />
 
         {/* Hero Area / Master Widget */}
         <HealthOverviewWidget />

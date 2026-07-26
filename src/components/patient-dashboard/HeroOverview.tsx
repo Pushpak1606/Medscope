@@ -1,7 +1,8 @@
 import { Sparkles, Calendar as CalendarIcon, Activity as ActivityIcon } from "lucide-react";
+import { PatientProfile } from "@/context/PatientContext";
 
 interface HeroOverviewProps {
-  profile: any;
+  profile: PatientProfile;
 }
 
 const HeroOverview = ({ profile }: HeroOverviewProps) => {

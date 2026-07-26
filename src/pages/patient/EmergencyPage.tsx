@@ -20,8 +20,8 @@ const EmergencyPage = () => {
           title: 'My Medical Vitals',
           text: summaryText,
         });
-      } catch (err) {
-        console.log('User cancelled share');
+      } catch {
+        // User cancelled share
       }
     } else {
       navigator.clipboard.writeText(summaryText);

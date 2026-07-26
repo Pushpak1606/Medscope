@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { useTheme } from "@/components/theme-provider";
-import { usePatient, DEFAULT_WIDGET_ORDER, WidgetConfig } from "@/context/PatientContext";
+import { useTheme, hexToHsl } from "@/components/theme-provider";
+import { usePatient, DEFAULT_WIDGET_ORDER, WidgetConfig, PatientPreferences } from "@/context/PatientContext";
 import PatientPageLayout from "@/components/patient-dashboard/shared/PatientPageLayout";
 import PageHeader from "@/components/patient-dashboard/shared/PageHeader";
 import GlassCard from "@/components/patient-dashboard/shared/GlassCard";
@@ -31,7 +31,7 @@ import {
   CheckCircle, ChevronRight, AlertTriangle,
   LayoutGrid, GripVertical, Eye, EyeOff, RotateCcw,
   SlidersHorizontal, Check, X, Save, AlertCircle,
-  ChevronUp, ChevronDown
+  ChevronUp, ChevronDown, Palette, Sparkles, LogOut
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -69,7 +69,12 @@ const TABS = [
 
 const PatientSettings = () => {
   const navigate = useNavigate();
-  const { theme, setTheme } = useTheme();
+  const { 
+    theme, setTheme, 
+    accentColor, setAccentColor, 
+    customHex, setCustomHex, 
+    accentPresets 
+  } = useTheme();
   const { profile, updateProfile, widgetOrder, setWidgetOrder } = usePatient();
   const [activeTab, setActiveTab] = useState("appearance");
   const [isBurgerMenuOpen, setIsBurgerMenuOpen] = useState(false);
@@ -82,19 +87,50 @@ const PatientSettings = () => {
   const [showLeaveModal, setShowLeaveModal] = useState(false);
   const [pendingTargetUrl, setPendingTargetUrl] = useState<string | null>(null);
 
-  // Buffered Appearance State
+  // 1. Buffered Appearance State
   const [appearanceData, setAppearanceData] = useState({
     theme: theme,
+    accentColor: accentColor,
+    customHex: customHex,
     fontSize: localStorage.getItem("medscope-font-size") || "default"
   });
-  
-  // Buffered Account State
+
+  // 2. Buffered Dashboard Layout State
+  const [layoutData, setLayoutData] = useState<WidgetConfig[]>(() => [...widgetOrder]);
+
+  // 3. Buffered Preferences State (Notifications, Privacy, Consultation)
+  const [preferencesData, setPreferencesData] = useState<PatientPreferences>(() => ({
+    notifications: { ...(profile.preferences?.notifications || { medicine: true, appointments: true, wellness: false, email: true, sms: false }) },
+    privacy: { ...(profile.preferences?.privacy || { twoFactor: false, aiAnalysis: true }) },
+    consultation: { ...(profile.preferences?.consultation || { defaultMode: "video", reminderTiming: "15", preferredGender: "any" }) },
+  }));
+
+  // 4. Buffered Health Focus State
+  const [healthFocusData, setHealthFocusData] = useState<string>(() => profile.healthFocus || "both");
+
+  // 5. Buffered Account State
   const [accountData, setAccountData] = useState({
     fullName: profile.fullName || "",
     email: profile.email || "",
     phone: profile.phone || "",
     city: profile.city || ""
   });
+
+  // Real-time live preview widget state & HSL calculation
+  const [previewToggle, setPreviewToggle] = useState(true);
+
+  const isDarkPreview = appearanceData.theme === "system"
+    ? typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches
+    : appearanceData.theme === "dark";
+
+  let previewHsl = "";
+  if (appearanceData.accentColor === "custom" && appearanceData.customHex) {
+    const hsl = hexToHsl(appearanceData.customHex);
+    previewHsl = isDarkPreview ? hsl.darkHsl : hsl.lightHsl;
+  } else {
+    const preset = accentPresets.find((p) => p.id === appearanceData.accentColor) || accentPresets[0];
+    previewHsl = isDarkPreview ? preset.darkHsl : preset.lightHsl;
+  }
 
   // Warn user before closing window/tab if there are unsaved changes
   useEffect(() => {
@@ -134,10 +170,14 @@ const PatientSettings = () => {
   const handleSave = () => {
     setIsSaving(true);
     
-    // Apply Theme
+    // Apply Theme & Accent Color globally
     setTheme(appearanceData.theme as "light"|"dark"|"system");
+    setAccentColor(appearanceData.accentColor);
+    if (appearanceData.customHex) {
+      setCustomHex(appearanceData.customHex);
+    }
     
-    // Apply Font Size
+    // Apply Font Size globally
     localStorage.setItem("medscope-font-size", appearanceData.fontSize);
     if (appearanceData.fontSize === "large") {
       document.documentElement.classList.add("font-large");
@@ -145,12 +185,17 @@ const PatientSettings = () => {
       document.documentElement.classList.remove("font-large");
     }
 
-    // Apply Profile & Preferences
+    // Apply Layout Order globally
+    setWidgetOrder(layoutData);
+
+    // Apply Profile & Preferences globally
     updateProfile({
       fullName: accountData.fullName,
       email: accountData.email,
       phone: accountData.phone,
-      city: accountData.city
+      city: accountData.city,
+      healthFocus: healthFocusData,
+      preferences: preferencesData,
     });
 
     setTimeout(() => {
@@ -169,6 +214,27 @@ const PatientSettings = () => {
   };
 
   const handleDiscardAndProceed = () => {
+    // Reset all local draft states back to initial global values
+    setAppearanceData({
+      theme: theme,
+      accentColor: accentColor,
+      customHex: customHex,
+      fontSize: localStorage.getItem("medscope-font-size") || "default"
+    });
+    setLayoutData([...widgetOrder]);
+    setPreferencesData({
+      notifications: { ...(profile.preferences?.notifications || { medicine: true, appointments: true, wellness: false, email: true, sms: false }) },
+      privacy: { ...(profile.preferences?.privacy || { twoFactor: false, aiAnalysis: true }) },
+      consultation: { ...(profile.preferences?.consultation || { defaultMode: "video", reminderTiming: "15", preferredGender: "any" }) },
+    });
+    setHealthFocusData(profile.healthFocus || "both");
+    setAccountData({
+      fullName: profile.fullName || "",
+      email: profile.email || "",
+      phone: profile.phone || "",
+      city: profile.city || ""
+    });
+
     setIsDirty(false);
     setShowLeaveModal(false);
     toast.info("Unsaved changes discarded.");
@@ -178,47 +244,42 @@ const PatientSettings = () => {
     }
   };
 
-  const updatePrefs = (category: "notifications"| "privacy" | "consultation", key: string, value: any) => {
+  const updatePrefs = (category: "notifications" | "privacy" | "consultation", key: string, value: any) => {
     markDirty();
-    const currentPrefs = profile.preferences!;
-    updateProfile({
-      preferences: {
-        ...currentPrefs,
-        [category]: {
-          ...currentPrefs[category],
-          [key]: value
-        }
+    setPreferencesData((prev) => ({
+      ...prev,
+      [category]: {
+        ...prev[category],
+        [key]: value
       }
-    });
+    }));
   };
 
   const toggleWidgetVisibility = (index: number) => {
     markDirty();
-    const newOrder = [...widgetOrder];
+    const newOrder = [...layoutData];
     newOrder[index] = { ...newOrder[index], visible: !newOrder[index].visible };
-    setWidgetOrder(newOrder);
+    setLayoutData(newOrder);
   };
 
   const moveWidgetUp = (index: number) => {
     if (index <= 0) return;
     markDirty();
-    const updated = arrayMove(widgetOrder, index, index - 1);
-    setWidgetOrder(updated);
-    toast.success(`Moved "${widgetOrder[index].label}" up!`);
+    const updated = arrayMove(layoutData, index, index - 1);
+    setLayoutData(updated);
   };
 
   const moveWidgetDown = (index: number) => {
-    if (index >= widgetOrder.length - 1) return;
+    if (index >= layoutData.length - 1) return;
     markDirty();
-    const updated = arrayMove(widgetOrder, index, index + 1);
-    setWidgetOrder(updated);
-    toast.success(`Moved "${widgetOrder[index].label}" down!`);
+    const updated = arrayMove(layoutData, index, index + 1);
+    setLayoutData(updated);
   };
 
   const resetWidgetOrder = () => {
     markDirty();
-    setWidgetOrder([...DEFAULT_WIDGET_ORDER]);
-    toast.success("Reset layout to default!");
+    setLayoutData([...DEFAULT_WIDGET_ORDER]);
+    toast.info("Layout reset. Click 'Save Changes' to apply.");
   };
 
   // DnD Sensors
@@ -233,10 +294,10 @@ const PatientSettings = () => {
     const { active, over } = event;
     if (over && active.id !== over.id) {
       markDirty();
-      const oldIndex = widgetOrder.findIndex((w) => w.id === active.id);
-      const newIndex = widgetOrder.findIndex((w) => w.id === over.id);
-      const updated = arrayMove(widgetOrder, oldIndex, newIndex);
-      setWidgetOrder(updated);
+      const oldIndex = layoutData.findIndex((w) => w.id === active.id);
+      const newIndex = layoutData.findIndex((w) => w.id === over.id);
+      const updated = arrayMove(layoutData, oldIndex, newIndex);
+      setLayoutData(updated);
     }
   };
 
@@ -443,12 +504,16 @@ const PatientSettings = () => {
                   
                   {/* --- APPEARANCE TAB --- */}
                   {activeTab === "appearance" && (
-                    <div className="space-y-6">
+                    <div className="space-y-8">
+                      {/* 1. Theme Mode */}
                       <div>
-                        <h3 className="text-base font-bold text-foreground mb-4">Color Theme</h3>
+                        <h3 className="text-base font-bold text-foreground mb-4">Color Mode</h3>
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                           <button 
-                            onClick={() => { setAppearanceData({...appearanceData, theme: "light"}); markDirty(); }}
+                            onClick={() => { 
+                              setAppearanceData({...appearanceData, theme: "light"}); 
+                              markDirty(); 
+                            }}
                             className={cn(
                               "flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all gap-3",
                               appearanceData.theme === "light" ? "border-primary bg-primary/10 shadow-md" : "border-border/50 hover:border-border bg-card/40"
@@ -458,7 +523,10 @@ const PatientSettings = () => {
                             <span className="font-bold text-xs">Light Mode</span>
                           </button>
                           <button 
-                            onClick={() => { setAppearanceData({...appearanceData, theme: "dark"}); markDirty(); }}
+                            onClick={() => { 
+                              setAppearanceData({...appearanceData, theme: "dark"}); 
+                              markDirty(); 
+                            }}
                             className={cn(
                               "flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all gap-3",
                               appearanceData.theme === "dark" ? "border-primary bg-primary/10 shadow-md" : "border-border/50 hover:border-border bg-card/40"
@@ -468,7 +536,10 @@ const PatientSettings = () => {
                             <span className="font-bold text-xs">Dark Mode (Default)</span>
                           </button>
                           <button 
-                            onClick={() => { setAppearanceData({...appearanceData, theme: "system"}); markDirty(); }}
+                            onClick={() => { 
+                              setAppearanceData({...appearanceData, theme: "system"}); 
+                              markDirty(); 
+                            }}
                             className={cn(
                               "flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all gap-3",
                               appearanceData.theme === "system" ? "border-primary bg-primary/10 shadow-md" : "border-border/50 hover:border-border bg-card/40"
@@ -479,7 +550,191 @@ const PatientSettings = () => {
                           </button>
                         </div>
                       </div>
+
                       <Separator className="bg-border/40" />
+
+                      {/* 2. Accent Color Theme */}
+                      <div className="space-y-4">
+                        <div>
+                          <h3 className="text-base font-bold text-foreground flex items-center gap-2 mb-1">
+                            <Palette className="w-5 h-5 text-primary" />
+                            <span>Accent Color Theme</span>
+                          </h3>
+                          <p className="text-xs text-muted-foreground">
+                            Select an accent color hue to personalize buttons, glow highlights, active nav icons, and badges portal-wide.
+                          </p>
+                        </div>
+
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                          {accentPresets.map((preset) => {
+                            const isSelected = appearanceData.accentColor === preset.id;
+                            return (
+                              <button
+                                key={preset.id}
+                                type="button"
+                                onClick={() => {
+                                  setAppearanceData({ ...appearanceData, accentColor: preset.id });
+                                  markDirty();
+                                }}
+                                className={cn(
+                                  "flex flex-col p-3.5 rounded-2xl border-2 transition-all text-left relative overflow-hidden group",
+                                  isSelected
+                                    ? "border-primary bg-primary/10 shadow-lg scale-[1.02]"
+                                    : "border-border/50 hover:border-primary/40 bg-card/40 hover:bg-card/80"
+                                )}
+                              >
+                                <div className="flex items-center justify-between w-full mb-2">
+                                  <div className="flex items-center gap-2">
+                                    <span
+                                      className="w-4 h-4 rounded-full shadow-sm ring-2 ring-background shrink-0"
+                                      style={{ backgroundColor: preset.previewHex }}
+                                    />
+                                    <span className="font-bold text-xs truncate text-foreground">{preset.label}</span>
+                                  </div>
+                                  {isSelected && (
+                                    <span className="w-4 h-4 rounded-full bg-primary text-primary-foreground flex items-center justify-center shrink-0">
+                                      <Check className="w-3 h-3 stroke-[3]" />
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="text-[10px] text-muted-foreground line-clamp-1">{preset.desc}</p>
+                              </button>
+                            );
+                          })}
+
+                          {/* Custom Hex Choice Tile */}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setAppearanceData({ ...appearanceData, accentColor: "custom" });
+                              markDirty();
+                            }}
+                            className={cn(
+                              "flex flex-col p-3.5 rounded-2xl border-2 transition-all text-left relative overflow-hidden group",
+                              appearanceData.accentColor === "custom"
+                                ? "border-primary bg-primary/10 shadow-lg scale-[1.02]"
+                                : "border-border/50 hover:border-primary/40 bg-card/40 hover:bg-card/80"
+                            )}
+                          >
+                            <div className="flex items-center justify-between w-full mb-2">
+                              <div className="flex items-center gap-2">
+                                <span
+                                  className="w-4 h-4 rounded-full shadow-sm ring-2 ring-background shrink-0 flex items-center justify-center text-[10px] font-bold text-white"
+                                  style={{ backgroundColor: appearanceData.customHex || "#3b82f6" }}
+                                />
+                                <span className="font-bold text-xs truncate text-foreground">Custom Color</span>
+                              </div>
+                              {appearanceData.accentColor === "custom" && (
+                                <span className="w-4 h-4 rounded-full bg-primary text-primary-foreground flex items-center justify-center shrink-0">
+                                  <Check className="w-3 h-3 stroke-[3]" />
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-[10px] text-muted-foreground truncate">Choose any custom HEX code</p>
+                          </button>
+                        </div>
+
+                        {/* Inline Custom Hex Input Picker */}
+                        {appearanceData.accentColor === "custom" && (
+                          <motion.div
+                            initial={{ opacity: 0, y: -5 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="p-4 rounded-2xl bg-card/80 border border-primary/30 flex items-center gap-4 flex-wrap"
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="relative">
+                                <input
+                                  type="color"
+                                  value={appearanceData.customHex}
+                                  onChange={(e) => {
+                                    const hex = e.target.value;
+                                    setAppearanceData({ ...appearanceData, customHex: hex });
+                                    markDirty();
+                                  }}
+                                  className="w-10 h-10 rounded-xl cursor-pointer bg-transparent border-0 p-0 overflow-hidden"
+                                />
+                              </div>
+                              <div className="space-y-1">
+                                <Label className="text-xs font-bold text-foreground">HEX Color Code</Label>
+                                <Input
+                                  type="text"
+                                  value={appearanceData.customHex}
+                                  onChange={(e) => {
+                                    const hex = e.target.value;
+                                    setAppearanceData({ ...appearanceData, customHex: hex });
+                                    markDirty();
+                                  }}
+                                  placeholder="#3b82f6"
+                                  className="w-32 h-9 rounded-xl text-xs font-mono font-bold uppercase bg-background border-border/60"
+                                />
+                              </div>
+                            </div>
+                            <p className="text-xs text-muted-foreground flex-1 min-w-[200px]">
+                              Your custom accent color will be converted to optimal high-contrast HSL spectrum across light & dark modes.
+                            </p>
+                          </motion.div>
+                        )}
+
+                        {/* Real-time Accent Live Preview Widget */}
+                        <div 
+                          style={{
+                            "--primary": previewHsl,
+                            "--ring": previewHsl,
+                          } as React.CSSProperties}
+                          className="p-5 rounded-2xl bg-card/60 backdrop-blur-md border border-border/60 space-y-3 relative overflow-hidden transition-all duration-300"
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-extrabold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                              <Sparkles className="w-3.5 h-3.5 text-primary" />
+                              <span>Real-time Portal UI Preview</span>
+                            </span>
+                            <span className="text-[11px] font-bold text-primary px-2.5 py-0.5 rounded-full bg-primary/10 border border-primary/20">
+                              Live Preview
+                            </span>
+                          </div>
+
+                          <div className="p-4 rounded-xl bg-background/60 border border-border/40 space-y-4 relative">
+                            <div className="flex items-center justify-between flex-wrap gap-3">
+                              <div className="flex items-center gap-2">
+                                <Button 
+                                  size="sm" 
+                                  onClick={() => toast.info("Primary button preview clicked!")}
+                                  className="rounded-xl bg-primary text-primary-foreground font-bold text-xs shadow-md shadow-primary/20 hover:opacity-90 transition-all"
+                                >
+                                  Primary Button
+                                </Button>
+                                <Button 
+                                  size="sm" 
+                                  variant="outline" 
+                                  onClick={() => toast.info("Secondary button preview clicked!")}
+                                  className="rounded-xl border-primary/40 text-primary font-bold text-xs bg-primary/5 hover:bg-primary/15 transition-all"
+                                >
+                                  Accent Secondary
+                                </Button>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="px-3 py-1 rounded-full text-xs font-bold bg-primary/15 text-primary border border-primary/30 flex items-center gap-1.5 transition-all">
+                                  <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                                  <span>Active Status</span>
+                                </span>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center justify-between p-3 rounded-lg bg-card/50 border border-border/40">
+                              <span className="text-xs font-semibold text-foreground">Notifications Enabled</span>
+                              <Switch 
+                                checked={previewToggle} 
+                                onCheckedChange={setPreviewToggle}
+                                className="data-[state=checked]:bg-primary" 
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <Separator className="bg-border/40" />
+
+                      {/* 3. Font Scale */}
                       <div>
                         <h3 className="text-base font-bold text-foreground mb-3">Font Scale</h3>
                         <Select 
@@ -517,16 +772,16 @@ const PatientSettings = () => {
                         onDragEnd={handleDragEnd}
                       >
                         <SortableContext
-                          items={widgetOrder.map((w) => w.id)}
+                          items={layoutData.map((w) => w.id)}
                           strategy={verticalListSortingStrategy}
                         >
                           <div className="space-y-3">
-                            {widgetOrder.map((widget, index) => (
+                            {layoutData.map((widget, index) => (
                               <SortableWidgetItem
                                 key={widget.id}
                                 widget={widget}
                                 index={index}
-                                totalCount={widgetOrder.length}
+                                totalCount={layoutData.length}
                                 onToggleVisibility={() => toggleWidgetVisibility(index)}
                                 onMoveUp={() => moveWidgetUp(index)}
                                 onMoveDown={() => moveWidgetDown(index)}
@@ -558,7 +813,7 @@ const PatientSettings = () => {
                             <p className="text-xs text-muted-foreground">Alerts when it's time to take prescribed medications.</p>
                           </div>
                           <Switch 
-                            checked={profile.preferences?.notifications.medicine}
+                            checked={preferencesData.notifications.medicine}
                             onCheckedChange={(val) => updatePrefs("notifications", "medicine", val)}
                             className="data-[state=checked]:bg-primary" 
                           />
@@ -569,7 +824,7 @@ const PatientSettings = () => {
                             <p className="text-xs text-muted-foreground">Notifications prior to live consultations.</p>
                           </div>
                           <Switch 
-                            checked={profile.preferences?.notifications.appointments}
+                            checked={preferencesData.notifications.appointments}
                             onCheckedChange={(val) => updatePrefs("notifications", "appointments", val)}
                             className="data-[state=checked]:bg-primary" 
                           />
@@ -580,7 +835,7 @@ const PatientSettings = () => {
                             <p className="text-xs text-muted-foreground">Daily AI suggestions based on your health logs.</p>
                           </div>
                           <Switch 
-                            checked={profile.preferences?.notifications.wellness}
+                            checked={preferencesData.notifications.wellness}
                             onCheckedChange={(val) => updatePrefs("notifications", "wellness", val)}
                             className="data-[state=checked]:bg-primary" 
                           />
@@ -600,7 +855,7 @@ const PatientSettings = () => {
                             <p className="text-xs text-muted-foreground">Add an extra verification step during login.</p>
                           </div>
                           <Switch 
-                            checked={profile.preferences?.privacy.twoFactor}
+                            checked={preferencesData.privacy.twoFactor}
                             onCheckedChange={(val) => updatePrefs("privacy", "twoFactor", val)}
                             className="data-[state=checked]:bg-primary" 
                           />
@@ -628,7 +883,7 @@ const PatientSettings = () => {
                         <div className="space-y-2">
                           <Label className="font-semibold text-xs">Default Mode</Label>
                           <Select 
-                            value={profile.preferences?.consultation.defaultMode}
+                            value={preferencesData.consultation.defaultMode}
                             onValueChange={(val) => updatePrefs("consultation", "defaultMode", val)}
                           >
                             <SelectTrigger className="w-full rounded-xl bg-card border-border/60 h-10 text-xs">
@@ -651,8 +906,8 @@ const PatientSettings = () => {
                       <div className="space-y-2">
                         <Label className="font-semibold text-xs">Primary Health Focus</Label>
                         <Select 
-                          value={profile.healthFocus || "both"}
-                          onValueChange={(val) => { updateProfile({ healthFocus: val }); markDirty(); }}
+                          value={healthFocusData}
+                          onValueChange={(val) => { setHealthFocusData(val); markDirty(); }}
                         >
                           <SelectTrigger className="w-full sm:w-[260px] rounded-xl bg-card border-border/60 h-10 text-xs">
                             <SelectValue placeholder="Select focus" />
@@ -703,6 +958,36 @@ const PatientSettings = () => {
                             className="bg-card rounded-xl h-10 text-xs" 
                           />
                         </div>
+                      </div>
+
+                      <Separator className="bg-border/40" />
+
+                      <div className="p-5 rounded-2xl border border-destructive/20 bg-destructive/5 space-y-3">
+                        <div className="space-y-1">
+                          <h3 className="text-sm font-bold text-destructive flex items-center gap-2">
+                            <LogOut className="h-4 w-4" /> Account Session
+                          </h3>
+                          <p className="text-xs text-muted-foreground">
+                            Log out of your current session on this device.
+                          </p>
+                        </div>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => {
+                            Object.keys(localStorage).forEach((key) => {
+                              if (key.startsWith("medscope-")) {
+                                localStorage.removeItem(key);
+                              }
+                            });
+                            toast.success("Logged out successfully");
+                            navigate("/auth/select-role");
+                          }}
+                          className="rounded-xl font-bold text-xs gap-2"
+                        >
+                          <LogOut className="h-3.5 w-3.5" />
+                          <span>Log Out of Medscope</span>
+                        </Button>
                       </div>
                     </div>
                   )}

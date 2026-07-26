@@ -2,12 +2,15 @@ import { Edit3, Activity } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { PatientProfile } from "@/context/PatientContext";
 
 interface ProfileSnapshotWidgetProps {
-  profile: any;
+  profile: PatientProfile;
 }
 
 const ProfileSnapshotWidget = ({ profile }: ProfileSnapshotWidgetProps) => {
+  const displayName = profile.fullName || "Patient";
+
   return (
     <div className="flex flex-col rounded-[2.5rem] bg-card shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-6 sm:p-8 relative overflow-hidden h-full">
       <div className="absolute top-0 left-0 right-0 h-2 bg-primary/80"></div>
@@ -17,14 +20,14 @@ const ProfileSnapshotWidget = ({ profile }: ProfileSnapshotWidgetProps) => {
       <div className="flex flex-col items-center text-center space-y-4 mb-8">
         <div className="relative">
           <Avatar className="h-24 w-24 border-4 border-background shadow-xl">
-            <AvatarImage src={`https://api.dicebear.com/7.x/notionists/svg?seed=${profile.name}`} alt={profile.name} />
-            <AvatarFallback className="text-2xl">{profile.name.charAt(0)}</AvatarFallback>
+            <AvatarImage src={`https://api.dicebear.com/7.x/notionists/svg?seed=${displayName}`} alt={displayName} />
+            <AvatarFallback className="text-2xl">{displayName.charAt(0)}</AvatarFallback>
           </Avatar>
           <div className="absolute bottom-0 right-0 h-6 w-6 bg-green-500 rounded-full border-4 border-background"></div>
         </div>
         
         <div className="space-y-1">
-          <h2 className="text-2xl font-bold font-heading text-foreground">{profile.name}</h2>
+          <h2 className="text-2xl font-bold font-heading text-foreground">{displayName}</h2>
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider">
             <Activity className="h-3.5 w-3.5" /> 
             {profile.healthFocus === "physical" ? "Physical Care" : profile.healthFocus === "mental" ? "Mental Wellness" : "Balanced Wellness"}

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Bell, Search, User, Settings, LogOut, Brain } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -15,6 +15,8 @@ import { Button } from "@/components/ui/button";
 import NotificationPanel from "./NotificationPanel";
 import GlobalSearch from "./GlobalSearch";
 import MedscopeLogo from "@/components/ui/MedscopeLogo";
+import { toast } from "sonner";
+import { PatientProfile } from "@/context/PatientContext";
 
 const NAV_LINKS = [
   { label: "Dashboard", path: "/patient/dashboard" },
@@ -25,14 +27,26 @@ const NAV_LINKS = [
 ];
 
 interface DashboardHeaderProps {
-  profile: any;
+  profile: PatientProfile;
   hideGreeting?: boolean;
 }
 
 const DashboardHeader = ({ profile }: DashboardHeaderProps) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [searchOpen, setSearchOpen] = useState(false);
   const userName = profile?.fullName || "Patient";
+
+  // TODO (Backend Team): Replace localStorage clearance with session revocation API call
+  const handleLogout = () => {
+    Object.keys(localStorage).forEach((key) => {
+      if (key.startsWith("medscope-")) {
+        localStorage.removeItem(key);
+      }
+    });
+    toast.success("Logged out successfully");
+    navigate("/auth/select-role");
+  };
 
   return (
     <header className="flex flex-col gap-3 w-full pb-2">
@@ -48,8 +62,8 @@ const DashboardHeader = ({ profile }: DashboardHeaderProps) => {
           </div>
         </div>
 
-        {/* Main Desktop Navigation — shown at lg+ */}
-        <nav className="hidden lg:flex items-center justify-center gap-1 p-1 bg-background/40 backdrop-blur-md rounded-2xl border border-border/50 mx-auto">
+        {/* Main Navigation — shown at md+ (fixes tablet navigation gap 768–1023px) */}
+        <nav className="hidden md:flex items-center justify-center gap-0.5 p-1 bg-background/40 backdrop-blur-md rounded-2xl border border-border/50 mx-auto">
           {NAV_LINKS.map((link) => {
             const isActive = location.pathname.includes(link.path);
             const isWellness = link.label === "Wellness";
@@ -59,19 +73,19 @@ const DashboardHeader = ({ profile }: DashboardHeaderProps) => {
                 key={link.label}
                 to={link.path}
                 className={cn(
-                  "px-2 md:px-3 lg:px-4 py-1.5 md:py-2 rounded-xl text-[11px] md:text-xs lg:text-sm font-semibold transition-all duration-300 whitespace-nowrap shrink-0",
+                  "px-2 md:px-3 lg:px-4 py-1.5 md:py-2 rounded-xl text-[10px] md:text-xs lg:text-sm font-semibold transition-all duration-300 whitespace-nowrap shrink-0",
                   isActive 
                     ? "bg-primary text-primary-foreground shadow-sm shadow-primary/20" 
                     : "text-muted-foreground hover:bg-muted hover:text-foreground"
                 )}
               >
-                <div className="flex items-center gap-1.5 md:gap-2">
+                <div className="flex items-center gap-1 md:gap-1.5 lg:gap-2">
                   {isWellness && (
                     <div className={cn(
-                      "h-5 w-5 sm:h-6 sm:w-6 rounded-md flex items-center justify-center shrink-0 transition-colors",
+                      "h-4 w-4 lg:h-5 lg:w-5 rounded-md flex items-center justify-center shrink-0 transition-colors",
                       isActive ? "bg-white/20 text-white" : "bg-pink-500/10 text-pink-500"
                     )}>
-                      <Brain className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                      <Brain className="h-3 w-3 lg:h-3.5 lg:w-3.5" />
                     </div>
                   )}
                   <span>{link.label}</span>
@@ -131,7 +145,7 @@ const DashboardHeader = ({ profile }: DashboardHeaderProps) => {
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="cursor-pointer text-destructive focus:bg-destructive/10 focus:text-destructive">
+              <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-destructive focus:bg-destructive/10 focus:text-destructive">
                 <LogOut className="mr-2 h-4 w-4" />
                 <span>Log out</span>
               </DropdownMenuItem>

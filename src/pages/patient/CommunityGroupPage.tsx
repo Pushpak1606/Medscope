@@ -45,28 +45,19 @@ import { useToast } from "@/components/ui/use-toast";
 
 const CATEGORIES = ["All", "Mental Health", "Chronic Conditions", "Nutrition", "Recovery", "Lifestyle", "Fitness"];
 
-const containerVariants = {
-  initial: { opacity: 0 },
-  animate: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.08,
-      delayChildren: 0.05
-    }
-  }
+const fadeInOptions = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.5 },
+};
+
+const staggerContainer = {
+  animate: { transition: { staggerChildren: 0.1 } }
 };
 
 const itemVariants = {
   initial: { opacity: 0, y: 15 },
-  animate: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      type: "spring",
-      stiffness: 110,
-      damping: 15
-    }
-  }
+  animate: { opacity: 1, y: 0 }
 };
 
 const BannerGradientMap: Record<string, string> = {
@@ -250,16 +241,16 @@ const CommunityGroupPage = () => {
         className="relative z-10 w-full max-w-[1400px] flex flex-col px-4 sm:px-8 py-8 md:py-10 min-h-screen gap-8"
         initial="initial"
         animate="animate"
-        variants={containerVariants}
+        variants={staggerContainer}
       >
         
         {/* HEADER ZONE */}
-        <motion.div variants={itemVariants}>
+        <motion.div variants={fadeInOptions}>
           <DashboardHeader profile={{ fullName: profile?.fullName || "Patient", profileCompleteness: profile?.profileCompleteness || 85 }} />
         </motion.div>
 
         {/* SUB-HEADER / BREADCRUMB ZONE */}
-        <motion.div variants={itemVariants} className="flex items-center gap-3">
+        <motion.div variants={fadeInOptions} className="flex items-center gap-3">
           <Button 
             variant="ghost" 
             className="rounded-full gap-2 px-3 text-muted-foreground hover:text-foreground bg-card/45 backdrop-blur-sm border border-border/30 hover:bg-card" 
@@ -274,7 +265,7 @@ const CommunityGroupPage = () => {
         <div className="grid grid-cols-12 gap-6 items-start">
             
             {/* LEFT SIDEBAR (Desktop: Navigation & Categories) */}
-            <motion.aside variants={itemVariants} className="hidden lg:flex flex-col gap-6 lg:col-span-3 sticky top-[100px] max-h-[82vh] overflow-y-auto pr-2">
+            <motion.aside variants={fadeInOptions} className="hidden lg:flex flex-col gap-6 lg:col-span-3 sticky top-[100px] max-h-[82vh] overflow-y-auto pr-2">
               
               {/* Feeds Group Navigation */}
               <div className="bg-card/35 backdrop-blur-md border border-border/30 rounded-3xl p-4 flex flex-col gap-1.5 hover:bg-card/50 transition-all duration-300">

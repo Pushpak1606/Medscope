@@ -16,6 +16,8 @@ interface NotificationPanelProps {
   children: React.ReactNode;
 }
 
+// TODO (Backend Team):
+// Replace initial notifications with WebSocket / push notification service endpoint.
 const INITIAL_NOTIFICATIONS = [
   {
     id: 1,

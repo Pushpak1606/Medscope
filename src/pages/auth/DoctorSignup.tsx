@@ -18,8 +18,11 @@ const features = [
   { icon: FileText, text: "Live consultation support" },
 ];
 
+import { useDoctor } from "@/context/DoctorContext";
+
 const DoctorSignup = () => {
   const navigate = useNavigate();
+  const { updateDoctorProfile } = useDoctor();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -43,19 +46,24 @@ const DoctorSignup = () => {
   };
 
   const handleGoogleSignup = () => {
-    const mockData = { fullName: "Dr. Google User", email: "doctor@google.com", specialization: "General Practice" };
+    const mockData = { fullName: "Dr. Google User", email: "doctor@google.com", specialization: "General Practice", registration: "MCI-98421" };
+    updateDoctorProfile(mockData);
     setIsSuccess(true);
     setTimeout(() => {
       navigate("/doctor/onboarding", { state: mockData });
-    }, 2000);
+    }, 1500);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
-    if (!formData.name || !formData.email || !formData.phone || !formData.specialization || !formData.hospital || !formData.registration || !formData.password) {
+    if (!formData.name || !formData.email || !formData.phone || !formData.specialization || !formData.hospital || !formData.password) {
       setError("Please fill in all required fields.");
+      return;
+    }
+    if (!formData.registration || !formData.registration.trim()) {
+      setError("Medical Council (MCI) Registration Number is mandatory.");
       return;
     }
     if (formData.password !== formData.confirmPassword) {
@@ -71,24 +79,33 @@ const DoctorSignup = () => {
       return;
     }
 
+    // Save master profile to DoctorContext
+    const syncedProfile = {
+      fullName: formData.name,
+      email: formData.email,
+      phone: formData.phone,
+      specialty: formData.specialization,
+      subSpecialty: formData.specialization,
+      hospital: formData.hospital,
+      registrationNumber: formData.registration,
+      licenseNumber: formData.registration,
+    };
+    updateDoctorProfile(syncedProfile);
+
     setIsSubmitting(true);
-    // Simulate account creation delay
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    await new Promise((resolve) => setTimeout(resolve, 1200));
     setIsSubmitting(false);
     setIsSuccess(true);
     
-    // Redirect to onboarding after reading message, passing state
     setTimeout(() => {
       navigate("/doctor/onboarding", { 
         state: { 
-          fullName: formData.name, 
-          email: formData.email, 
-          phone: formData.phone,
-          specialization: formData.specialization,
-          registration: formData.registration 
+          ...syncedProfile,
+          registration: formData.registration,
+          license: formData.registration,
         } 
       });
-    }, 3000);
+    }, 1500);
   };
 
   if (isSuccess) {
@@ -181,10 +198,12 @@ const DoctorSignup = () => {
               <Input id="hospital" value={formData.hospital} onChange={handleChange} placeholder="City General Hospital" className="h-12 bg-card border-border/80 hover:bg-background focus-visible:bg-background focus-visible:ring-violet-500/20 focus-visible:border-violet-500 transition-all rounded-xl" />
             </div>
             <div className="space-y-2.5">
-              <Label htmlFor="registration" className="text-sm font-semibold text-foreground/80">Registration No.</Label>
+              <Label htmlFor="registration" className="text-sm font-semibold text-foreground/80">
+                Medical Council (MCI) Registration No. <span className="text-rose-500">*</span>
+              </Label>
               <div className="relative group">
                 <FileText className="absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-violet-500" />
-                <Input id="registration" value={formData.registration} onChange={handleChange} placeholder="MCI-12345" className="pl-11 h-12 bg-card border-border/80 hover:bg-background focus-visible:bg-background focus-visible:ring-violet-500/20 focus-visible:border-violet-500 transition-all rounded-xl" />
+                <Input id="registration" value={formData.registration} onChange={handleChange} placeholder="MCI-12345 (Mandatory)" className="pl-11 h-12 bg-card border-border/80 hover:bg-background focus-visible:bg-background focus-visible:ring-violet-500/20 focus-visible:border-violet-500 transition-all rounded-xl" />
               </div>
             </div>
           </div>
@@ -215,9 +234,11 @@ const DoctorSignup = () => {
           <div className="flex items-start gap-2.5 pt-1">
             <Checkbox id="terms" checked={formData.terms} onCheckedChange={(c) => setFormData(p => ({...p, terms: c as boolean}))} className="mt-1 rounded-md border-muted-foreground/30 data-[state=checked]:border-violet-500 data-[state=checked]:bg-violet-500" />
             <Label htmlFor="terms" className="text-sm font-medium text-muted-foreground cursor-pointer select-none leading-relaxed">
-              I agree to the <Link to="#" className="font-semibold text-violet-500 hover:text-violet-600 transition-colors hover:underline">Terms of Service</Link> and <Link to="#" className="font-semibold text-violet-500 hover:text-violet-600 transition-colors hover:underline">Privacy Policy</Link>
+              I agree to the <Link to="/legal/terms" className="font-semibold text-violet-500 hover:text-violet-600 transition-colors hover:underline">Terms of Service</Link> and <Link to="/legal/privacy" className="font-semibold text-violet-500 hover:text-violet-600 transition-colors hover:underline">Privacy Policy</Link>
             </Label>
           </div>
+
+          {/* TODO (Backend Team): Connect doctor registration with authentication API */}
 
           <Button type="submit" disabled={isSubmitting} size="lg" className="w-full h-12 mt-2 rounded-xl text-base font-bold bg-violet-600 text-white hover:bg-violet-700 shadow-lg shadow-violet-500/20 transition-all hover:-translate-y-0.5 hover:shadow-xl hover:shadow-violet-500/30 border-0">
             {isSubmitting ? (

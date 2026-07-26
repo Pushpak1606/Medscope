@@ -33,10 +33,10 @@ const SMART_ACTIONS = [
     isDialog: true
   },
   { 
-    href: "/patient/log-mood", 
+    href: "/patient/wellness", 
     icon: Sparkles, 
     label: "Mental Wellness", 
-    desc: "Log your daily mood",
+    desc: "Explore wellness & mood",
     color: "text-pink-500", 
     bg: "bg-pink-500/10", 
     border: "border-pink-500/20",
@@ -57,18 +57,29 @@ const SMART_ACTIONS = [
   },
 ];
 
+interface SmartAction {
+  href: string;
+  icon: React.ElementType;
+  label: string;
+  desc: string;
+  color: string;
+  bg: string;
+  border: string;
+  glow: string;
+  isDialog: boolean;
+  dialogType?: string;
+}
+
 const QuickActionsWidget = () => {
   const navigate = useNavigate();
 
   const handleDocumentOptionClick = (path: string) => {
-    // You could close the dialog programmatically here if needed, 
-    // but navigating away effectively unmounts it or navigates away.
     navigate(path);
   };
 
-  const renderCardContent = (action: any) => (
+  const renderCardContent = (action: SmartAction) => (
     <>
-      <div className={`absolute inset-0 bg-gradient-to-br from-transparent to-${action.color.replace('text-', '')}/5 opacity-0 group-hover/card:opacity-100 transition-opacity duration-500 pointer-events-none`}></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-primary/5 opacity-0 group-hover/card:opacity-100 transition-opacity duration-500 pointer-events-none" />
       <div className={`h-12 w-12 rounded-2xl flex items-center justify-center mb-4 backdrop-blur-md border ${action.bg} ${action.border}`}>
         <action.icon className={`h-6 w-6 ${action.color} transition-transform duration-300 group-hover/card:scale-110`} />
       </div>

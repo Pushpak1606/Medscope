@@ -12,12 +12,12 @@ const GlassCard = ({ children, className, variant = "default", onClick }: GlassC
   const getVariantStyles = () => {
     switch (variant) {
       case "highlight":
-        return "bg-card/95 border-primary/20 shadow-lg shadow-primary/5";
+        return "bg-card/90 backdrop-blur-2xl border-primary/25 shadow-xl shadow-primary/5 dark:shadow-primary/10";
       case "subtle":
-        return "bg-muted/30 border-border/30 shadow-none";
+        return "bg-card/40 backdrop-blur-md border border-border/30 shadow-none";
       case "default":
       default:
-        return "bg-card/80 backdrop-blur-xl border border-border/50 shadow-sm";
+        return "bg-card/70 backdrop-blur-2xl border border-border/50 shadow-lg shadow-black/5 dark:shadow-black/40";
     }
   };
 

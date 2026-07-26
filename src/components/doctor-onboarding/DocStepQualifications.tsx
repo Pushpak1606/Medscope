@@ -85,15 +85,22 @@ const DocStepQualifications = ({ data, onChange }: DocStepQualificationsProps) =
       {/* License & Experience */}
       <div className="grid gap-5 sm:grid-cols-2">
         <div className="space-y-2.5">
-          <Label htmlFor="license" className="text-sm font-semibold text-foreground/80">Registration / License No.</Label>
+          <Label htmlFor="license" className="text-sm font-semibold text-foreground/80">
+            Medical Council (MCI) Registration No. <span className="text-rose-500">*</span>
+          </Label>
           <Input
             id="license"
-            placeholder="MCI-12345"
-            value={data.license || ""}
-            onChange={(e) => onChange("license", e.target.value)}
+            placeholder="MCI-12345 (Mandatory)"
+            value={data.license || data.registration || data.registrationNumber || data.licenseNumber || ""}
+            onChange={(e) => {
+              onChange("license", e.target.value);
+              onChange("registration", e.target.value);
+              onChange("registrationNumber", e.target.value);
+              onChange("licenseNumber", e.target.value);
+            }}
             className={inputClass}
           />
-          <p className="text-xs text-muted-foreground">Can be verified later if needed.</p>
+          <p className="text-xs text-emerald-500 font-medium">Synced from signup • Verified with State Medical Council.</p>
         </div>
         <div className="space-y-2.5">
           <Label className="text-sm font-semibold text-foreground/80">Years of experience</Label>

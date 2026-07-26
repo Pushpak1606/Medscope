@@ -14,10 +14,10 @@ const PatientPageLayout = ({ children, className }: PatientPageLayoutProps) => {
   const { profile } = usePatient(); // to pass to header
 
   return (
-    <div className={`min-h-screen bg-surface relative flex justify-center pb-24 sm:pb-8 overflow-x-hidden ${className || ''}`}>
+    <div className={`min-h-screen bg-surface relative flex justify-center pb-24 lg:pb-8 overflow-x-hidden ${className || ''}`}>
       <AnimatedBackground variant="patient" className="opacity-30 fixed inset-0 pointer-events-none" />
 
-      <main className="relative z-10 w-full max-w-[1400px] flex flex-col px-4 sm:px-8 py-8 md:py-10 min-h-screen gap-8">
+      <main className="relative z-10 w-full max-w-[1500px] flex flex-col px-4 sm:px-6 lg:px-10 py-6 sm:py-8 lg:py-10 min-h-screen gap-8">
         {/* Shared Dashboard Header */}
         <DashboardHeader profile={profile} />
 

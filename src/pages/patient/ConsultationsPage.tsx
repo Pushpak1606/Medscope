@@ -3,8 +3,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Calendar, Clock, Video, Phone, MessageSquare, ChevronRight, User, FileText, Star, Clock10, X, CalendarSearch, CheckCircle2 } from "lucide-react";
 import PatientPageLayout from "@/components/patient-dashboard/shared/PatientPageLayout";
 import PageHeader from "@/components/patient-dashboard/shared/PageHeader";
+import EmptyState from "@/components/patient-dashboard/shared/EmptyState";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import PatientLiveConsultationView from "@/components/patient-dashboard/consultations/PatientLiveConsultationView";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardFooter } from "@/components/ui/card";
 import { useConsultation, Consultation } from "@/context/ConsultationContext";
@@ -69,10 +71,13 @@ export default function ConsultationsPage() {
         <motion.div variants={fadeInOptions} className="flex flex-col gap-4 relative">
           <PageHeader 
             title="Consultations" 
-            subtitle="Manage your upcoming appointments and medical history" 
+            subtitle="Manage your upcoming appointments, medical history & live consultation sessions" 
           />
 
-          <div className="grid grid-cols-3 gap-3 flex-wrap sm:gap-4 mt-2">
+          {/* REAL-TIME SYNCHRONIZED CONSULTATION SESSION VIEW */}
+          <PatientLiveConsultationView />
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mt-2">
             <div className="bg-card/40 border border-border/50 rounded-2xl p-4 flex flex-col items-center justify-center backdrop-blur-md shadow-sm">
               <span className="text-2xl font-bold text-primary">{upcomingCount}</span>
               <span className="text-xs text-muted-foreground font-semibold mt-1 uppercase tracking-wider text-center">Upcoming</span>
@@ -210,32 +215,29 @@ export default function ConsultationsPage() {
               ))}
               
               {upcomingConsultations.length === 0 && (
-                <motion.div 
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="w-full rounded-[2rem] border border-dashed border-border p-8 flex flex-col items-center justify-center text-center bg-card/10 backdrop-blur-sm"
-                >
-                  <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                    <CheckCircle2 className="w-8 h-8 text-primary" />
-                  </div>
-                  <h3 className="font-bold text-lg text-foreground mb-1">You're all caught up!</h3>
-                  <p className="text-muted-foreground text-sm max-w-sm mb-6">You have no upcoming consultations. Book a new appointment below if you need to see a doctor.</p>
-                </motion.div>
+                <EmptyState
+                  icon={CheckCircle2}
+                  title="You're all caught up!"
+                  description="You have no upcoming consultations. Browse available specialists below to book a appointment."
+                />
               )}
             </AnimatePresence>
           </div>
         </motion.div>
 
         {/* DISCOVERY LAYER: Browse & Book */}
-        <motion.div variants={fadeInOptions} className="flex flex-col gap-3">
+        <motion.div id="available-specialists" variants={fadeInOptions} className="flex flex-col gap-3">
           <div className="flex items-center justify-between px-1 mt-2">
             <h2 className="font-bold text-lg text-foreground tracking-tight flex items-center gap-2">
               <CalendarSearch className="w-5 h-5 text-primary" />
               Available Specialists
             </h2>
-            <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80 font-semibold p-0 h-auto">
-              View All <ChevronRight className="w-4 h-4 ml-1" />
-            </Button>
+              <button 
+                onClick={() => document.getElementById('available-specialists')?.scrollIntoView({ behavior: 'smooth' })}
+                className="flex items-center gap-1 text-primary hover:text-primary/80 font-semibold text-sm p-0 h-auto cursor-pointer"
+              >
+                View All <ChevronRight className="w-4 h-4 ml-1" />
+              </button>
           </div>
 
           <div className="flex gap-4 overflow-x-auto pb-6 pt-2 snap-x snap-mandatory hide-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0">

@@ -53,7 +53,7 @@ export function NavBar({ items, className }: NavBarProps) {
       window.removeEventListener("resize", handleResize)
       window.removeEventListener("scroll", handleScroll)
     }
-  }, [items])
+  }, [items, activeTab])
 
   return (
     <div

@@ -4,22 +4,22 @@ import { Link } from "react-router-dom";
 
 const links = {
   Platform: [
-    { label: "AI Assistant", href: "#" },
-    { label: "Live Consultations", href: "#" },
-    { label: "Reminders", href: "#" },
-    { label: "Community", href: "#" },
+    { label: "AI Assistant", path: "/patient/ask-ai" },
+    { label: "Live Consultations", path: "/patient/consultations" },
+    { label: "Reminders", path: "/patient/reminders" },
+    { label: "Community", path: "/patient/community" },
   ],
   Company: [
-    { label: "About Us", href: "#" },
-    { label: "Careers", href: "#" },
-    { label: "Contact", href: "#" },
-    { label: "Blog", href: "#" },
+    { label: "About Us", path: "/coming-soon" },
+    { label: "Careers", path: "/coming-soon" },
+    { label: "Contact", path: "/coming-soon" },
+    { label: "Blog", path: "/coming-soon" },
   ],
   Support: [
-    { label: "Help Center", href: "#" },
-    { label: "Privacy Policy", href: "#" },
-    { label: "Terms of Service", href: "#" },
-    { label: "FAQ", href: "#faq" },
+    { label: "Help Center", path: "/coming-soon" },
+    { label: "Privacy Policy", path: "/legal/privacy" },
+    { label: "Terms of Service", path: "/legal/terms" },
+    { label: "FAQ", path: "#faq", isAnchor: true },
   ],
 };
 
@@ -48,14 +48,25 @@ const Footer = () => (
             <ul className="space-y-3">
               {items.map((item) => (
                 <li key={item.label}>
-                  <a 
-                    href={item.href} 
-                    className="group inline-flex items-center text-sm text-muted-foreground transition-colors hover:text-primary"
-                  >
-                    <span className="relative transform transition-transform duration-300 group-hover:translate-x-1">
-                      {item.label}
-                    </span>
-                  </a>
+                  {item.isAnchor ? (
+                    <a 
+                      href={item.path} 
+                      className="group inline-flex items-center text-sm text-muted-foreground transition-colors hover:text-primary"
+                    >
+                      <span className="relative transform transition-transform duration-300 group-hover:translate-x-1">
+                        {item.label}
+                      </span>
+                    </a>
+                  ) : (
+                    <Link 
+                      to={item.path} 
+                      className="group inline-flex items-center text-sm text-muted-foreground transition-colors hover:text-primary"
+                    >
+                      <span className="relative transform transition-transform duration-300 group-hover:translate-x-1">
+                        {item.label}
+                      </span>
+                    </Link>
+                  )}
                 </li>
               ))}
             </ul>
@@ -94,9 +105,15 @@ const Footer = () => (
               <ul className="space-y-3">
                 {items.map((item) => (
                   <li key={item.label}>
-                    <a href={item.href} className="text-sm text-muted-foreground transition-colors hover:text-primary">
-                      {item.label}
-                    </a>
+                    {item.isAnchor ? (
+                      <a href={item.path} className="text-sm text-muted-foreground transition-colors hover:text-primary">
+                        {item.label}
+                      </a>
+                    ) : (
+                      <Link to={item.path} className="text-sm text-muted-foreground transition-colors hover:text-primary">
+                        {item.label}
+                      </Link>
+                    )}
                   </li>
                 ))}
               </ul>

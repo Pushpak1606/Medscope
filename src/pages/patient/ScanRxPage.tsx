@@ -24,7 +24,8 @@ const ScanRxPage = () => {
 
   const handleSimulateScan = () => {
     setIsScanning(true);
-    // Simulate AI processing delay
+    // TODO (AI Team): Connect Scan Rx OCR & Prescription Analysis API endpoint here
+    // Replace mock scan result timeout with multipart/form-data upload to Vision OCR service
     setTimeout(() => {
       setIsScanning(false);
       setScanResult({

@@ -48,8 +48,9 @@ const PatientProfile = () => {
   const waterIntake = waterMap[profile.waterIntake || ""] || "Not set";
   const diet = dietMap[profile.diet || ""] || "Not set";
 
+  // TODO (Backend Team): Connect avatar image upload API endpoint
   const handleAvatarChange = () => {
-    toast.info("Avatar selection mode active.");
+    toast.info("Avatar update requested.", { description: "Profile photo upload will be available once storage API is connected." });
   };
 
   return (

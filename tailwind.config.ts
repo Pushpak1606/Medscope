@@ -1,5 +1,7 @@
 import type { Config } from "tailwindcss";
-const { default: flattenColorPalette } = require("tailwindcss/lib/util/flattenColorPalette");
+import tailwindcssAnimate from "tailwindcss-animate";
+// @ts-expect-error flattenColorPalette lacks type definitions
+import flattenColorPalette from "tailwindcss/lib/util/flattenColorPalette";
 
 export default {
   darkMode: ["class"],
@@ -130,14 +132,16 @@ export default {
         "accordion-up": "accordion-up 0.2s ease-out",
         "fade-in": "fade-in 0.6s ease-out forwards",
         "float": "float 6s ease-in-out infinite",
-        "pulse-glow": "pulse-glow 4s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+        "pulse-subtle": "pulse-glow 2.5s ease-in-out infinite",
+        "fade-in-up": "fade-in 0.5s ease-out forwards",
+        "scan": "scan 2.5s ease-in-out infinite",
         "blob-drift": "blob-drift 20s ease-in-out infinite",
         "blob-spin-slow": "blob-spin 30s linear infinite",
         "blob-spin-slow-reverse": "blob-spin 40s linear infinite reverse",
       },
     },
   },
-  plugins: [require("tailwindcss-animate"), addVariablesForColors],
+  plugins: [tailwindcssAnimate, addVariablesForColors],
 } satisfies Config;
 
 // This plugin adds each Tailwind color as a global CSS variable, e.g. var(--gray-200).

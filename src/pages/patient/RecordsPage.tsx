@@ -1,9 +1,11 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo } from "react";
 import { toast } from "sonner";
+import { usePatient } from "@/context/PatientContext";
 import PatientPageLayout from "@/components/patient-dashboard/shared/PatientPageLayout";
 import PageHeader from "@/components/patient-dashboard/shared/PageHeader";
 import GlassCard from "@/components/patient-dashboard/shared/GlassCard";
 import LiquidGlassButton from "@/components/patient-dashboard/shared/LiquidGlassButton";
+import EmptyState from "@/components/patient-dashboard/shared/EmptyState";
 import { FileHeart, FileText, FlaskConical, Download, Eye, UploadCloud, Search, Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 
 type RecordType = "All" | "Prescriptions" | "Lab Reports" | "Scans";
@@ -18,6 +20,7 @@ const RECORDS = [
 const FILTER_TAGS: RecordType[] = ["All", "Prescriptions", "Lab Reports", "Scans"];
 
 const RecordsPage = () => {
+  const { syncedRecords } = usePatient();
   const [activeFilter, setActiveFilter] = useState<RecordType>("All");
   const [searchQuery, setSearchQuery] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -42,7 +45,22 @@ const RecordsPage = () => {
     }
   };
 
-  const filteredRecords = RECORDS.filter((record) => {
+  // Merge static mock records with doctor-synced records from ConsultationContext
+  const allRecords = useMemo(() => {
+    const doctorRecords = syncedRecords.map((r) => ({
+      id: r.id as string | number,
+      name: r.title,
+      date: r.date,
+      size: "—",
+      type: r.category === "Cardiology" || r.type.includes("Lab") ? "Lab Reports" as RecordType : "Prescriptions" as RecordType,
+      icon: FlaskConical,
+      color: "text-emerald-500",
+      bg: "bg-emerald-500/10",
+    }));
+    return [...RECORDS, ...doctorRecords];
+  }, [syncedRecords]);
+
+  const filteredRecords = allRecords.filter((record) => {
     const matchesFilter = activeFilter === "All" || record.type === activeFilter;
     const matchesSearch = record.name.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesFilter && matchesSearch;
@@ -136,11 +154,21 @@ const RecordsPage = () => {
                       </div>
                     </div>
 
+                    {/* TODO (Backend Team): Connect file download & preview cloud storage API */}
+
                     <div className="flex w-full sm:w-auto gap-2 justify-end mt-2 sm:mt-0">
-                      <LiquidGlassButton variant="secondary" className="px-3 py-2 flex-1 sm:flex-none">
+                      <LiquidGlassButton 
+                        variant="secondary" 
+                        className="px-3 py-2 flex-1 sm:flex-none"
+                        onClick={() => toast.info(`Viewing preview for ${record.name}`, { description: "Full document viewer will load when backend storage is connected." })}
+                      >
                         <Eye className="h-4 w-4 sm:mr-2" /> <span className="hidden sm:inline">View</span>
                       </LiquidGlassButton>
-                      <LiquidGlassButton variant="secondary" className="px-3 py-2 flex-1 sm:flex-none">
+                      <LiquidGlassButton 
+                        variant="secondary" 
+                        className="px-3 py-2 flex-1 sm:flex-none"
+                        onClick={() => toast.success(`Downloading ${record.name}`, { description: "File download initiated." })}
+                      >
                         <Download className="h-4 w-4 sm:mr-2" /> <span className="hidden sm:inline">Download</span>
                       </LiquidGlassButton>
                     </div>
@@ -148,10 +176,13 @@ const RecordsPage = () => {
                   </div>
                 ))
               ) : (
-                <div className="flex flex-col items-center gap-3 py-12 text-muted-foreground/50 border border-dashed rounded-2xl border-border/50">
-                  <Search className="h-8 w-8 mb-2" />
-                  <p className="text-sm font-bold text-muted-foreground">No records found</p>
-                </div>
+                <EmptyState
+                  icon={Search}
+                  title="No records found"
+                  description={`No health documents match your filter "${activeFilter}" ${searchQuery ? `or query "${searchQuery}"` : ""}.`}
+                  actionLabel="Clear Filters"
+                  onAction={() => { setActiveFilter("All"); setSearchQuery(""); }}
+                />
               )}
             </div>
           </GlassCard>

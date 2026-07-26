@@ -82,6 +82,7 @@ export const DietWorkoutModal = ({ trigger }: DietWorkoutModalProps) => {
     setIsGeneratingDiet(true);
     setDietResponse(null);
     
+    // TODO (AI Team): Replace mock diet generation with Nutrition AI API endpoint
     setTimeout(() => {
       setDietResponse(`Here is a beautifully tailored diet plan based on: "${dietPrompt}"\n\n• Breakfast: Berry Protein Smoothie Bowl (350 kcal)\n• Lunch: Quinoa & Roasted Veggie Salad with Tahini (450 kcal)\n• Dinner: Lemon Herb Grilled Chicken with Asparagus (500 kcal)\n• Snack: Handful of almonds & green tea.`);
       setIsGeneratingDiet(false);
@@ -102,6 +103,7 @@ export const DietWorkoutModal = ({ trigger }: DietWorkoutModalProps) => {
     toast.success("Diet plan added to Today's Care Plan!");
     setDietResponse(null);
     setDietPrompt("");
+    setIsOpen(false);
   };
 
   const handleGenerateWorkout = () => {
@@ -129,6 +131,7 @@ export const DietWorkoutModal = ({ trigger }: DietWorkoutModalProps) => {
     toast.success("Workout plan added to Today's Care Plan!");
     setWorkoutResponse(null);
     setWorkoutPrompt("");
+    setIsOpen(false);
   };
 
   return (

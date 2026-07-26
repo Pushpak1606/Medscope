@@ -307,8 +307,8 @@ void main() {
       if (!paused && programRef.current && meshRef.current) {
         try {
           renderer.render({ scene: meshRef.current });
-        } catch (e) {
-          console.error(e);
+        } catch {
+          // Ignore render loop errors on unmount
         }
       }
     };

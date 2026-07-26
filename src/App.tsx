@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -6,33 +7,48 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/theme-provider";
 import { PatientProvider } from "@/context/PatientContext";
 import { ConsultationProvider } from "@/context/ConsultationContext";
+import { DoctorProvider } from "@/context/DoctorContext";
 import { ChatHistoryProvider } from "@/context/ChatHistoryContext";
-import Index from "./pages/Index.tsx";
-import NotFound from "./pages/NotFound.tsx";
-import SelectRole from "./pages/auth/SelectRole.tsx";
-import PatientLogin from "./pages/auth/PatientLogin.tsx";
-import PatientSignup from "./pages/auth/PatientSignup.tsx";
-import DoctorLogin from "./pages/auth/DoctorLogin.tsx";
-import DoctorSignup from "./pages/auth/DoctorSignup.tsx";
-import OnboardingPage from "./pages/patient/OnboardingPage.tsx";
-import PatientDashboard from "./pages/patient/PatientDashboard.tsx";
-import PatientSettings from "./pages/patient/PatientSettings.tsx";
-import PatientProfile from "./pages/patient/PatientProfile.tsx";
-import EditProfile from "./pages/patient/EditProfile.tsx";
-import DoctorOnboardingPage from "./pages/doctor/DoctorOnboardingPage.tsx";
-import ScanRxPage from "./pages/patient/ScanRxPage.tsx";
-import AskAIPage from "./pages/patient/AskAIPage.tsx";
-import LogMoodPage from "./pages/patient/LogMoodPage.tsx";
-import EmergencyPage from "./pages/patient/EmergencyPage.tsx";
-import RecordsPage from "./pages/patient/RecordsPage.tsx";
-import RemindersPage from "./pages/patient/RemindersPage.tsx";
-import ConsultationsPage from "./pages/patient/ConsultationsPage.tsx";
-import WellnessPage from "./pages/patient/WellnessPage.tsx";
-import JournalPage from "./pages/patient/JournalPage.tsx";
-import AICompanionPage from "./pages/patient/AICompanionPage.tsx";
-import CommunityPage from "./pages/patient/CommunityPage.tsx";
-import CommunityGroupPage from "./pages/patient/CommunityGroupPage.tsx";
 import ScrollToTop from "@/components/ScrollToTop";
+import PageLoadingFallback from "@/components/ui/PageLoadingFallback";
+
+// Lazy-loaded pages
+const Index = lazy(() => import("./pages/Index.tsx"));
+const NotFound = lazy(() => import("./pages/NotFound.tsx"));
+const SelectRole = lazy(() => import("./pages/auth/SelectRole.tsx"));
+const PatientLogin = lazy(() => import("./pages/auth/PatientLogin.tsx"));
+const PatientSignup = lazy(() => import("./pages/auth/PatientSignup.tsx"));
+const DoctorLogin = lazy(() => import("./pages/auth/DoctorLogin.tsx"));
+const DoctorSignup = lazy(() => import("./pages/auth/DoctorSignup.tsx"));
+const OnboardingPage = lazy(() => import("./pages/patient/OnboardingPage.tsx"));
+const PatientDashboard = lazy(() => import("./pages/patient/PatientDashboard.tsx"));
+const PatientSettings = lazy(() => import("./pages/patient/PatientSettings.tsx"));
+const PatientProfile = lazy(() => import("./pages/patient/PatientProfile.tsx"));
+const EditProfile = lazy(() => import("./pages/patient/EditProfile.tsx"));
+const DoctorOnboardingPage = lazy(() => import("./pages/doctor/DoctorOnboardingPage.tsx"));
+const DoctorDashboard = lazy(() => import("./pages/doctor/DoctorDashboard.tsx"));
+const PatientWorkspacePage = lazy(() => import("./pages/doctor/PatientWorkspacePage.tsx"));
+const ConsultationWorkspacePage = lazy(() => import("./pages/doctor/ConsultationWorkspacePage.tsx"));
+const DoctorMedicineAssistantPage = lazy(() => import("./pages/doctor/DoctorMedicineAssistantPage.tsx"));
+const DoctorSchedulePage = lazy(() => import("./pages/doctor/DoctorSchedulePage.tsx"));
+const DoctorClinicalAiPage = lazy(() => import("./pages/doctor/DoctorClinicalAiPage.tsx"));
+const DoctorCommunityPage = lazy(() => import("./pages/doctor/DoctorCommunityPage.tsx"));
+const DoctorSettingsPage = lazy(() => import("./pages/doctor/DoctorSettingsPage.tsx"));
+const DoctorPatientsPage = lazy(() => import("./pages/doctor/DoctorPatientsPage.tsx"));
+const ScanRxPage = lazy(() => import("./pages/patient/ScanRxPage.tsx"));
+const AskAIPage = lazy(() => import("./pages/patient/AskAIPage.tsx"));
+const LogMoodPage = lazy(() => import("./pages/patient/LogMoodPage.tsx"));
+const LogVitalsPage = lazy(() => import("./pages/patient/LogVitalsPage.tsx"));
+const EmergencyPage = lazy(() => import("./pages/patient/EmergencyPage.tsx"));
+const RecordsPage = lazy(() => import("./pages/patient/RecordsPage.tsx"));
+const RemindersPage = lazy(() => import("./pages/patient/RemindersPage.tsx"));
+const ConsultationsPage = lazy(() => import("./pages/patient/ConsultationsPage.tsx"));
+const WellnessPage = lazy(() => import("./pages/patient/WellnessPage.tsx"));
+const JournalPage = lazy(() => import("./pages/patient/JournalPage.tsx"));
+const AICompanionPage = lazy(() => import("./pages/patient/AICompanionPage.tsx"));
+const CommunityPage = lazy(() => import("./pages/patient/CommunityPage.tsx"));
+const CommunityGroupPage = lazy(() => import("./pages/patient/CommunityGroupPage.tsx"));
+const ComingSoonPage = lazy(() => import("./pages/ComingSoonPage"));
 
 const queryClient = new QueryClient();
 
@@ -50,46 +66,67 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
       <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <ScrollToTop />
-        <PatientProvider>
-        <ConsultationProvider>
-        <ChatHistoryProvider>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/auth/select-role" element={<SelectRole />} />
-          <Route path="/patient/login" element={<PatientLogin />} />
-          <Route path="/patient/signup" element={<PatientSignup />} />
-          <Route path="/patient/onboarding" element={<OnboardingPage />} />
-          <Route path="/patient/dashboard" element={<PatientDashboard />} />
-          <Route path="/patient/settings" element={<PatientSettings />} />
-          <Route path="/patient/profile" element={<PatientProfile />} />
-          <Route path="/patient/profile/edit" element={<EditProfile />} />
-          <Route path="/doctor/login" element={<DoctorLogin />} />
-          <Route path="/doctor/signup" element={<DoctorSignup />} />
-          <Route path="/doctor/onboarding" element={<DoctorOnboardingPage />} />
-          <Route path="/patient/scan-rx" element={<ScanRxPage />} />
-          <Route path="/patient/ask-ai" element={<AskAIPage />} />
-          <Route path="/patient/log-mood" element={<LogMoodPage />} />
-          <Route path="/patient/emergency" element={<EmergencyPage />} />
-          <Route path="/patient/records" element={<RecordsPage />} />
-          <Route path="/patient/reminders" element={<RemindersPage />} />
-          <Route path="/patient/consultations" element={<ConsultationsPage />} />
-          <Route path="/patient/wellness" element={<WellnessPage />} />
-          <Route path="/patient/journal" element={<JournalPage />} />
-          <Route path="/patient/ai-companion" element={<AICompanionPage />} />
-          <Route path="/patient/community" element={<CommunityPage />} />
-          <Route path="/patient/community/:id" element={<CommunityGroupPage />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-        </ChatHistoryProvider>
-        </ConsultationProvider>
-        </PatientProvider>
-      </BrowserRouter>
-    </TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <ScrollToTop />
+          <DoctorProvider>
+            <PatientProvider>
+              <ConsultationProvider>
+                <ChatHistoryProvider>
+                  <Suspense fallback={<PageLoadingFallback />}>
+                    <Routes>
+                    <Route path="/" element={<Index />} />
+                    <Route path="/auth/select-role" element={<SelectRole />} />
+                    <Route path="/patient/login" element={<PatientLogin />} />
+                    <Route path="/patient/signup" element={<PatientSignup />} />
+                    <Route path="/patient/onboarding" element={<OnboardingPage />} />
+                    <Route path="/patient/dashboard" element={<PatientDashboard />} />
+                    <Route path="/patient/settings" element={<PatientSettings />} />
+                    <Route path="/patient/profile" element={<PatientProfile />} />
+                    <Route path="/patient/profile/edit" element={<EditProfile />} />
+                    <Route path="/doctor/login" element={<DoctorLogin />} />
+                    <Route path="/doctor/signup" element={<DoctorSignup />} />
+                    <Route path="/doctor/onboarding" element={<DoctorOnboardingPage />} />
+                    <Route path="/doctor/dashboard" element={<DoctorDashboard />} />
+                    <Route path="/doctor/patients" element={<DoctorPatientsPage />} />
+                    <Route path="/doctor/patients/:id" element={<PatientWorkspacePage />} />
+                    <Route path="/doctor/consultations" element={<ConsultationWorkspacePage />} />
+                    <Route path="/doctor/consultations/:id" element={<ConsultationWorkspacePage />} />
+                    <Route path="/doctor/medicine-assistant" element={<DoctorMedicineAssistantPage />} />
+                    <Route path="/doctor/schedule" element={<DoctorSchedulePage />} />
+                    <Route path="/doctor/clinical-ai" element={<DoctorClinicalAiPage />} />
+                    <Route path="/doctor/community" element={<DoctorCommunityPage />} />
+                    <Route path="/doctor/settings" element={<DoctorSettingsPage />} />
+                    <Route path="/patient/scan-rx" element={<ScanRxPage />} />
+                    <Route path="/patient/ask-ai" element={<AskAIPage />} />
+                    <Route path="/patient/log-mood" element={<LogMoodPage />} />
+                    <Route path="/patient/log-vitals" element={<LogVitalsPage />} />
+                    <Route path="/patient/emergency" element={<EmergencyPage />} />
+                    <Route path="/patient/records" element={<RecordsPage />} />
+                    <Route path="/patient/reminders" element={<RemindersPage />} />
+                    <Route path="/patient/consultations" element={<ConsultationsPage />} />
+                    <Route path="/patient/wellness" element={<WellnessPage />} />
+                    <Route path="/patient/journal" element={<JournalPage />} />
+                    <Route path="/patient/ai-companion" element={<AICompanionPage />} />
+                    <Route path="/patient/community" element={<CommunityPage />} />
+                    <Route path="/patient/community/:id" element={<CommunityGroupPage />} />
+                    
+                    {/* Legal & Placeholder Routes */}
+                    <Route path="/legal/terms" element={<ComingSoonPage title="Terms of Service" desc="Our terms of service and user agreements will be updated here." />} />
+                    <Route path="/legal/privacy" element={<ComingSoonPage title="Privacy Policy" desc="Our patient privacy and data compliance guidelines will be detailed here." />} />
+                    <Route path="/coming-soon" element={<ComingSoonPage />} />
+
+                    {/* CATCH-ALL ROUTE */}
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </Suspense>
+              </ChatHistoryProvider>
+            </ConsultationProvider>
+          </PatientProvider>
+        </DoctorProvider>
+        </BrowserRouter>
+      </TooltipProvider>
     </ThemeProvider>
   </QueryClientProvider>
 );

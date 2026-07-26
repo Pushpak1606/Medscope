@@ -188,9 +188,11 @@ const PatientSignup = () => {
           <div className="flex items-start gap-2.5 pt-1">
             <Checkbox id="terms" checked={formData.terms} onCheckedChange={(c) => setFormData(p => ({...p, terms: c as boolean}))} className="mt-1 rounded-md border-muted-foreground/30 data-[state=checked]:border-primary" />
             <Label htmlFor="terms" className="text-sm font-medium text-muted-foreground cursor-pointer select-none leading-relaxed">
-              I agree to the <Link to="#" className="font-semibold text-primary hover:text-primary/80 transition-colors hover:underline">Terms of Service</Link> and <Link to="#" className="font-semibold text-primary hover:text-primary/80 transition-colors hover:underline">Privacy Policy</Link>
+              I agree to the <Link to="/legal/terms" className="font-semibold text-primary hover:text-primary/80 transition-colors hover:underline">Terms of Service</Link> and <Link to="/legal/privacy" className="font-semibold text-primary hover:text-primary/80 transition-colors hover:underline">Privacy Policy</Link>
             </Label>
           </div>
+
+          {/* TODO (Backend Team): Connect signup form submit with user registration API */}
 
           <Button type="submit" disabled={isSubmitting} size="lg" className="w-full h-12 mt-2 rounded-xl text-base font-bold shadow-lg shadow-primary/20 transition-all hover:-translate-y-0.5 hover:shadow-xl hover:shadow-primary/30">
             {isSubmitting ? (

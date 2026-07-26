@@ -55,6 +55,8 @@ interface Soundtrack {
   iconColor: string;
 }
 
+// TODO (Backend Team):
+// Connect audio streaming service / HLS audio endpoints for ambient soundscapes.
 const SOUNDSCAPES: Soundtrack[] = [
   { id: "snd-1", title: "Rain & Gentle Thunder", category: "Sleep & Calm", duration: "Infinite", gradient: "from-blue-500/10 via-cyan-500/5 to-transparent", iconColor: "text-cyan-400" },
   { id: "snd-2", title: "Deep Focus Lo-Fi Beats", category: "Concentration", duration: "Infinite", gradient: "from-purple-500/10 via-indigo-500/5 to-transparent", iconColor: "text-purple-400" },
@@ -70,6 +72,16 @@ const PHASE_CONFIG: Record<BreathingPhase, { duration: number; label: string; co
   Inhale: { duration: 4, label: "Inhale Slowly", color: "text-emerald-400 border-emerald-500/40 bg-emerald-500/10", scale: 1.4, text: "Breathe in deeply through your nose" },
   Hold: { duration: 7, label: "Hold Breath", color: "text-purple-400 border-purple-500/40 bg-purple-500/10", scale: 1.4, text: "Hold gently and remain calm" },
   Exhale: { duration: 8, label: "Exhale Completely", color: "text-cyan-400 border-cyan-500/40 bg-cyan-500/10", scale: 1, text: "Release smoothly through your mouth" },
+};
+
+const fadeInOptions = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.5 },
+};
+
+const staggerContainer = {
+  animate: { transition: { staggerChildren: 0.1 } }
 };
 
 export default function WellnessPage() {
@@ -195,32 +207,78 @@ export default function WellnessPage() {
 
   return (
     <PatientPageLayout className="w-full">
-      <div className="w-full space-y-8 lg:space-y-10 pb-12">
+      <motion.div 
+        className="w-full space-y-8 lg:space-y-10 pb-12"
+        initial="initial"
+        animate="animate"
+        variants={staggerContainer}
+      >
         {/* --- PAGE HEADER WITH NAVIGATION ACCESS --- */}
-        <PageHeader
-          title="Mental Wellness Hub"
-          subtitle="Your calm, supportive sanctuary for emotional balance, guided breathing, and mindfulness."
-        >
-          <div className="flex items-center gap-2 mt-3 sm:mt-0 flex-wrap">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-xs font-semibold">
-              <Flame className="w-4 h-4 text-purple-400 animate-pulse" />
-              <span>Wellness Streak: {profile.moodLogs?.length || 5} Days</span>
+        <motion.div variants={fadeInOptions}>
+          <PageHeader
+            title="Mental Wellness Hub"
+            subtitle="Your calm, supportive sanctuary for emotional balance, guided breathing, and mindfulness."
+          >
+            <div className="flex items-center gap-2 mt-3 sm:mt-0 flex-wrap">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 text-xs font-semibold">
+                <Flame className="w-4 h-4 text-purple-400 animate-pulse" />
+                <span>Wellness Streak: {profile.moodLogs?.length || 5} Days</span>
+              </div>
+              <Link to="/patient/emergency">
+                <Button size="sm" variant="destructive" className="rounded-full gap-1.5 shadow-lg shadow-red-500/20 text-xs font-bold">
+                  <ShieldAlert className="w-4 h-4" />
+                  <span>SOS Support</span>
+                </Button>
+              </Link>
             </div>
-            <Link to="/patient/emergency">
-              <Button size="sm" variant="destructive" className="rounded-full gap-1.5 shadow-lg shadow-red-500/20 text-xs font-bold">
-                <ShieldAlert className="w-4 h-4" />
-                <span>SOS Support</span>
-              </Button>
-            </Link>
+          </PageHeader>
+        </motion.div>
+
+        {/* --- SECTION 1: FULL SUPPORT ECOSYSTEM GRID (MOVED TO TOP FOR EASY NAVIGATION) --- */}
+        <motion.div variants={fadeInOptions}>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="text-xl font-bold flex items-center gap-2 text-foreground">
+                <Heart className="w-6 h-6 text-rose-400" />
+                <span>Explore Care & Support Ecosystem</span>
+              </h3>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                Direct access to AI health tools, community connections, and professional doctor support.
+              </p>
+            </div>
           </div>
-        </PageHeader>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+            {[
+              { title: "Personal Journal", desc: "Private thoughts & reflection", icon: BookOpen, color: "text-amber-400", bg: "bg-amber-500/10", border: "border-amber-500/20", path: "/patient/journal" },
+              { title: "AI Companion", desc: "24/7 intelligent symptom chat", icon: MessageCircle, color: "text-indigo-400", bg: "bg-indigo-500/10", border: "border-indigo-500/20", path: "/patient/ai-companion" },
+              { title: "Peer Community", desc: "Connect with support groups", icon: Users, color: "text-cyan-400", bg: "bg-cyan-500/10", border: "border-cyan-500/20", path: "/patient/community" },
+              { title: "Doctor Consults", desc: "Book video or in-clinic visits", icon: Calendar, color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/20", path: "/patient/consultations" },
+              { title: "Emergency SOS", desc: "Instant emergency protocols", icon: ShieldAlert, color: "text-red-400", bg: "bg-red-500/10", border: "border-red-500/20", path: "/patient/emergency" },
+            ].map((action, i) => (
+              <Link
+                key={i}
+                to={action.path}
+                className={cn(
+                  "flex flex-col items-center justify-center p-5 sm:p-6 rounded-3xl bg-card/60 backdrop-blur-xl border transition-all duration-300 cursor-pointer group hover:-translate-y-1 shadow-sm text-center",
+                  action.border,
+                  "hover:border-primary/50 hover:shadow-lg"
+                )}
+              >
+                <div className={cn("p-4 rounded-2xl mb-3 group-hover:scale-110 transition-transform", action.bg, action.color)}>
+                  <action.icon className="w-6 h-6" />
+                </div>
+                <h4 className="font-bold text-sm text-foreground mb-1 group-hover:text-primary transition-colors">
+                  {action.title}
+                </h4>
+                <p className="text-xs text-muted-foreground leading-snug">{action.desc}</p>
+              </Link>
+            ))}
+          </div>
+        </motion.div>
 
         {/* --- SECTION 1: DAILY AFFIRMATIONS CAROUSEL --- */}
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
+        <motion.div variants={fadeInOptions}>
           <GlassCard className="relative overflow-hidden p-6 sm:p-8 bg-gradient-to-r from-purple-900/20 via-indigo-900/15 to-purple-950/20 border-purple-500/20 group">
             <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity duration-700 pointer-events-none">
               <Sparkles className="w-36 h-36 text-purple-400" />
@@ -282,7 +340,7 @@ export default function WellnessPage() {
         </motion.div>
 
         {/* --- BENTO GRID: GUIDED BREATHING & MOOD TRACKING --- */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
+        <motion.div variants={fadeInOptions} className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
           
           {/* --- 4-7-8 BREATHING TRAINER (7 cols lg) --- */}
           <GlassCard className="lg:col-span-7 p-6 sm:p-8 flex flex-col justify-between relative overflow-hidden bg-gradient-to-br from-card/80 via-card/50 to-emerald-950/10 border-emerald-500/20">
@@ -460,10 +518,10 @@ export default function WellnessPage() {
             </div>
           </GlassCard>
 
-        </div>
+        </motion.div>
 
         {/* --- SECTION 3: AMBIENT SOUNDSCAPES & GRATITUDE JOURNAL --- */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
+        <motion.div variants={fadeInOptions} className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
           
           {/* AMBIENT SOUNDSCAPES HUB (8 cols lg) */}
           <GlassCard className="lg:col-span-8 p-6 sm:p-8 bg-card/60 backdrop-blur-xl border-border/50">
@@ -568,52 +626,9 @@ export default function WellnessPage() {
             </div>
           </GlassCard>
 
-        </div>
+        </motion.div>
 
-        {/* --- SECTION 4: FULL SUPPORT ECOSYSTEM GRID --- */}
-        <div className="pt-4">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h3 className="text-xl font-bold flex items-center gap-2 text-foreground">
-                <Heart className="w-6 h-6 text-rose-400" />
-                <span>Explore Care & Support Ecosystem</span>
-              </h3>
-              <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-                Direct access to AI health tools, community connections, and professional doctor support.
-              </p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-            {[
-              { title: "Personal Journal", desc: "Private thoughts & reflection", icon: BookOpen, color: "text-amber-400", bg: "bg-amber-500/10", border: "border-amber-500/20", path: "/patient/journal" },
-              { title: "AI Companion", desc: "24/7 intelligent symptom chat", icon: MessageCircle, color: "text-indigo-400", bg: "bg-indigo-500/10", border: "border-indigo-500/20", path: "/patient/ai-companion" },
-              { title: "Peer Community", desc: "Connect with support groups", icon: Users, color: "text-cyan-400", bg: "bg-cyan-500/10", border: "border-cyan-500/20", path: "/patient/community" },
-              { title: "Doctor Consults", desc: "Book video or in-clinic visits", icon: Calendar, color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/20", path: "/patient/consultations" },
-              { title: "Emergency SOS", desc: "Instant emergency protocols", icon: ShieldAlert, color: "text-red-400", bg: "bg-red-500/10", border: "border-red-500/20", path: "/patient/emergency" },
-            ].map((action, i) => (
-              <Link
-                key={i}
-                to={action.path}
-                className={cn(
-                  "flex flex-col items-center justify-center p-5 sm:p-6 rounded-3xl bg-card/60 backdrop-blur-xl border transition-all duration-300 cursor-pointer group hover:-translate-y-1 shadow-sm text-center",
-                  action.border,
-                  "hover:border-primary/50 hover:shadow-lg"
-                )}
-              >
-                <div className={cn("p-4 rounded-2xl mb-3 group-hover:scale-110 transition-transform", action.bg, action.color)}>
-                  <action.icon className="w-6 h-6" />
-                </div>
-                <h4 className="font-bold text-sm text-foreground mb-1 group-hover:text-primary transition-colors">
-                  {action.title}
-                </h4>
-                <p className="text-xs text-muted-foreground leading-snug">{action.desc}</p>
-              </Link>
-            ))}
-          </div>
-        </div>
-
-      </div>
+      </motion.div>
     </PatientPageLayout>
   );
 }

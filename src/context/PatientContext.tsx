@@ -2,6 +2,9 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { secureStorage } from "@/lib/secureStorage";
 import { CommunityGroup, MOCK_GROUPS } from "@/lib/communityMockData";
 
+// TODO (Backend Team):
+// Replace local secureStorage / mock data state in PatientContext with REST / GraphQL API hooks (e.g. React Query).
+
 // ─── Default widget order (center column of dashboard) ───
 export const DEFAULT_WIDGET_ORDER = [
   { id: "quick-actions", label: "Quick Actions", visible: true },
@@ -41,6 +44,22 @@ export interface MoodLog {
   mood: string;
   score: number;
   note?: string;
+}
+
+export interface VitalsLog {
+  id: string;
+  timestamp: string;
+  heartRate?: number;
+  bloodPressureSys?: number;
+  bloodPressureDia?: number;
+  spO2?: number;
+  temperature?: number;
+  bloodGlucose?: number;
+  weight?: number;
+  waterIntake?: number;
+  sleepHours?: number;
+  notes?: string;
+  status?: "Normal" | "Attention" | "Optimal";
 }
 
 export interface JournalEntry {
@@ -92,6 +111,7 @@ export interface PatientProfile {
   profileCompleteness?: number;
   preferences?: PatientPreferences;
   moodLogs?: MoodLog[];
+  vitalsLogs?: VitalsLog[];
   savedQuotes?: string[];
   journalEntries?: JournalEntry[];
 }
@@ -124,9 +144,23 @@ interface PatientContextType {
   snoozeReminder: (id: string) => void;
   deleteReminder: (id: string) => void;
   addMoodLog: (log: Omit<MoodLog, "id">) => void;
+  vitalsLogs: VitalsLog[];
+  addVitalsLog: (log: Omit<VitalsLog, "id"> & { id?: string }) => void;
+  deleteVitalsLog: (id: string) => void;
   toggleQuoteFavorite: (quoteId: string) => void;
+  // Journal
   journalEntries: JournalEntry[];
   addJournalEntry: (entry: Omit<JournalEntry, "id">) => void;
+
+  /* =========================================================================
+     ECOSYSTEM REAL-TIME SYNCHRONIZATION MUTATOR APIS (DOCTOR -> PATIENT)
+     ========================================================================= */
+  syncedMedications: { id: string; name: string; dosage: string; frequency: string; duration: string; mealTiming: string; instructions: string }[];
+  syncedRecords: { id: string; title: string; type: string; category: string; date: string; summary: string }[];
+  syncedLifestylePlan: string[];
+  addDoctorPrescription: (item: { name: string; dosage: string; frequency: string; duration: string; mealTiming: string; instructions: string }) => void;
+  addDoctorRecord: (record: { title: string; type: string; category: string; date: string; summary: string }) => void;
+  updateDoctorLifestylePlan: (recs: string[]) => void;
   updateJournalEntry: (id: string, updates: Partial<JournalEntry>) => void;
   deleteJournalEntry: (id: string) => void;
   
@@ -227,6 +261,70 @@ export const PatientProvider = ({ children }: { children: ReactNode }) => {
     }
   });
 
+// ─── Module-level constant: prevents re-creation on every PatientProvider render ───
+const MOCK_VITALS_LOGS: VitalsLog[] = [
+  {
+    id: "v1",
+    timestamp: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
+    heartRate: 72,
+    bloodPressureSys: 118,
+    bloodPressureDia: 78,
+    spO2: 99,
+    temperature: 98.4,
+    bloodGlucose: 92,
+    weight: 70.2,
+    waterIntake: 8,
+    sleepHours: 7.5,
+    notes: "Felt great after morning run",
+    status: "Optimal"
+  },
+  {
+    id: "v2",
+    timestamp: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
+    heartRate: 76,
+    bloodPressureSys: 122,
+    bloodPressureDia: 80,
+    spO2: 98,
+    temperature: 98.6,
+    bloodGlucose: 96,
+    weight: 70.0,
+    waterIntake: 7,
+    sleepHours: 7.0,
+    notes: "Regular check-in",
+    status: "Normal"
+  },
+  {
+    id: "v3",
+    timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    heartRate: 74,
+    bloodPressureSys: 120,
+    bloodPressureDia: 79,
+    spO2: 98,
+    temperature: 98.5,
+    bloodGlucose: 94,
+    weight: 69.8,
+    waterIntake: 8,
+    sleepHours: 7.5,
+    notes: "Resting comfortably",
+    status: "Optimal"
+  },
+  {
+    id: "v4",
+    timestamp: new Date().toISOString(),
+    heartRate: 70,
+    bloodPressureSys: 116,
+    bloodPressureDia: 76,
+    spO2: 99,
+    temperature: 98.2,
+    bloodGlucose: 90,
+    weight: 69.7,
+    waterIntake: 6,
+    sleepHours: 8.0,
+    notes: "Morning baseline vitals",
+    status: "Optimal"
+  }
+];
+
   const [journalEntries, setJournalEntries] = useState<JournalEntry[]>(() => {
     try {
       const stored = secureStorage.getItem<JournalEntry[]>("medscope-journal");
@@ -237,6 +335,16 @@ export const PatientProvider = ({ children }: { children: ReactNode }) => {
       ];
     } catch {
       return [];
+    }
+  });
+
+  const [vitalsLogs, setVitalsLogs] = useState<VitalsLog[]>(() => {
+    try {
+      const stored = secureStorage.getItem<VitalsLog[]>("medscope-vitals-logs");
+      if (stored && stored.length > 0) return stored;
+      return MOCK_VITALS_LOGS;
+    } catch {
+      return MOCK_VITALS_LOGS;
     }
   });
 
@@ -274,6 +382,10 @@ export const PatientProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     secureStorage.setItem("medscope-journal", journalEntries);
   }, [journalEntries]);
+
+  useEffect(() => {
+    secureStorage.setItem("medscope-vitals-logs", vitalsLogs);
+  }, [vitalsLogs]);
 
   useEffect(() => {
     secureStorage.setItem("medscope-joined-groups", joinedGroups);
@@ -333,6 +445,19 @@ export const PatientProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
+  const addVitalsLog = (log: Omit<VitalsLog, "id"> & { id?: string }) => {
+    const newLog: VitalsLog = {
+      ...log,
+      id: log.id || `v_${Math.random().toString(36).substring(2, 9)}`,
+      timestamp: log.timestamp || new Date().toISOString()
+    };
+    setVitalsLogs(prev => [newLog, ...prev]);
+  };
+
+  const deleteVitalsLog = (id: string) => {
+    setVitalsLogs(prev => prev.filter(v => v.id !== id));
+  };
+
   const toggleQuoteFavorite = (quoteId: string) => {
     setProfileState(prev => {
       const current = prev.savedQuotes || [];
@@ -381,6 +506,87 @@ export const PatientProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  /* =========================================================================
+     ECOSYSTEM REAL-TIME SYNCHRONIZATION STATE & MUTATOR IMPLEMENTATION
+     ========================================================================= */
+  const [syncedMedications, setSyncedMedications] = useState<
+    { id: string; name: string; dosage: string; frequency: string; duration: string; mealTiming: string; instructions: string }[]
+  >([
+    {
+      id: "rx-1",
+      name: "Clopidogrel Bisulfate",
+      dosage: "75 mg",
+      frequency: "Once Daily",
+      duration: "12 Months",
+      mealTiming: "After Meal",
+      instructions: "Take daily post-morning meal to prevent stent thrombosis.",
+    },
+    {
+      id: "rx-2",
+      name: "Atorvastatin Calcium",
+      dosage: "80 mg",
+      frequency: "Once Daily",
+      duration: "Ongoing",
+      mealTiming: "At Bedtime",
+      instructions: "High-intensity statin for plaque stabilization.",
+    },
+  ]);
+
+  const [syncedRecords, setSyncedRecords] = useState<
+    { id: string; title: string; type: string; category: string; date: string; summary: string }[]
+  >([
+    {
+      id: "rec-1",
+      title: "Troponin T Cardiac Biomarker Panel",
+      type: "Laboratory PDF",
+      category: "Cardiology",
+      date: "July 26, 2026",
+      summary: "Troponin T elevated at 0.14 ng/mL.",
+    },
+    {
+      id: "rec-2",
+      title: "12-Lead Electrocardiogram (ECG)",
+      type: "Telemetry Trace",
+      category: "Cardiology",
+      date: "July 26, 2026",
+      summary: "ST elevation in anterolateral leads V2-V4.",
+    },
+  ]);
+
+  const [syncedLifestylePlan, setSyncedLifestylePlan] = useState<string[]>([
+    "Sodium restriction < 2,000 mg/day (less than 1 tsp salt).",
+    "Restricted strenuous activity pending Cath Lab evaluation.",
+    "Monitor daily weight and report > 2lb sudden gain.",
+  ]);
+
+  const addDoctorPrescription = (item: { name: string; dosage: string; frequency: string; duration: string; mealTiming: string; instructions: string }) => {
+    const newRx = { id: `rx-${Date.now()}`, ...item };
+    setSyncedMedications((prev) => [newRx, ...prev]);
+
+    // Automatically generate patient medicine reminder
+    const newReminder: Reminder = {
+      id: `rem-${Date.now()}`,
+      title: `${item.name} ${item.dosage}`,
+      time: "08:00 AM",
+      type: "Medicines",
+      status: "upcoming",
+      repeat: item.frequency,
+      iconName: "Pill",
+      color: "text-emerald-500",
+      bg: "bg-emerald-500/10 border-emerald-500/20",
+    };
+    setReminders((prev) => [newReminder, ...prev]);
+  };
+
+  const addDoctorRecord = (record: { title: string; type: string; category: string; date: string; summary: string }) => {
+    const newRec = { id: `rec-${Date.now()}`, ...record };
+    setSyncedRecords((prev) => [newRec, ...prev]);
+  };
+
+  const updateDoctorLifestylePlan = (recs: string[]) => {
+    setSyncedLifestylePlan(recs);
+  };
+
   return (
     <PatientContext.Provider
       value={{
@@ -396,6 +602,9 @@ export const PatientProvider = ({ children }: { children: ReactNode }) => {
         snoozeReminder,
         deleteReminder,
         addMoodLog,
+        vitalsLogs,
+        addVitalsLog,
+        deleteVitalsLog,
         toggleQuoteFavorite,
         journalEntries,
         addJournalEntry,
@@ -405,7 +614,13 @@ export const PatientProvider = ({ children }: { children: ReactNode }) => {
         joinGroup,
         leaveGroup,
         groups,
-        createGroup
+        createGroup,
+        syncedMedications,
+        syncedRecords,
+        syncedLifestylePlan,
+        addDoctorPrescription,
+        addDoctorRecord,
+        updateDoctorLifestylePlan,
       }}
     >
       {children}

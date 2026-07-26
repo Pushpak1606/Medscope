@@ -1,6 +1,29 @@
 import CryptoJS from 'crypto-js';
 
-const SECRET_KEY = import.meta.env.VITE_SECURE_STORAGE_KEY || 'default-dev-secret-key-12345';
+// TODO (Backend Team): Set VITE_SECURE_STORAGE_KEY in your .env file.
+// This MUST be a long, random secret (32+ chars). Never commit this to source control.
+// In production: use your CI/CD secret manager (e.g., GitHub Secrets, Vercel env vars).
+const _envKey = import.meta.env.VITE_SECURE_STORAGE_KEY;
+if (!_envKey && import.meta.env.DEV) {
+  console.warn(
+    '[Medscope Security] VITE_SECURE_STORAGE_KEY is not set in your .env file.\n' +
+    'PHI (Personal Health Information) will be encrypted with a session-only fallback key.\n' +
+    'Data stored in localStorage will not persist between sessions until this key is configured.\n' +
+    'See .env.example for setup instructions.'
+  );
+}
+// Production safety: if env key is missing, use a per-session random key so PHI
+// is NEVER encrypted with a known/hardcoded string. Data won't persist between
+// sessions, but this is safer than a known fallback.
+const SECRET_KEY = _envKey || (typeof window !== 'undefined'
+  ? (() => {
+      const sk = sessionStorage.getItem('_msk');
+      if (sk) return sk;
+      const rand = CryptoJS.lib.WordArray.random(32).toString();
+      sessionStorage.setItem('_msk', rand);
+      return rand;
+    })()
+  : 'unreachable-server-side');
 
 /**
  * Secure Storage Utility for Healthcare Data
@@ -13,14 +36,17 @@ const SECRET_KEY = import.meta.env.VITE_SECURE_STORAGE_KEY || 'default-dev-secre
  * on the client-side at all, or stored using short-lived HttpOnly cookies.
  */
 
+// TODO (Backend Team):
+// Replace local secureStorage/localStorage persistence with encrypted backend API calls and session cookies.
+
 export const secureStorage = {
   setItem: (key: string, value: any) => {
     try {
       const stringValue = JSON.stringify(value);
       const encrypted = CryptoJS.AES.encrypt(stringValue, SECRET_KEY).toString();
       localStorage.setItem(key, encrypted);
-    } catch (e) {
-      console.error("Secure storage write error", e);
+    } catch {
+      // Fail silently in production
     }
   },
   
@@ -43,7 +69,7 @@ export const secureStorage = {
            secureStorage.setItem(key, parsed);
            return parsed;
         }
-      } catch (e) {
+      } catch {
         // Not old btoa format, proceed to AES decryption
       }
       
@@ -53,8 +79,7 @@ export const secureStorage = {
       if (!decrypted) return null;
       
       return JSON.parse(decrypted) as T;
-    } catch (e) {
-      console.error("Secure storage read error", e);
+    } catch {
       return null;
     }
   },

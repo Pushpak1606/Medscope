@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { ChatThread, ChatThreadType, useChatHistory, ChatMessage } from "@/context/ChatHistoryContext";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -8,6 +8,7 @@ import {
   X,
   MessagesSquare,
   ChevronRight,
+  Search,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { isToday, isYesterday, differenceInCalendarDays, format } from "date-fns";
@@ -75,9 +76,19 @@ const ChatHistorySidebar = ({
 }: ChatHistorySidebarProps) => {
   const { getThreadsForType, activeThreadId, setActiveThreadId, createThread, deleteThread } = useChatHistory();
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const threads = getThreadsForType(type);
-  const grouped = groupThreads(threads);
+  const filteredThreads = useMemo(() => {
+    if (!searchQuery.trim()) return threads;
+    return threads.filter(
+      (t) =>
+        t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        t.messages.some((m) => m.text.toLowerCase().includes(searchQuery.toLowerCase()))
+    );
+  }, [threads, searchQuery]);
+
+  const grouped = groupThreads(filteredThreads);
   const accent = getAccent(accentColor);
 
   const handleNewChat = () => {
@@ -102,7 +113,7 @@ const ChatHistorySidebar = ({
   };
 
   const sidebarContent = (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full select-none">
       {/* Header */}
       <div className="p-4 border-b border-border/30 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-2">
@@ -117,19 +128,38 @@ const ChatHistorySidebar = ({
         </button>
       </div>
 
-      {/* New Chat Button */}
-      <div className="p-3 shrink-0">
+      {/* New Chat Button & Search */}
+      <div className="p-3 shrink-0 space-y-2">
         <button
           onClick={handleNewChat}
           className={cn(
-            "w-full flex items-center gap-2.5 px-4 py-3 rounded-xl font-semibold text-sm transition-all duration-200 border",
+            "w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs transition-all duration-200 border shadow-sm",
             accent.bgLight, accent.text, accent.border,
-            "hover:scale-[1.02] active:scale-[0.98]"
+            "hover:scale-[1.01] active:scale-[0.98]"
           )}
         >
           <MessageSquarePlus className="h-4 w-4" />
-          New Chat
+          <span>New Chat Thread</span>
         </button>
+
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search chat history..."
+            className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-card border border-border/50 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-primary/30"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery("")}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hover:text-foreground"
+            >
+              ✕
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Thread List */}

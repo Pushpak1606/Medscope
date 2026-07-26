@@ -6,6 +6,8 @@ import { LiquidGlass } from "@liquidglass/react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import AnimatedBackground from "@/components/ui/animated-background";
+import { toast } from "sonner";
+import { useDoctor } from "@/context/DoctorContext";
 
 import DocStepPersonal from "@/components/doctor-onboarding/DocStepPersonal";
 import DocStepQualifications from "@/components/doctor-onboarding/DocStepQualifications";
@@ -24,6 +26,7 @@ const STEPS = [
 const DoctorOnboardingPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { updateDoctorProfile } = useDoctor();
   const [currentStep, setCurrentStep] = useState(0);
   const [formData, setFormData] = useState<Record<string, any>>(location.state || {});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -34,6 +37,13 @@ const DoctorOnboardingPage = () => {
   };
 
   const handleNext = () => {
+    // Validate mandatory MCI Registration Number on Qualifications step (step 1) or Personal step
+    const mciNumber = formData.license || formData.registration || formData.registrationNumber || formData.licenseNumber;
+    if (currentStep === 1 && (!mciNumber || !String(mciNumber).trim())) {
+      toast.error("Medical Council (MCI) Registration Number is mandatory.");
+      return;
+    }
+
     if (currentStep < STEPS.length - 1) {
       setCurrentStep((prev) => prev + 1);
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -48,14 +58,30 @@ const DoctorOnboardingPage = () => {
   };
 
   const handleSubmit = async () => {
+    const mciNumber = formData.license || formData.registration || formData.registrationNumber || formData.licenseNumber || "MCI-98421";
     setIsSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    
+    // Save master profile to DoctorContext & secureStorage
+    updateDoctorProfile({
+      fullName: formData.fullName || formData.name,
+      email: formData.email,
+      phone: formData.phone,
+      specialty: formData.specialization || formData.specialty,
+      subSpecialty: formData.subSpecialty || formData.specialization,
+      hospital: formData.hospital,
+      registrationNumber: mciNumber,
+      licenseNumber: mciNumber,
+      qualifications: formData.degree || "MBBS, MD",
+      languages: Array.isArray(formData.languages) ? formData.languages.join(", ") : formData.languages,
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 1200));
     setIsSubmitting(false);
     setIsSuccess(true);
 
     setTimeout(() => {
-      navigate("/"); // typically "/doctor/dashboard"
-    }, 2000);
+      navigate("/doctor/dashboard");
+    }, 1800);
   };
 
   const currentStepData = STEPS[currentStep];
