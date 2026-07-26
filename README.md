@@ -180,7 +180,6 @@ Personal Health Information (PHI) is protected using **AES-256 Client-Side Encry
 ## 🤝 Contributors
 
 *   **Pushpak Patil** - *Lead Frontend Architect & UI/UX Designer*
-*   **Bhavy Dave** - *Backend Architect*
 
 ---
 
