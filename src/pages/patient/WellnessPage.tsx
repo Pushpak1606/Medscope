@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { usePatient } from "@/context/PatientContext";
 import PatientPageLayout from "@/components/patient-dashboard/shared/PatientPageLayout";
@@ -28,13 +28,20 @@ import {
   ShieldAlert,
   Send,
   RefreshCw,
-  Sun
+  Sun,
+  Apple,
+  Dumbbell,
+  Utensils,
+  ShieldCheck,
+  CheckCircle2,
 } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { getPersonalizedDietAndWorkout } from "@/lib/dietWorkoutPlans";
+import { DietWorkoutModal } from "@/components/patient-dashboard/shared/DietWorkoutModal";
 
 // --- Motivational Affirmations Data ---
 const MOTIVATIONAL_QUOTES = [
@@ -86,6 +93,12 @@ const staggerContainer = {
 
 export default function WellnessPage() {
   const { profile, addMoodLog, toggleQuoteFavorite } = usePatient();
+
+  // Dynamically resolve hardcoded clinical diet & workout from onboarding profile
+  const { dietPlan, workoutPlan, matchReasons } = useMemo(
+    () => getPersonalizedDietAndWorkout(profile),
+    [profile]
+  );
 
   // --- Quote Rotation State ---
   const [currentQuoteIndex, setCurrentQuoteIndex] = useState(0);
@@ -518,6 +531,102 @@ export default function WellnessPage() {
             </div>
           </GlassCard>
 
+        </motion.div>
+
+        {/* --- SECTION 2.5: PERSONALIZED ONBOARDING DIET & WORKOUT PROTOCOLS --- */}
+        <motion.div variants={fadeInOptions} className="space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <h3 className="text-xl font-bold flex items-center gap-2 text-foreground">
+                <Activity className="w-5 h-5 text-emerald-400" />
+                <span>Onboarding-Synchronized Regimens</span>
+              </h3>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+                Personalized based on your {profile.diet || "vegetarian"} diet preference, {profile.activityLevel || "moderate"} activity, and clinical profile.
+              </p>
+            </div>
+            <DietWorkoutModal
+              trigger={
+                <Button className="h-9 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md">
+                  View Full Protocols & Meal Schedule
+                </Button>
+              }
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Diet Protocol Card */}
+            <GlassCard className="p-6 bg-gradient-to-br from-emerald-500/10 via-card/70 to-card/90 border-emerald-500/20 flex flex-col justify-between space-y-4">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25 flex items-center gap-1">
+                    <Apple className="w-3 h-3" />
+                    <span>{dietPlan.category} Protocol</span>
+                  </span>
+                  <span className="text-xs font-black text-foreground">{dietPlan.caloriesTarget}</span>
+                </div>
+
+                <h4 className="text-lg font-extrabold text-foreground">{dietPlan.title}</h4>
+                <p className="text-xs text-muted-foreground leading-relaxed">{dietPlan.medicalRationale}</p>
+
+                <div className="p-3 rounded-xl bg-background/50 border border-border/40 space-y-1.5 text-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold text-foreground">Breakfast:</span>
+                    <span className="text-muted-foreground truncate max-w-[200px]">{dietPlan.meals.breakfast.name}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold text-foreground">Lunch:</span>
+                    <span className="text-muted-foreground truncate max-w-[200px]">{dietPlan.meals.lunch.name}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold text-foreground">Dinner:</span>
+                    <span className="text-muted-foreground truncate max-w-[200px]">{dietPlan.meals.dinner.name}</span>
+                  </div>
+                </div>
+              </div>
+
+              <DietWorkoutModal
+                trigger={
+                  <Button variant="outline" className="w-full h-10 rounded-xl border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-bold hover:bg-emerald-500/10">
+                    Explore Nutritional Breakdown & Macros
+                  </Button>
+                }
+              />
+            </GlassCard>
+
+            {/* Workout Protocol Card */}
+            <GlassCard className="p-6 bg-gradient-to-br from-blue-500/10 via-card/70 to-card/90 border-blue-500/20 flex flex-col justify-between space-y-4">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/25 flex items-center gap-1">
+                    <Dumbbell className="w-3 h-3" />
+                    <span>{workoutPlan.intensity}</span>
+                  </span>
+                  <span className="text-xs font-black text-foreground">{workoutPlan.duration} • {workoutPlan.frequency}</span>
+                </div>
+
+                <h4 className="text-lg font-extrabold text-foreground">{workoutPlan.title}</h4>
+                <p className="text-xs text-muted-foreground leading-relaxed">{workoutPlan.physiologicalBenefit}</p>
+
+                <div className="p-3 rounded-xl bg-background/50 border border-border/40 space-y-1.5 text-xs">
+                  {workoutPlan.mainCircuit.slice(0, 3).map((ex, i) => (
+                    <div key={i} className="flex items-center justify-between">
+                      <span className="font-semibold text-foreground">{ex.name}:</span>
+                      <span className="text-blue-500 font-semibold">{ex.setsReps}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <DietWorkoutModal
+                trigger={
+                  <Button variant="outline" className="w-full h-10 rounded-xl border-blue-500/30 text-blue-600 dark:text-blue-400 text-xs font-bold hover:bg-blue-500/10">
+                    View Prescribed Circuit & Schedule
+                  </Button>
+                }
+              />
+            </GlassCard>
+          </div>
         </motion.div>
 
         {/* --- SECTION 3: AMBIENT SOUNDSCAPES & GRATITUDE JOURNAL --- */}

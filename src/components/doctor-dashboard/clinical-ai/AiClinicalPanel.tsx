@@ -4,6 +4,7 @@ import SectionHeader from "../SectionHeader";
 import { Sparkles, Send, Paperclip, Bot, User, RefreshCw, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { queryMedscopeAI, AIMessage } from "@/services/aiService";
 
 export interface ChatMessage {
   id: string;
@@ -39,7 +40,7 @@ export const AiClinicalPanel: React.FC = () => {
   const [inputPrompt, setInputPrompt] = useState("");
   const [isTyping, setIsTyping] = useState(false);
 
-  const handleSendPrompt = (textToSend?: string) => {
+  const handleSendPrompt = async (textToSend?: string) => {
     const promptText = textToSend || inputPrompt;
     if (!promptText.trim()) return;
 
@@ -54,16 +55,29 @@ export const AiClinicalPanel: React.FC = () => {
     if (!textToSend) setInputPrompt("");
     setIsTyping(true);
 
-    setTimeout(() => {
+    try {
+      const history: AIMessage[] = [
+        ...messages.map((m) => ({
+          role: (m.sender === "doctor" ? "user" : "assistant") as "user" | "assistant",
+          content: m.text,
+        })),
+        { role: "user", content: promptText },
+      ];
+
+      const aiReplyText = await queryMedscopeAI(history, "clinical-ai");
+
       const aiReply: ChatMessage = {
         id: `m-ai-${Date.now()}`,
         sender: "ai",
-        text: `Clinical AI Assistant Response:\nEvaluated "${promptText}". Medscope Clinical Knowledge Base recommends verifying patient baseline vitals, confirming penicillin allergy flags, and reviewing current DAPT therapy. All final decisions remain with Dr. Sarah Jenkins.`,
+        text: aiReplyText,
         timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       };
       setMessages((prev) => [...prev, aiReply]);
+    } catch (err: any) {
+      toast.error("Failed to reach Medscope AI service: " + (err?.message || "Unknown error"));
+    } finally {
       setIsTyping(false);
-    }, 1000);
+    }
   };
 
   return (

@@ -52,8 +52,16 @@ const OnboardingPage = () => {
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    
+    // Store onboarding data strictly in localStorage (no remote DB)
+    try {
+      localStorage.setItem("medscope_patient_onboarding", JSON.stringify(formData));
+      localStorage.setItem("medscope_onboarding_completed", "true");
+    } catch (e) {
+      console.warn("Could not save onboarding data to localStorage:", e);
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 1200));
     setIsSubmitting(false);
     setIsSuccess(true);
     
@@ -65,7 +73,7 @@ const OnboardingPage = () => {
         profileCompleteness: 100,
       });
       navigate("/patient/dashboard");
-    }, 2000);
+    }, 1800);
   };
 
   const currentStepData = STEPS[currentStep];

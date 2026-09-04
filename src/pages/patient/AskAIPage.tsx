@@ -4,10 +4,11 @@ import GlassCard from "@/components/patient-dashboard/shared/GlassCard";
 import LiquidGlassButton from "@/components/patient-dashboard/shared/LiquidGlassButton";
 import ChatHistorySidebar, { HistoryToggleButton } from "@/components/patient-dashboard/shared/ChatHistorySidebar";
 import { useChatHistory, ChatMessage } from "@/context/ChatHistoryContext";
+import { queryMedscopeAI, AIMessage } from "@/services/aiService";
 import { 
   Send, Bot, User, Sparkles, ShieldAlert, ArrowLeft,
   Copy, Volume2, VolumeX, ThumbsUp, ThumbsDown, Mic, MicOff,
-  RotateCcw, ArrowDown, Check, Zap, MessageSquare
+  ArrowDown, Check, Zap, Activity, Cpu
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -17,15 +18,15 @@ import { toast } from "sonner";
 const WELCOME_MESSAGE: ChatMessage = {
   id: "welcome-1",
   type: "ai",
-  text: "Hello! I'm Medscope AI, your personal healthcare assistant. I can help you analyze medicines, suggest wellness routines, answer clinical questions, or assist with your medical log.\n\nHow can I support your health journey today?",
+  text: "Hello! I'm Medscope AI, your personal clinical health assistant powered by ultra-fast AI intelligence.\n\nI can help you analyze symptoms, explain prescribed medications, suggest wellness routines, or prepare for your next doctor consultation.\n\nHow can I support your health journey today?",
 };
 
 const SUGGESTED_PROMPTS = [
   "What should I know about Amoxicillin?",
   "Suggest a 10-minute routine for stress.",
   "When should I take my morning medicine?",
-  "What diet supports balanced wellness?",
-  "How do I prepare for a doctor consultation?",
+  "What are common symptoms of dehydration?",
+  "How do I prepare for a cardiologist consultation?",
 ];
 
 const AskAIPage = () => {
@@ -87,7 +88,7 @@ const AskAIPage = () => {
   };
 
   const handleSend = useCallback(
-    (text: string) => {
+    async (text: string) => {
       if (!text.trim() || isTyping) return;
       let threadId = activeThreadId;
       if (!threadId || !activeThread || activeThread.type !== "ask-ai") {
@@ -100,23 +101,42 @@ const AskAIPage = () => {
 
       if (textareaRef.current) textareaRef.current.style.height = "auto";
 
-      // TODO (AI Team): Replace mock string responses with Medscope Clinical LLM / OpenAI / Anthropic API streaming endpoint
-      setTimeout(() => {
-        setIsTyping(false);
-        const aiResponseText = 
-          text.toLowerCase().includes("amoxicillin")
-            ? "Amoxicillin is a common penicillin-type antibiotic used to treat bacterial infections. Important tips:\n\n• Take it with or without food as prescribed.\n• Complete the full prescribed course even if symptoms improve early.\n• Common side effects include mild nausea or diarrhea; report rash or swelling immediately."
-            : text.toLowerCase().includes("stress")
-            ? "Here is a 10-minute evidence-based stress reduction routine:\n\n1. **Deep Breathing (3 mins)**: Inhale 4s, hold 4s, exhale 6s.\n2. **Progressive Muscle Relaxation (4 mins)**: Tense and release your shoulders, jaw, and hands.\n3. **Mindful Grounding (3 mins)**: Focus on 5 things you can see and 3 things you hear."
-            : "Thank you for reaching out. As your Medscope AI companion, I can analyze your symptoms, organize medications, and offer wellness guidance.\n\nNote: For urgent symptoms or dosage changes, please consult your primary physician or use our SOS Emergency Support.";
+      // Prepare conversation history for the Groq AI service
+      const currentMessages = activeThread?.messages || [WELCOME_MESSAGE];
+      const conversationHistory: AIMessage[] = [...currentMessages, userMsg]
+        .filter((m) => m.id !== "welcome-1")
+        .slice(-8)
+        .map((m) => ({
+          role: m.type === "user" ? ("user" as const) : ("assistant" as const),
+          content: m.text,
+        }));
 
+      // Ensure at least the latest user prompt is present
+      if (conversationHistory.length === 0) {
+        conversationHistory.push({ role: "user", content: text.trim() });
+      }
+
+      try {
+        const aiResponseText = await queryMedscopeAI(conversationHistory, "ask-ai");
+        setIsTyping(false);
         const aiResponse: ChatMessage = {
           id: (Date.now() + 1).toString(),
           type: "ai",
           text: aiResponseText,
         };
         addMessageToThread(threadId!, aiResponse);
-      }, 1400);
+      } catch (err: any) {
+        console.error("AI service error:", err);
+        setIsTyping(false);
+        const fallbackText = "I encountered a brief connection issue communicating with Medscope AI Cloud. Please verify your internet connection or ask your question again.";
+        const fallbackResponse: ChatMessage = {
+          id: (Date.now() + 1).toString(),
+          type: "ai",
+          text: fallbackText,
+        };
+        addMessageToThread(threadId!, fallbackResponse);
+        toast.error("Failed to fetch response from AI. Please try again.");
+      }
     },
     [activeThreadId, activeThread, isTyping, createThread, addMessageToThread]
   );
@@ -152,13 +172,13 @@ const AskAIPage = () => {
   const toggleVoiceInput = () => {
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      toast.info("Voice Recognition feature simulated: speak into microphone.");
+      toast.info("Voice recognition simulated: speak into your microphone.");
       setIsListening(!isListening);
       if (!isListening) {
         setTimeout(() => {
           setInputValue("What are recommended remedies for mild headaches?");
           setIsListening(false);
-          toast.success("Voice transcribed successfully!");
+          toast.success("Voice input transcribed!");
         }, 2000);
       }
       return;
@@ -189,7 +209,7 @@ const AskAIPage = () => {
 
   const handleFeedback = (id: string, type: "up" | "down") => {
     setFeedbackState((prev) => ({ ...prev, [id]: type }));
-    toast.success(type === "up" ? "Thanks for your feedback! 👍" : "Feedback recorded. We'll improve response accuracy. 👎");
+    toast.success(type === "up" ? "Thanks for your feedback! 👍" : "Feedback recorded. 👎");
   };
 
   const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -201,7 +221,7 @@ const AskAIPage = () => {
 
   return (
     <PatientPageLayout className="!pb-0 sm:!pb-0">
-      {/* ─── RESPONSIVE FLEX CONTAINER (Mobile Nav Dock Compatible) ─── */}
+      {/* ─── RESPONSIVE FLEX CONTAINER ─── */}
       <div className="flex flex-col h-[calc(100dvh-230px)] sm:h-[calc(100vh-110px)] -mt-4 sm:-mt-2">
         
         {/* ─── Sleek Top Header Bar ─── */}
@@ -217,12 +237,12 @@ const AskAIPage = () => {
             <div className="min-w-0">
               <h1 className="text-base sm:text-xl font-extrabold font-heading text-foreground truncate flex items-center gap-2">
                 <span>Ask Medscope AI</span>
-                <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-primary/10 text-primary border border-primary/20">
-                  <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                  <span>AI v3.0 Online</span>
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-primary/10 text-primary border border-primary/20">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  <span>Groq AI Cloud Online</span>
                 </span>
               </h1>
-              <p className="text-xs text-muted-foreground truncate hidden sm:block">Intelligent clinical guidance & health assistant</p>
+              <p className="text-xs text-muted-foreground truncate hidden sm:block">Intelligent clinical guidance, symptom triage & medication assistant</p>
             </div>
           </div>
 
@@ -347,26 +367,29 @@ const AskAIPage = () => {
                       </div>
                     </motion.div>
                   ))}
-
-                  {/* AI Typing Waves */}
-                  {isTyping && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0 }}
-                      className="flex gap-3 max-w-[80%] mr-auto"
-                    >
-                      <div className="shrink-0 h-8 w-8 sm:h-9 sm:w-9 rounded-2xl bg-primary/15 text-primary border border-primary/25 flex items-center justify-center">
-                        <Bot className="h-4 w-4" />
-                      </div>
-                      <div className="px-4 py-3 rounded-2xl bg-card border border-border/50 rounded-tl-xs flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: "0ms" }} />
-                        <span className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: "150ms" }} />
-                        <span className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: "300ms" }} />
-                      </div>
-                    </motion.div>
-                  )}
                 </AnimatePresence>
+
+                {/* AI Typing Waves */}
+                {isTyping && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    className="flex gap-3 max-w-[80%] mr-auto"
+                  >
+                    <div className="shrink-0 h-8 w-8 sm:h-9 sm:w-9 rounded-2xl bg-primary/15 text-primary border border-primary/25 flex items-center justify-center">
+                      <Bot className="h-4 w-4" />
+                    </div>
+                    <div className="px-4 py-3 rounded-2xl bg-card border border-border/50 rounded-tl-xs flex items-center gap-2">
+                      <span className="text-xs text-muted-foreground">Medscope AI is thinking</span>
+                      <div className="flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: "0ms" }} />
+                        <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: "150ms" }} />
+                        <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: "300ms" }} />
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
 
                 <div ref={messagesEndRef} className="h-1" />
 
@@ -383,23 +406,25 @@ const AskAIPage = () => {
               </div>
 
               {/* ─── Persistent Quick Prompts Chip Bar ─── */}
-              <div className="px-4 sm:px-6 pt-2 pb-2 bg-card/40 border-t border-border/30">
-                <div className="flex items-center gap-2 overflow-x-auto hide-scrollbar snap-x py-0.5">
-                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider shrink-0 flex items-center gap-1 mr-1">
-                    <Sparkles className="w-3 h-3 text-primary" />
-                    <span>Prompts:</span>
-                  </span>
-                  {SUGGESTED_PROMPTS.map((prompt, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => handleSend(prompt)}
-                      className="shrink-0 snap-start px-3 py-1.5 rounded-xl text-xs font-semibold bg-card border border-border/50 text-foreground/80 hover:bg-primary/10 hover:border-primary/40 hover:text-primary transition-all whitespace-nowrap shadow-xs"
-                    >
-                      {prompt}
-                    </button>
-                  ))}
+              {messages.length <= 2 && !isTyping && (
+                <div className="px-4 sm:px-6 pt-2 pb-2 bg-card/40 border-t border-border/30">
+                  <div className="flex items-center gap-2 overflow-x-auto hide-scrollbar snap-x py-0.5">
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider shrink-0 flex items-center gap-1 mr-1">
+                      <Sparkles className="w-3 h-3 text-primary" />
+                      <span>Suggested:</span>
+                    </span>
+                    {SUGGESTED_PROMPTS.map((prompt, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => handleSend(prompt)}
+                        className="shrink-0 snap-start px-3 py-1.5 rounded-xl text-xs font-semibold bg-card border border-border/50 text-foreground/80 hover:bg-primary/10 hover:border-primary/40 hover:text-primary transition-all whitespace-nowrap shadow-xs"
+                      >
+                        {prompt}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* ─── Floating Input Controls Container ─── */}
               <div className="shrink-0 px-4 sm:px-6 py-3 border-t border-border/40 bg-card/90 backdrop-blur-xl">
@@ -427,7 +452,7 @@ const AskAIPage = () => {
                         handleSend(inputValue);
                       }
                     }}
-                    placeholder={isListening ? "Listening to your voice..." : "Ask Medscope AI about symptoms, meds, or health..."}
+                    placeholder={isListening ? "Listening to your voice..." : "Ask Medscope AI about symptoms, medicines, or health..."}
                     className="w-full bg-background border border-border/60 rounded-2xl pl-4 pr-12 py-2.5 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 resize-none min-h-[44px] max-h-[130px] shadow-sm hide-scrollbar transition-all"
                     rows={1}
                   />
@@ -446,10 +471,36 @@ const AskAIPage = () => {
 
           {/* ─── Desktop Info & Helper Column ─── */}
           <div className="hidden lg:flex flex-col gap-4 lg:col-span-4">
+            <GlassCard className="p-5 space-y-3 bg-gradient-to-br from-primary/10 via-card/80 to-blue-500/10 backdrop-blur-xl border-primary/30 shadow-lg">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-primary font-bold text-sm">
+                  <Cpu className="h-4 w-4 text-primary" />
+                  <h3>Groq AI Intelligence</h3>
+                </div>
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse mr-1" />
+                  Live Connected
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Powered by Groq's LPUs for real-time clinical synthesis and symptom triage with sub-second response times.
+              </p>
+              <div className="pt-1 space-y-1 text-[11px] text-muted-foreground border-t border-border/30">
+                <div className="flex justify-between">
+                  <span>Engine:</span>
+                  <span className="font-semibold text-foreground">Qwen 3.8 27B / GPT-OSS</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Inference Latency:</span>
+                  <span className="font-semibold text-emerald-400">&lt; 450 ms</span>
+                </div>
+              </div>
+            </GlassCard>
+
             <GlassCard className="p-5 space-y-3 bg-card/60 backdrop-blur-xl border-border/50">
               <div className="flex items-center gap-2 text-primary font-bold text-sm">
                 <Zap className="h-4 w-4" />
-                <h3>Medscope AI Capabilities</h3>
+                <h3>Medscope Capabilities</h3>
               </div>
               <ul className="space-y-2 text-xs text-muted-foreground leading-relaxed">
                 <li className="flex items-start gap-2">
@@ -485,4 +536,3 @@ const AskAIPage = () => {
 };
 
 export default AskAIPage;
-

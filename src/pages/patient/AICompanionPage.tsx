@@ -26,24 +26,42 @@ import {
   ArrowDown,
   Check,
   ShieldAlert,
+  Moon,
+  BookOpen,
+  Stethoscope,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
+import { queryMedscopeAI, AIMessage } from "@/services/aiService";
 
 const WELCOME_MESSAGE: ChatMessage = {
   id: "welcome",
   type: "ai",
-  text: "Hi there 💜 I'm your Medscope Wellness Companion — a safe, supportive space for your emotional health. I'm here to listen, help you practice mindfulness, and support your mental wellness journey.\n\nHow are you feeling right now? You can tell me in your own words, or pick one of the conversation starters.",
+  text: "Hi there 💜 I'm your Medscope Mental Health & Wellness Companion — a safe, supportive, and confidential space for your emotional well-being. I'm here to listen, support, and guide you through calming exercises.\n\nHow are you feeling right now? You can share in your own words, or choose any of the quick actions below.",
 };
 
 const COMPANION_PROMPTS = [
-  { text: "I'm feeling overwhelmed today", icon: Wind, color: "text-purple-500" },
-  { text: "Help me practice gratitude", icon: Heart, color: "text-rose-500" },
-  { text: "I need help calming down", icon: Brain, color: "text-blue-500" },
-  { text: "Can we do a breathing exercise?", icon: Wind, color: "text-emerald-500" },
-  { text: "I want to talk about my feelings", icon: MessageCircle, color: "text-indigo-500" },
-  { text: "Share a positive affirmation", icon: Sparkles, color: "text-amber-500" },
+  { text: "Talk about my feelings", icon: MessageCircle, color: "text-indigo-400" },
+  { text: "Stress management", icon: Sparkles, color: "text-amber-400" },
+  { text: "Anxiety support", icon: Heart, color: "text-rose-400" },
+  { text: "Sleep problems", icon: Moon, color: "text-blue-400" },
+  { text: "Calm me down", icon: Brain, color: "text-purple-400" },
+  { text: "Breathing exercise", icon: Wind, color: "text-emerald-400" },
+  { text: "Journaling", icon: BookOpen, color: "text-teal-400" },
+  { text: "Understand my emotions", icon: Smile, color: "text-yellow-400" },
+  { text: "Talk to a professional", icon: Stethoscope, color: "text-cyan-400" },
+];
+
+const EMOTION_CHECKIN_OPTIONS = [
+  { emoji: "😊", label: "Happy" },
+  { emoji: "😔", label: "Sad" },
+  { emoji: "😰", label: "Anxious" },
+  { emoji: "😡", label: "Angry" },
+  { emoji: "😣", label: "Stressed" },
+  { emoji: "😴", label: "Tired" },
+  { emoji: "😐", label: "Neutral" },
+  { emoji: "🤯", label: "Overwhelmed" },
 ];
 
 const AI_RESPONSES: Record<string, string> = {
@@ -129,7 +147,7 @@ export default function AICompanionPage() {
   };
 
   const handleSend = useCallback(
-    (text: string) => {
+    async (text: string) => {
       if (!text.trim() || isTyping) return;
       let threadId = activeThreadId;
       if (!threadId || !activeThread || activeThread.type !== "companion") {
@@ -144,39 +162,71 @@ export default function AICompanionPage() {
 
       if (textareaRef.current) textareaRef.current.style.height = "auto";
 
-      // TODO (AI Team): Replace mock wellness responses with Wellness Companion LLM endpoint
-      const delay = 1200 + Math.random() * 600;
-      setTimeout(() => {
+      const currentMessages = activeThread?.messages || [WELCOME_MESSAGE];
+      const conversationHistory: AIMessage[] = [...currentMessages, userMsg]
+        .filter((m) => m.id !== "welcome")
+        .slice(-8)
+        .map((m) => ({
+          role: m.type === "user" ? ("user" as const) : ("assistant" as const),
+          content: m.text,
+        }));
+
+      if (conversationHistory.length === 0) {
+        conversationHistory.push({ role: "user", content: text.trim() });
+      }
+
+      try {
+        const responseText = await queryMedscopeAI(conversationHistory, "wellness-companion");
         setIsTyping(false);
-        const response = AI_RESPONSES[text.trim()] || DEFAULT_RESPONSE;
-        const aiResponse: ChatMessage = { id: (Date.now() + 1).toString(), type: "ai", text: response };
+        const aiResponse: ChatMessage = { id: (Date.now() + 1).toString(), type: "ai", text: responseText };
         addMessageToThread(threadId!, aiResponse);
         if (newCount === 3 && !showMoodCheck) {
           setTimeout(() => setShowMoodCheck(true), 1000);
         }
-      }, delay);
+      } catch (err) {
+        console.error("Wellness AI error:", err);
+        setIsTyping(false);
+        const fallback = AI_RESPONSES[text.trim()] || DEFAULT_RESPONSE;
+        const aiResponse: ChatMessage = { id: (Date.now() + 1).toString(), type: "ai", text: fallback };
+        addMessageToThread(threadId!, aiResponse);
+      }
     },
     [activeThreadId, activeThread, isTyping, messageCount, showMoodCheck, createThread, addMessageToThread]
   );
 
-  const handleMoodSelect = (mood: string) => {
+  const handleMoodSelect = async (moodLabel: string, emoji: string) => {
     setShowMoodCheck(false);
     let threadId = activeThreadId;
     if (!threadId || !activeThread || activeThread.type !== "companion") {
       threadId = createThread("companion", WELCOME_MESSAGE);
     }
-    const userMsg: ChatMessage = { id: Date.now().toString(), type: "user", text: `I'm feeling ${mood.toLowerCase()} right now.` };
+    const userMsg: ChatMessage = { id: Date.now().toString(), type: "user", text: `I'm feeling ${moodLabel.toLowerCase()} right now ${emoji}.` };
     addMessageToThread(threadId, userMsg);
     setIsTyping(true);
-    setTimeout(() => {
+
+    try {
+      const responseText = await queryMedscopeAI([
+        {
+          role: "user",
+          content: `I'm checking in: I'm feeling ${moodLabel.toLowerCase()} right now ${emoji}. Please acknowledge this gently, ask about its intensity, explore what might have caused it or how long I've felt this way, and ask what kind of support would feel most helpful right now.`
+        }
+      ], "wellness-companion");
       setIsTyping(false);
       const aiMsg: ChatMessage = {
         id: (Date.now() + 1).toString(),
         type: "ai",
-        text: `Thank you for checking in — feeling ${mood.toLowerCase()} is completely valid. 💜\n\nAcknowledging your emotional state is an essential step in self-compassion. Would you like to explore what triggered this feeling or practice a relaxing exercise together?`,
+        text: responseText,
       };
       addMessageToThread(threadId!, aiMsg);
-    }, 1200);
+    } catch {
+      setIsTyping(false);
+      const aiMsg: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        type: "ai",
+        text: `Thank you for checking in — feeling ${moodLabel.toLowerCase()} is completely valid. 💜\n\nOn a scale of 1 to 10, how intense does this feel right now? If you feel comfortable sharing, what might have brought this on, and how can I best support you today?`,
+      };
+      addMessageToThread(threadId!, aiMsg);
+    }
   };
 
   const handleCopy = (id: string, text: string) => {
@@ -281,6 +331,16 @@ export default function AICompanionPage() {
           </div>
 
           <div className="flex items-center gap-2">
+            <Link to="/patient/ask-ai" className="hidden sm:block">
+              <button
+                className="h-9 px-3 rounded-xl bg-purple-500/10 border border-purple-500/25 text-purple-400 hover:bg-purple-500/20 text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm"
+                title="Go to Medscope Live AI Chat"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+                <span>Live AI Chat</span>
+              </button>
+            </Link>
+
             <Link to="/patient/emergency" className="hidden sm:block">
               <button className="h-9 px-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 hover:bg-red-500/20 text-xs font-bold transition-all flex items-center gap-1.5">
                 <ShieldAlert className="w-3.5 h-3.5" />
@@ -400,16 +460,17 @@ export default function AICompanionPage() {
                       <div className="ml-11 sm:ml-13 p-4 rounded-2xl bg-gradient-to-br from-purple-500/15 via-card/80 to-indigo-500/10 border border-purple-500/30 space-y-2.5">
                         <p className="text-xs font-bold text-foreground flex items-center gap-2">
                           <Smile className="h-4 w-4 text-purple-400" />
-                          <span>Quick Mood Reflection</span>
+                          <span>How are you feeling right now?</span>
                         </p>
                         <div className="flex flex-wrap gap-2">
-                          {["Great", "Good", "Okay", "Rough", "Bad"].map((mood) => (
+                          {EMOTION_CHECKIN_OPTIONS.map((item) => (
                             <button
-                              key={mood}
-                              onClick={() => handleMoodSelect(mood)}
-                              className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-card border border-border/60 text-foreground hover:bg-purple-500/20 hover:border-purple-500/40 hover:text-purple-400 transition-all shadow-xs"
+                              key={item.label}
+                              onClick={() => handleMoodSelect(item.label, item.emoji)}
+                              className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-card border border-border/60 text-foreground hover:bg-purple-500/20 hover:border-purple-500/40 hover:text-purple-400 transition-all shadow-xs flex items-center gap-1.5"
                             >
-                              {mood}
+                              <span>{item.emoji}</span>
+                              <span>{item.label}</span>
                             </button>
                           ))}
                         </div>

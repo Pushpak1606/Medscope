@@ -61,6 +61,14 @@ const DoctorOnboardingPage = () => {
     const mciNumber = formData.license || formData.registration || formData.registrationNumber || formData.licenseNumber || "MCI-98421";
     setIsSubmitting(true);
     
+    // Store doctor onboarding data strictly in localStorage (no remote DB)
+    try {
+      localStorage.setItem("medscope_doctor_onboarding", JSON.stringify(formData));
+      localStorage.setItem("medscope_doctor_onboarding_completed", "true");
+    } catch (e) {
+      console.warn("Could not save doctor onboarding to localStorage:", e);
+    }
+
     // Save master profile to DoctorContext & secureStorage
     updateDoctorProfile({
       fullName: formData.fullName || formData.name,
