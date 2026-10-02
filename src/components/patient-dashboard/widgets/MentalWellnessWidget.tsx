@@ -80,21 +80,29 @@ const MentalWellnessWidget = () => {
         </button>
       </div>
 
-      <div className="space-y-3 flex-1 flex flex-col justify-end">
+      <div className="space-y-2.5 flex-1 flex flex-col justify-end">
+        <Button 
+          onClick={(e) => { e.stopPropagation(); navigate('/patient/mental-screening'); }}
+          className="w-full justify-start h-11 rounded-xl bg-pink-500/10 border border-pink-500/20 hover:bg-pink-500/20 text-pink-500 transition-all shadow-sm group/btn"
+        >
+          <Activity className="mr-3 h-4 w-4 text-pink-500" />
+          <span className="font-semibold text-xs sm:text-sm">Clinical Screening (PHQ-9 / GAD-7)</span>
+        </Button>
+
         <Button 
           onClick={(e) => { e.stopPropagation(); navigate('/patient/journal'); }}
-          className="w-full justify-start h-12 rounded-xl bg-background border border-border/30 hover:bg-pink-500/10 hover:text-pink-600 hover:border-pink-500/30 text-foreground transition-all shadow-sm group/btn"
+          className="w-full justify-start h-11 rounded-xl bg-background border border-border/30 hover:bg-muted text-foreground transition-all shadow-sm group/btn"
         >
           <Edit3 className="mr-3 h-4 w-4 text-muted-foreground group-hover/btn:text-pink-500" />
-          <span className="font-semibold text-sm">Write in Journal</span>
+          <span className="font-semibold text-xs sm:text-sm">Write in Journal</span>
         </Button>
         
         <Button 
           onClick={(e) => { e.stopPropagation(); navigate('/patient/ai-companion'); }}
-          className="w-full justify-start h-12 rounded-xl bg-background border border-border/30 hover:bg-purple-500/10 hover:text-purple-600 hover:border-purple-500/30 text-foreground transition-all shadow-sm group/btn"
+          className="w-full justify-start h-11 rounded-xl bg-background border border-border/30 hover:bg-purple-500/10 hover:text-purple-600 hover:border-purple-500/30 text-foreground transition-all shadow-sm group/btn"
         >
           <HeartHandshake className="mr-3 h-4 w-4 text-muted-foreground group-hover/btn:text-purple-500" />
-          <span className="font-semibold text-sm">Talk to AI Companion</span>
+          <span className="font-semibold text-xs sm:text-sm">Talk to AI Companion</span>
         </Button>
       </div>
     </div>

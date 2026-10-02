@@ -54,7 +54,6 @@ The application features a **fully responsive, dark/light themed** interface wit
 | **Styling** | TailwindCSS 3 | Utility-first CSS with custom design tokens |
 | **UI Components** | ShadCN/UI (Radix Primitives) | 58+ accessible, headless UI components |
 | **Animations** | Framer Motion | Page transitions, stagger reveals, micro-interactions |
-| **3D Graphics** | Three.js + Spline | Interactive 3D hero visuals and backgrounds |
 | **Charts** | Recharts | Health progress data visualization |
 | **Forms** | React Hook Form + Zod | Type-safe form validation with schema-based parsing |
 | **State** | React Context API | Global state for patient profile, reminders, consultations |
@@ -62,7 +61,6 @@ The application features a **fully responsive, dark/light themed** interface wit
 | **Icons** | Lucide React | 460+ open-source icons |
 | **Toasts** | Sonner | Elegant, stacked toast notifications |
 | **Date Handling** | date-fns | Lightweight date manipulation and formatting |
-| **Server State** | TanStack React Query | Async state management and caching |
 | **Testing** | Vitest + Playwright | Unit tests (Vitest) and E2E browser tests (Playwright) |
 | **Linting** | ESLint 9 | Code quality and consistency enforcement |
 | **Fonts** | Geist Sans (headings + body) | Premium, modern typography via Fontsource jsDelivr CDN |
@@ -236,7 +234,6 @@ medscope/
 │   │       ├── glowing-effect.tsx    # Glow border effect
 │   │       ├── global-command.tsx    # ⌘K command palette
 │   │       ├── the-infinite-grid.tsx # Infinite dot-grid background
-│   │       ├── web-gl-shader.tsx     # WebGL shader background
 │   │       ├── emergency-fab.tsx     # Emergency floating action button
 │   │       ├── sidebar.tsx           # Multi-state sidebar
 │   │       └── ... (45 more Radix-based components)
@@ -533,8 +530,6 @@ Permissions-Policy: camera=(), microphone=(), geolocation=()
 
 | Package | Integration |
 |---|---|
-| `@splinetool/react-spline` | 3D Spline scene embedding in hero/backgrounds |
-| `three` | WebGL shader-based animated backgrounds |
 | `embla-carousel-react` | Touch-optimized carousels for feature showcases |
 | `@dnd-kit/core` + `@dnd-kit/sortable` | Drag-and-drop widget reordering on dashboard |
 | `react-resizable-panels` | Resizable split-pane layouts |
@@ -543,6 +538,7 @@ Permissions-Policy: camera=(), microphone=(), geolocation=()
 | `input-otp` | OTP input component for two-factor authentication |
 | `crypto-js` | AES encryption for client-side data security |
 | `recharts` | Health progress chart visualizations |
+| `tesseract.js` + OCR.space | Dual-engine OCR pipeline (offline primary, cloud fallback) |
 
 ---
 

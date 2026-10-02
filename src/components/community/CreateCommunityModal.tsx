@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ShieldAlert, Sparkles, Tag, Users, CheckCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 
 const CATEGORIES = ["Mental Health", "Chronic Conditions", "Nutrition", "Recovery", "Lifestyle", "Fitness", "General"];
 
@@ -43,8 +43,7 @@ interface CreateCommunityModalProps {
   }) => void;
 }
 
-const CreateCommunityModal = ({ isOpen, onClose, onSubmit }: CreateCommunityModalProps) => {
-  const { toast } = useToast();
+const CreateCommunityModal = ({ isOpen, onClose, onSubmit }: CreateCommunityModalProps) => {  
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("General");
@@ -126,8 +125,7 @@ const CreateCommunityModal = ({ isOpen, onClose, onSubmit }: CreateCommunityModa
       icon: iconMap[category] || "Users"
     });
     
-    toast({
-      title: "Community Created!",
+    toast.success("Community Created!", {
       description: `m/${name.trim().replace(/\s+/g, "")} has been successfully created.`,
       duration: 3500,
     });

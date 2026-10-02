@@ -2,6 +2,7 @@ import React from "react";
 import DoctorGlassCard from "../DoctorGlassCard";
 import { ShieldCheck, MessageSquare, AlertTriangle, Plus, Users, Award, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useDoctor } from "@/context/DoctorContext";
 
 export interface DoctorCommunityHeroProps {
   doctorName?: string;
@@ -12,12 +13,15 @@ export interface DoctorCommunityHeroProps {
 }
 
 export const DoctorCommunityHero: React.FC<DoctorCommunityHeroProps> = ({
-  doctorName = "Dr. Sarah Jenkins",
-  specialty = "Endocrinology & Internal Medicine",
+  doctorName,
+  specialty,
   pendingReportsCount = 3,
   verifiedAnswersCount = 12,
   onCreateAnnouncement,
 }) => {
+  const { doctorProfile } = useDoctor();
+  const name = doctorName || doctorProfile.fullName;
+  const spec = specialty || doctorProfile.specialty;
   return (
     <DoctorGlassCard
       variant="glow"
@@ -35,7 +39,7 @@ export const DoctorCommunityHero: React.FC<DoctorCommunityHeroProps> = ({
               <span>Verified Clinical Moderator</span>
             </span>
             <span className="text-xs font-semibold px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/20">
-              {specialty}
+              {spec}
             </span>
           </div>
 
@@ -44,7 +48,7 @@ export const DoctorCommunityHero: React.FC<DoctorCommunityHeroProps> = ({
           </h1>
 
           <p className="text-xs sm:text-sm text-muted-foreground font-medium leading-relaxed">
-            Welcome, {doctorName}. Guide patient discussions, answer medical inquiries, review flagged misinformation, and publish verified health guidance for Medscope communities.
+            Welcome, {name}. Guide patient discussions, answer medical inquiries, review flagged misinformation, and publish verified health guidance for Medscope communities.
           </p>
         </div>
 

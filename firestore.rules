@@ -1,0 +1,43 @@
+rules_version = '2';
+
+// Medscope Firestore security rules
+// Paste these in: Firebase Console → Firestore Database → Rules → Publish
+//
+// Model:
+//   users/{uid}       role + onboarding flag
+//   patients/{uid}    patient onboarding profile (owner writes, signed-in users read)
+//   doctors/{uid}     doctor onboarding profile (owner writes, public read for
+//                     the patient "Find Doctors" directory)
+//   appointments/{id} booking records (signed-in users)
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /users/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow create, update: if request.auth != null && request.auth.uid == uid;
+      allow delete: if false;
+    }
+
+    match /patients/{uid} {
+      // Doctors load patient details into their workspace, so any signed-in
+      // user can read; only the owner patient can write their own profile.
+      allow read: if request.auth != null;
+      allow create, update: if request.auth != null && request.auth.uid == uid;
+      allow delete: if false;
+    }
+
+    match /doctors/{uid} {
+      // Public read so patients can browse the directory while signing up;
+      // only the owner doctor can write their own profile.
+      allow read: if true;
+      allow create, update: if request.auth != null && request.auth.uid == uid;
+      allow delete: if false;
+    }
+
+    match /appointments/{appointmentId} {
+      allow read, create, update: if request.auth != null;
+      allow delete: if false;
+    }
+  }
+}

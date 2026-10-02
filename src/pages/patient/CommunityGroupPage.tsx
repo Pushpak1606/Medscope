@@ -41,7 +41,7 @@ import {
   Post, 
   CommunityGroup 
 } from "@/lib/communityMockData";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 
 const CATEGORIES = ["All", "Mental Health", "Chronic Conditions", "Nutrition", "Recovery", "Lifestyle", "Fitness"];
 
@@ -71,8 +71,7 @@ const BannerGradientMap: Record<string, string> = {
 
 const CommunityGroupPage = () => {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
-  const { toast } = useToast();
+  const navigate = useNavigate();  
   const { profile, joinedGroups, joinGroup, leaveGroup, groups, createGroup } = usePatient();
   const displayName = profile?.fullName?.split(" ")[0] || "Patient";
 
@@ -99,16 +98,14 @@ const CommunityGroupPage = () => {
   const handleJoinToggle = () => {
     if (isJoined) {
       leaveGroup(group.id);
-      toast({
-        title: "Left Group",
+      toast.info("Left Group", {
         description: `You left m/${group.name}. You will no longer see updates in your Home Feed.`,
         duration: 3000,
       });
     } else {
       joinGroup(group.id);
       setKarma(prev => prev + 15); // 15 karma points for joining!
-      toast({
-        title: "Joined Group! +15 Karma",
+      toast.success("Joined Group! +15 Karma", {
         description: `Welcome to m/${group.name}. Feel free to participate in conversations.`,
         duration: 3000,
       });
@@ -146,8 +143,7 @@ const CommunityGroupPage = () => {
 
     setPosts(prev => [newPost, ...prev]);
     setKarma(prev => prev + 50); // 50 Karma for writing a post!
-    toast({
-      title: "Post Published!",
+    toast.success("Post Published!", {
       description: `Your post is live in m/${postData.groupName}. +50 Karma!`,
       duration: 3500,
     });
@@ -185,8 +181,7 @@ const CommunityGroupPage = () => {
     if (voteType === "up" && !hasUpvoted) {
       setHasUpvoted(true);
       setKarma(prev => prev + 10);
-      toast({
-        title: "Achievement: Supportive Peer!",
+      toast.success("Achievement: Supportive Peer!", {
         description: "You gained 10 Healing Karma points.",
         duration: 2500,
       });
@@ -198,8 +193,7 @@ const CommunityGroupPage = () => {
     if (!hasCommented) {
       setHasCommented(true);
       setKarma(prev => prev + 25);
-      toast({
-        title: "Achievement: Coping Helper!",
+      toast.success("Achievement: Coping Helper!", {
         description: "You gained 25 Healing Karma points.",
         duration: 2500,
       });

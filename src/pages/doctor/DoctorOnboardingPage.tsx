@@ -8,6 +8,8 @@ import { Progress } from "@/components/ui/progress";
 import AnimatedBackground from "@/components/ui/animated-background";
 import { toast } from "sonner";
 import { useDoctor } from "@/context/DoctorContext";
+import { saveDoctorOnboarding } from "@/services/firebaseService";
+import { getStoredAuthUser } from "@/services/authService";
 
 import DocStepPersonal from "@/components/doctor-onboarding/DocStepPersonal";
 import DocStepQualifications from "@/components/doctor-onboarding/DocStepQualifications";
@@ -60,13 +62,22 @@ const DoctorOnboardingPage = () => {
   const handleSubmit = async () => {
     const mciNumber = formData.license || formData.registration || formData.registrationNumber || formData.licenseNumber || "MCI-98421";
     setIsSubmitting(true);
-    
-    // Store doctor onboarding data strictly in localStorage (no remote DB)
+
+    // Local flags first so navigation is never blocked
     try {
       localStorage.setItem("medscope_doctor_onboarding", JSON.stringify(formData));
       localStorage.setItem("medscope_doctor_onboarding_completed", "true");
     } catch (e) {
-      console.warn("Could not save doctor onboarding to localStorage:", e);
+      console.warn("Could not save doctor onboarding flags to localStorage:", e);
+    }
+
+    // Persist the full profile to Firestore: doctors/{uid} + users/{uid}
+    const authUser = getStoredAuthUser();
+    const uid = authUser?.uid || `local_doctor_${Date.now()}`;
+    try {
+      await saveDoctorOnboarding(uid, formData);
+    } catch (e) {
+      console.warn("Firestore doctor save failed; kept in local mirror:", e);
     }
 
     // Save master profile to DoctorContext & secureStorage
@@ -75,15 +86,18 @@ const DoctorOnboardingPage = () => {
       email: formData.email,
       phone: formData.phone,
       specialty: formData.specialization || formData.specialty,
-      subSpecialty: formData.subSpecialty || formData.specialization,
+      subSpecialty: formData.subSpecialization || formData.subSpecialty || formData.specialization,
       hospital: formData.hospital,
+      city: formData.city,
+      bio: formData.bio || formData.professionalBio,
       registrationNumber: mciNumber,
       licenseNumber: mciNumber,
       qualifications: formData.degree || "MBBS, MD",
+      experienceYears: formData.experience ? `${formData.experience}+ Years Experience` : undefined,
+      consultationFee: formData.fee ? String(formData.fee) : undefined,
       languages: Array.isArray(formData.languages) ? formData.languages.join(", ") : formData.languages,
     });
 
-    await new Promise((resolve) => setTimeout(resolve, 1200));
     setIsSubmitting(false);
     setIsSuccess(true);
 

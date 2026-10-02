@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { usePatient, JournalEntry } from "@/context/PatientContext";
 import PatientPageLayout from "@/components/patient-dashboard/shared/PatientPageLayout";
 import PageHeader from "@/components/patient-dashboard/shared/PageHeader";
@@ -20,10 +20,20 @@ import {
   Flame,
   FileText,
   TrendingUp,
+  Moon,
+  Zap,
+  Activity,
+  AlertTriangle,
+  RefreshCw,
+  BrainCircuit,
 } from "lucide-react";
 import { format, isToday, isYesterday, differenceInCalendarDays } from "date-fns";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { Slider } from "@/components/ui/slider";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { generateJournalTrendInsight, JournalTrendAnalysis } from "@/services/aiService";
 
 const MOOD_OPTIONS = [
   { label: "Great", icon: Smile, color: "text-emerald-500", bg: "bg-emerald-500/10", activeBg: "bg-emerald-500/20 ring-2 ring-emerald-500/40" },
@@ -33,7 +43,7 @@ const MOOD_OPTIONS = [
   { label: "Bad", icon: Frown, color: "text-red-500", bg: "bg-red-500/10", activeBg: "bg-red-500/20 ring-2 ring-red-500/40" },
 ];
 
-const TAG_OPTIONS = ["gratitude", "anxiety", "sleep", "progress", "therapy", "self-care", "goals", "reflection"];
+const TAG_OPTIONS = ["gratitude", "anxiety", "sleep", "progress", "therapy", "self-care", "goals", "reflection", "exercise", "nutrition"];
 
 const WRITING_PROMPTS = [
   "What are 3 things you're grateful for today?",
@@ -67,11 +77,53 @@ export default function JournalPage() {
   // New entry form state
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [selectedMood, setSelectedMood] = useState<string | null>(null);
+  const [selectedMood, setSelectedMood] = useState<string | null>("Good");
+  const [moodRating, setMoodRating] = useState<number>(7);
+  const [sleepQuality, setSleepQuality] = useState<number>(7);
+  const [stressLevel, setStressLevel] = useState<number>(4);
+  const [energyLevel, setEnergyLevel] = useState<number>(7);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [expandedEntry, setExpandedEntry] = useState<string | null>(null);
   const [showComposer, setShowComposer] = useState(false);
   const [promptIndex] = useState(() => Math.floor(Math.random() * WRITING_PROMPTS.length));
+
+  // AI Longitudinal Trend Analysis state
+  const [trendInsight, setTrendInsight] = useState<JournalTrendAnalysis | null>(null);
+  const [isAnalyzingTrends, setIsAnalyzingTrends] = useState<boolean>(false);
+
+  // Auto-analyze trends on load or when entries change
+  useEffect(() => {
+    let isMounted = true;
+    const loadTrends = async () => {
+      if (journalEntries.length === 0) return;
+      setIsAnalyzingTrends(true);
+      try {
+        const result = await generateJournalTrendInsight(journalEntries);
+        if (isMounted) setTrendInsight(result);
+      } catch (err) {
+        console.warn("Trend insight generation fallback:", err);
+      } finally {
+        if (isMounted) setIsAnalyzingTrends(false);
+      }
+    };
+    loadTrends();
+    return () => {
+      isMounted = false;
+    };
+  }, [journalEntries.length]);
+
+  const handleRefreshTrends = async () => {
+    setIsAnalyzingTrends(true);
+    try {
+      const result = await generateJournalTrendInsight(journalEntries);
+      setTrendInsight(result);
+      toast.success("AI trend insights updated.");
+    } catch {
+      toast.error("Could not refresh AI insights.");
+    } finally {
+      setIsAnalyzingTrends(false);
+    }
+  };
 
   const handleSave = () => {
     if (!title.trim() || !content.trim()) {
@@ -83,12 +135,20 @@ export default function JournalPage() {
       title: title.trim(),
       content: content.trim(),
       mood: selectedMood || undefined,
+      moodRating,
+      sleepQuality,
+      stressLevel,
+      energyLevel,
       tags: selectedTags.length > 0 ? selectedTags : undefined,
     });
-    toast.success("Journal entry saved ✨");
+    toast.success("Daily clinical journal entry saved ✨");
     setTitle("");
     setContent("");
-    setSelectedMood(null);
+    setSelectedMood("Good");
+    setMoodRating(7);
+    setSleepQuality(7);
+    setStressLevel(4);
+    setEnergyLevel(7);
     setSelectedTags([]);
     setShowComposer(false);
   };
@@ -230,6 +290,87 @@ export default function JournalPage() {
                             {mood.label}
                           </button>
                         ))}
+                      </div>
+                    </div>
+
+                    {/* Numeric 1-10 Metrics Sliders (Medscope FR-07 Specification) */}
+                    <div className="p-4 sm:p-5 rounded-2xl bg-muted/30 border border-border/40 space-y-4">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold uppercase tracking-wider text-foreground flex items-center gap-1.5">
+                          <Activity className="w-3.5 h-3.5 text-primary" />
+                          Daily Health Metrics (1-10 Scale)
+                        </span>
+                        <span className="text-[11px] text-muted-foreground">Used for AI longitudinal trend analysis</span>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+                        {/* Mood Rating */}
+                        <div className="space-y-1.5">
+                          <div className="flex justify-between text-xs">
+                            <span className="text-muted-foreground flex items-center gap-1">
+                              <Smile className="w-3.5 h-3.5 text-blue-400" /> Mood Rating
+                            </span>
+                            <span className="font-bold text-foreground">{moodRating} / 10</span>
+                          </div>
+                          <Slider
+                            value={[moodRating]}
+                            min={1}
+                            max={10}
+                            step={1}
+                            onValueChange={([val]) => setMoodRating(val)}
+                          />
+                        </div>
+
+                        {/* Sleep Quality */}
+                        <div className="space-y-1.5">
+                          <div className="flex justify-between text-xs">
+                            <span className="text-muted-foreground flex items-center gap-1">
+                              <Moon className="w-3.5 h-3.5 text-purple-400" /> Sleep Quality
+                            </span>
+                            <span className="font-bold text-foreground">{sleepQuality} / 10</span>
+                          </div>
+                          <Slider
+                            value={[sleepQuality]}
+                            min={1}
+                            max={10}
+                            step={1}
+                            onValueChange={([val]) => setSleepQuality(val)}
+                          />
+                        </div>
+
+                        {/* Stress Level */}
+                        <div className="space-y-1.5">
+                          <div className="flex justify-between text-xs">
+                            <span className="text-muted-foreground flex items-center gap-1">
+                              <AlertTriangle className="w-3.5 h-3.5 text-amber-400" /> Stress Level
+                            </span>
+                            <span className="font-bold text-foreground">{stressLevel} / 10</span>
+                          </div>
+                          <Slider
+                            value={[stressLevel]}
+                            min={1}
+                            max={10}
+                            step={1}
+                            onValueChange={([val]) => setStressLevel(val)}
+                          />
+                        </div>
+
+                        {/* Energy Level */}
+                        <div className="space-y-1.5">
+                          <div className="flex justify-between text-xs">
+                            <span className="text-muted-foreground flex items-center gap-1">
+                              <Zap className="w-3.5 h-3.5 text-emerald-400" /> Energy Vitality
+                            </span>
+                            <span className="font-bold text-foreground">{energyLevel} / 10</span>
+                          </div>
+                          <Slider
+                            value={[energyLevel]}
+                            min={1}
+                            max={10}
+                            step={1}
+                            onValueChange={([val]) => setEnergyLevel(val)}
+                          />
+                        </div>
                       </div>
                     </div>
 
@@ -377,6 +518,32 @@ export default function JournalPage() {
                                     </div>
                                   )}
 
+                                  {/* Metric Pills (FR-07) */}
+                                  {(entry.moodRating || entry.sleepQuality || entry.stressLevel || entry.energyLevel) && (
+                                    <div className="flex flex-wrap gap-2 pt-1 pb-3 text-xs">
+                                      {entry.moodRating && (
+                                        <span className="px-2 py-0.5 rounded-md bg-blue-500/10 text-blue-400 border border-blue-500/20 font-medium">
+                                          Mood: {entry.moodRating}/10
+                                        </span>
+                                      )}
+                                      {entry.sleepQuality && (
+                                        <span className="px-2 py-0.5 rounded-md bg-purple-500/10 text-purple-400 border border-purple-500/20 font-medium">
+                                          Sleep: {entry.sleepQuality}/10
+                                        </span>
+                                      )}
+                                      {entry.stressLevel && (
+                                        <span className="px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-400 border border-amber-500/20 font-medium">
+                                          Stress: {entry.stressLevel}/10
+                                        </span>
+                                      )}
+                                      {entry.energyLevel && (
+                                        <span className="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium">
+                                          Energy: {entry.energyLevel}/10
+                                        </span>
+                                      )}
+                                    </div>
+                                  )}
+
                                   {/* Mood + Meta */}
                                   <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -412,6 +579,80 @@ export default function JournalPage() {
         {/* --- Desktop Sidebar --- */}
         <div className="hidden lg:flex lg:col-span-4 flex-col gap-6">
           
+          {/* AI Longitudinal Trend Analysis (Microservice 4) */}
+          <GlassCard className="relative overflow-hidden border-purple-500/30 bg-gradient-to-br from-purple-500/10 via-card/70 to-card">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-500 via-pink-500 to-indigo-500" />
+            <div className="flex items-center justify-between mb-3 pt-2">
+              <div className="flex items-center gap-2">
+                <BrainCircuit className="h-5 w-5 text-purple-400" />
+                <h4 className="font-bold text-foreground text-sm">AI Weekly Trend Insights</h4>
+              </div>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={handleRefreshTrends}
+                disabled={isAnalyzingTrends}
+                className="h-8 px-2 text-xs text-muted-foreground hover:text-foreground"
+              >
+                <RefreshCw className={cn("w-3.5 h-3.5", isAnalyzingTrends && "animate-spin")} />
+              </Button>
+            </div>
+
+            {trendInsight ? (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-muted-foreground">Trajectory:</span>
+                  <Badge
+                    variant="outline"
+                    className={cn(
+                      "text-xs font-bold",
+                      trendInsight.trajectory === "Improving"
+                        ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/30"
+                        : trendInsight.trajectory === "Declining / Needs Attention"
+                        ? "bg-red-500/15 text-red-400 border-red-500/30"
+                        : "bg-blue-500/15 text-blue-400 border-blue-500/30"
+                    )}
+                  >
+                    {trendInsight.trajectory}
+                  </Badge>
+                </div>
+
+                {/* 4 Metrics Averages */}
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div className="p-2 rounded-xl bg-background/50 border border-border/30">
+                    <span className="text-muted-foreground block text-[10px]">Avg Mood</span>
+                    <span className="font-bold text-foreground text-sm">{trendInsight.averageMood} / 10</span>
+                  </div>
+                  <div className="p-2 rounded-xl bg-background/50 border border-border/30">
+                    <span className="text-muted-foreground block text-[10px]">Avg Sleep</span>
+                    <span className="font-bold text-foreground text-sm">{trendInsight.averageSleep} / 10</span>
+                  </div>
+                  <div className="p-2 rounded-xl bg-background/50 border border-border/30">
+                    <span className="text-muted-foreground block text-[10px]">Avg Stress</span>
+                    <span className="font-bold text-foreground text-sm">{trendInsight.averageStress} / 10</span>
+                  </div>
+                  <div className="p-2 rounded-xl bg-background/50 border border-border/30">
+                    <span className="text-muted-foreground block text-[10px]">Avg Energy</span>
+                    <span className="font-bold text-foreground text-sm">{trendInsight.averageEnergy} / 10</span>
+                  </div>
+                </div>
+
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  {trendInsight.summaryText}
+                </p>
+
+                <div className="p-2.5 rounded-xl bg-primary/10 border border-primary/20 text-xs text-foreground/90">
+                  <strong className="text-primary block mb-0.5">Clinical Note:</strong>
+                  {trendInsight.actionableAdvice}
+                </div>
+              </div>
+            ) : (
+              <p className="text-xs text-muted-foreground py-2">
+                {isAnalyzingTrends ? "Analyzing trend patterns with Medscope AI..." : "Log your daily entries to reveal trend insights."}
+              </p>
+            )}
+          </GlassCard>
+
           {/* Writing Streak */}
           <GlassCard className="relative overflow-hidden">
             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-400 to-orange-500" />

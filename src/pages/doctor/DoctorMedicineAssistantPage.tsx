@@ -12,7 +12,7 @@ import FinalPrescriptionPreview from "@/components/doctor-dashboard/medicine-ass
 
 export const DoctorMedicineAssistantPage: React.FC = () => {
   return (
-    <DoctorLayout doctorName="Dr. Sarah Jenkins" specialty="Cardiology & Internal Medicine">
+    <DoctorLayout>
       <DoctorPageContainer maxWidth="wide">
         <PageTransition className="space-y-8">
           

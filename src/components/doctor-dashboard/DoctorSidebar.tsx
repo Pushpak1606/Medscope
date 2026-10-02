@@ -9,7 +9,6 @@ import {
   Stethoscope,
   Pill,
   MessageSquare,
-  Sparkles,
   Settings,
   LogOut,
   ChevronLeft,
@@ -33,7 +32,6 @@ export const DOCTOR_NAV_ITEMS: NavItem[] = [
   { label: "Consultations", path: "/doctor/consultations", icon: Stethoscope },
   { label: "Medicine Assistant", path: "/doctor/medicine-assistant", icon: Pill },
   { label: "Community", path: "/doctor/community", icon: MessageSquare },
-  { label: "Clinical AI", path: "/doctor/clinical-ai", icon: Sparkles, badge: "AI" },
   { label: "Settings", path: "/doctor/settings", icon: Settings },
 ];
 

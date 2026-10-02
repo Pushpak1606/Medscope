@@ -24,12 +24,6 @@ export interface ClinicalSummaryData {
   diagnosis: string;
   allergies: string[];
   currentMedsCount: number;
-  vitals: {
-    bp: string;
-    hr: number;
-    spo2: number;
-    temp: string;
-  };
   labsSummary: string;
   treatmentGoals: string[];
 }
@@ -42,12 +36,6 @@ const MOCK_SUMMARY: ClinicalSummaryData = {
   diagnosis: "Subacute Coronary Syndrome • Coronary Artery Disease (CAD)",
   allergies: ["Penicillin (Severe Anaphylaxis)", "Shellfish (Urticaria)"],
   currentMedsCount: 5,
-  vitals: {
-    bp: "148/92",
-    hr: 94,
-    spo2: 95,
-    temp: "98.6°F",
-  },
   labsSummary: "Troponin T: 0.14 ng/mL (Elevated) • LDL: 112 mg/dL • HbA1c: 6.8%",
   treatmentGoals: [
     "Target LDL reduction < 70 mg/dL (High-intensity statin)",
@@ -109,26 +97,6 @@ export const PatientClinicalSummaryWidget: React.FC = () => {
                   <ShieldAlert className="h-3.5 w-3.5 text-amber-500" /> Allergies: <strong className="text-rose-500">{MOCK_SUMMARY.allergies.join(", ")}</strong>
                 </span>
               </div>
-            </div>
-          </div>
-
-          {/* Vitals Telemetry Box */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 w-full lg:w-auto shrink-0 bg-background/50 p-3 rounded-2xl border border-border/40 backdrop-blur-md">
-            <div className="px-3 py-1.5 rounded-xl bg-card/60">
-              <div className="text-[10px] uppercase font-bold text-muted-foreground">BP</div>
-              <div className="text-xs font-bold text-foreground">{MOCK_SUMMARY.vitals.bp}</div>
-            </div>
-            <div className="px-3 py-1.5 rounded-xl bg-card/60">
-              <div className="text-[10px] uppercase font-bold text-muted-foreground">HR</div>
-              <div className="text-xs font-bold text-foreground">{MOCK_SUMMARY.vitals.hr} <span className="text-[10px]">bpm</span></div>
-            </div>
-            <div className="px-3 py-1.5 rounded-xl bg-card/60">
-              <div className="text-[10px] uppercase font-bold text-muted-foreground">SpO2</div>
-              <div className="text-xs font-bold text-foreground">{MOCK_SUMMARY.vitals.spo2}%</div>
-            </div>
-            <div className="px-3 py-1.5 rounded-xl bg-card/60">
-              <div className="text-[10px] uppercase font-bold text-muted-foreground">Temp</div>
-              <div className="text-xs font-bold text-foreground">{MOCK_SUMMARY.vitals.temp}</div>
             </div>
           </div>
         </div>

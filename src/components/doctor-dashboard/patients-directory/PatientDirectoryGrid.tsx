@@ -32,7 +32,6 @@ export interface PatientDirectoryCardItem {
   nextAppointment: string;
   riskLevel: "HIGH RISK" | "STABLE" | "MONITOR";
   assignedDoctor: string;
-  vitals: { bp: string; hr: number; spo2: number };
 }
 
 export const MOCK_PATIENT_DIRECTORY: PatientDirectoryCardItem[] = [
@@ -50,7 +49,6 @@ export const MOCK_PATIENT_DIRECTORY: PatientDirectoryCardItem[] = [
     nextAppointment: "August 10, 2026",
     riskLevel: "HIGH RISK",
     assignedDoctor: "Dr. Sarah Jenkins, MD",
-    vitals: { bp: "148/92", hr: 94, spo2: 95 },
   },
   {
     id: "pat-102",
@@ -66,7 +64,6 @@ export const MOCK_PATIENT_DIRECTORY: PatientDirectoryCardItem[] = [
     nextAppointment: "August 04, 2026",
     riskLevel: "HIGH RISK",
     assignedDoctor: "Dr. Sarah Jenkins, MD",
-    vitals: { bp: "164/102", hr: 88, spo2: 97 },
   },
   {
     id: "pat-103",
@@ -82,7 +79,6 @@ export const MOCK_PATIENT_DIRECTORY: PatientDirectoryCardItem[] = [
     nextAppointment: "August 18, 2026",
     riskLevel: "MONITOR",
     assignedDoctor: "Dr. Sarah Jenkins, MD",
-    vitals: { bp: "132/84", hr: 78, spo2: 98 },
   },
   {
     id: "pat-104",
@@ -98,7 +94,6 @@ export const MOCK_PATIENT_DIRECTORY: PatientDirectoryCardItem[] = [
     nextAppointment: "August 12, 2026",
     riskLevel: "STABLE",
     assignedDoctor: "Dr. Sarah Jenkins, MD",
-    vitals: { bp: "120/78", hr: 72, spo2: 99 },
   },
   {
     id: "pat-105",
@@ -114,7 +109,6 @@ export const MOCK_PATIENT_DIRECTORY: PatientDirectoryCardItem[] = [
     nextAppointment: "August 02, 2026",
     riskLevel: "HIGH RISK",
     assignedDoctor: "Dr. Sarah Jenkins, MD",
-    vitals: { bp: "138/88", hr: 82, spo2: 94 },
   },
   {
     id: "pat-106",
@@ -130,7 +124,6 @@ export const MOCK_PATIENT_DIRECTORY: PatientDirectoryCardItem[] = [
     nextAppointment: "September 01, 2026",
     riskLevel: "STABLE",
     assignedDoctor: "Dr. Sarah Jenkins, MD",
-    vitals: { bp: "118/74", hr: 68, spo2: 99 },
   },
 ];
 
@@ -211,19 +204,10 @@ export const PatientDirectoryGrid: React.FC<PatientDirectoryGridProps> = ({ pati
                   </div>
                 </div>
 
-                {/* Current Treatment Status & Vitals Grid */}
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div className="p-2.5 rounded-xl bg-background/50 border border-border/40 space-y-0.5">
-                    <span className="text-[10px] text-muted-foreground font-bold uppercase">Regimen / Status:</span>
-                    <div className="font-semibold text-foreground truncate">{patient.treatmentStatus}</div>
-                  </div>
-
-                  <div className="p-2.5 rounded-xl bg-background/50 border border-border/40 space-y-0.5">
-                    <span className="text-[10px] text-muted-foreground font-bold uppercase">Telemetry Vitals:</span>
-                    <div className="font-mono text-foreground font-bold truncate">
-                      BP {patient.vitals.bp} • HR {patient.vitals.hr}
-                    </div>
-                  </div>
+                {/* Current Treatment Status */}
+                <div className="p-2.5 rounded-xl bg-background/50 border border-border/40 space-y-0.5 text-xs">
+                  <span className="text-[10px] text-muted-foreground font-bold uppercase">Regimen / Status:</span>
+                  <div className="font-semibold text-foreground truncate">{patient.treatmentStatus}</div>
                 </div>
 
                 {/* Consult & Follow-up Dates */}

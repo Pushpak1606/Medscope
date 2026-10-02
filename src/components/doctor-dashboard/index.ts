@@ -12,7 +12,6 @@ export { default as PageTransition } from "./PageTransition";
 export { default as EmptyState } from "./EmptyState";
 export { default as LoadingState } from "./LoadingState";
 export { default as ErrorState } from "./ErrorState";
-export { default as DoctorWorkspaceStructure } from "./DoctorWorkspaceStructure";
 
 export type { ClinicalStatus } from "./StatusBadge";
 export type { PriorityLevel } from "./PriorityBadge";

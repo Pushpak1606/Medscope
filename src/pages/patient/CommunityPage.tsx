@@ -44,7 +44,7 @@ import {
   Post, 
   CommunityGroup 
 } from "@/lib/communityMockData";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 const CATEGORIES = ["All", "Mental Health", "Chronic Conditions", "Nutrition", "Recovery", "Lifestyle", "Fitness"];
@@ -62,8 +62,7 @@ const staggerContainer = {
 type MobileTab = "feed" | "groups" | "doctors" | "karma";
 
 const CommunityPage = () => {
-  const navigate = useNavigate();
-  const { toast } = useToast();
+  const navigate = useNavigate();  
   const { profile, joinedGroups, joinGroup, leaveGroup, groups, createGroup } = usePatient();
   const displayName = profile?.fullName?.split(" ")[0] || "Patient";
 
@@ -89,8 +88,7 @@ const CommunityPage = () => {
     if (voteType === "up" && !hasUpvoted) {
       setHasUpvoted(true);
       setKarma(prev => prev + 10);
-      toast({
-        title: "Achievement: Peer Supporter",
+      toast.success("Achievement: Peer Supporter", {
         description: "Gained +10 Healing Karma points.",
         duration: 2500,
       });
@@ -102,8 +100,7 @@ const CommunityPage = () => {
     if (!hasCommented) {
       setHasCommented(true);
       setKarma(prev => prev + 25);
-      toast({
-        title: "Achievement: Care Helper",
+      toast.success("Achievement: Care Helper", {
         description: "Gained +25 Healing Karma points.",
         duration: 2500,
       });
@@ -151,8 +148,7 @@ const CommunityPage = () => {
 
     setPosts(prev => [newPost, ...prev]);
     setKarma(prev => prev + 50);
-    toast({
-      title: "Post Published!",
+    toast.success("Post Published!", {
       description: `Your post is live in m/${postData.groupName}. +50 Karma!`,
       duration: 3500,
     });
@@ -601,7 +597,7 @@ const CommunityPage = () => {
                       variant="outline"
                       onClick={() => {
                         joinGroup(g.id);
-                        toast({ title: "Joined Group", description: `You joined m/${g.name}!` });
+                        toast.success("Joined Group", { description: `You joined m/${g.name}!` });
                       }}
                       className="h-7 px-3 rounded-full text-[11px] font-bold border-primary/30 text-primary hover:bg-primary/10 shrink-0"
                     >
@@ -631,7 +627,7 @@ const CommunityPage = () => {
         onClose={() => setIsCreateGroupModalOpen(false)}
         onSubmit={(groupData) => {
           createGroup(groupData);
-          toast({ title: "Group Created!", description: `m/${groupData.name} is now live.` });
+          toast.success("Group Created!", { description: `m/${groupData.name} is now live.` });
         }}
       />
     </PatientPageLayout>

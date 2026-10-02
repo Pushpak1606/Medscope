@@ -19,7 +19,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Post, Comment } from "@/lib/communityMockData";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 
 interface PostFeedCardProps {
   post: Post;
@@ -28,8 +28,7 @@ interface PostFeedCardProps {
   onCommentSubmit?: (postId: string) => void;
 }
 
-const PostFeedCard = ({ post, currentUserName = "Patient", onVoteToggle, onCommentSubmit }: PostFeedCardProps) => {
-  const { toast } = useToast();
+const PostFeedCard = ({ post, currentUserName = "Patient", onVoteToggle, onCommentSubmit }: PostFeedCardProps) => {  
   const [vote, setVote] = useState<"up" | "down" | null>(post.userVote);
   const [score, setScore] = useState(post.likes);
   const [commentsExpanded, setCommentsExpanded] = useState(false);
@@ -66,8 +65,7 @@ const PostFeedCard = ({ post, currentUserName = "Patient", onVoteToggle, onComme
   const handleShare = () => {
     navigator.clipboard.writeText(`${window.location.origin}/patient/community/${post.groupId}`);
     setShared(true);
-    toast({
-      title: "Link Copied!",
+    toast.success("Link Copied!", {
       description: "Community link copied to clipboard.",
       duration: 2500,
     });
@@ -96,8 +94,7 @@ const PostFeedCard = ({ post, currentUserName = "Patient", onVoteToggle, onComme
       onCommentSubmit(post.id);
     }
 
-    toast({
-      title: "Comment Published",
+    toast.success("Comment Published", {
       description: "Your thought was added to this discussion.",
       duration: 2000,
     });

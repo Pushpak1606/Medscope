@@ -22,6 +22,7 @@ const NAV_LINKS = [
   { label: "Dashboard", path: "/patient/dashboard" },
   { label: "Reminders", path: "/patient/reminders" },
   { label: "Consultations", path: "/patient/consultations" },
+  { label: "Find Doctors", path: "/patient/find-doctors" },
   { label: "Wellness", path: "/patient/wellness" },
   { label: "Community", path: "/patient/community" },
 ];

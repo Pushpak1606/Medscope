@@ -6,7 +6,7 @@ import UnifiedConsultationRoom from "@/components/consultation/UnifiedConsultati
 
 export const ConsultationWorkspacePage: React.FC = () => {
   return (
-    <DoctorLayout doctorName="Dr. Sarah Jenkins" specialty="Cardiology & Internal Medicine">
+    <DoctorLayout>
       <DoctorPageContainer maxWidth="wide">
         <PageTransition className="space-y-8">
           <UnifiedConsultationRoom role="doctor" />

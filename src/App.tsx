@@ -1,14 +1,35 @@
 import { lazy, Suspense } from "react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
-import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/theme-provider";
-import { PatientProvider } from "@/context/PatientContext";
+import { PatientProvider, usePatient } from "@/context/PatientContext";
+import { useEffect } from "react";
+import { useDoctor } from "@/context/DoctorContext";
 import { ConsultationProvider } from "@/context/ConsultationContext";
-import { DoctorProvider } from "@/context/DoctorContext";
+import { DoctorProvider, hydrateDoctorContextFromFirestore } from "@/context/DoctorContext";
+import { hydratePatientContextFromFirestore } from "@/context/PatientContext";
 import { ChatHistoryProvider } from "@/context/ChatHistoryContext";
+
+/* Pulls doctors/{uid} from Firestore into DoctorContext once on mount. */
+const DoctorHydrator = () => {
+  const { updateDoctorProfile } = useDoctor();
+  useEffect(() => {
+    hydrateDoctorContextFromFirestore(updateDoctorProfile);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  return null;
+};
+
+/* Pulls patients/{uid} from Firestore into PatientContext once on mount. */
+const PatientHydrator = () => {
+  const { updateProfile } = usePatient();
+  useEffect(() => {
+    hydratePatientContextFromFirestore(updateProfile);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  return null;
+};
 import ScrollToTop from "@/components/ScrollToTop";
 import PageLoadingFallback from "@/components/ui/PageLoadingFallback";
 
@@ -43,14 +64,14 @@ const EmergencyPage = lazy(() => import("./pages/patient/EmergencyPage.tsx"));
 const RecordsPage = lazy(() => import("./pages/patient/RecordsPage.tsx"));
 const RemindersPage = lazy(() => import("./pages/patient/RemindersPage.tsx"));
 const ConsultationsPage = lazy(() => import("./pages/patient/ConsultationsPage.tsx"));
+const FindDoctorsPage = lazy(() => import("./pages/patient/FindDoctorsPage.tsx"));
 const WellnessPage = lazy(() => import("./pages/patient/WellnessPage.tsx"));
 const JournalPage = lazy(() => import("./pages/patient/JournalPage.tsx"));
 const AICompanionPage = lazy(() => import("./pages/patient/AICompanionPage.tsx"));
 const CommunityPage = lazy(() => import("./pages/patient/CommunityPage.tsx"));
 const CommunityGroupPage = lazy(() => import("./pages/patient/CommunityGroupPage.tsx"));
+const MentalHealthScreeningPage = lazy(() => import("./pages/patient/MentalHealthScreeningPage.tsx"));
 const ComingSoonPage = lazy(() => import("./pages/ComingSoonPage"));
-
-const queryClient = new QueryClient();
 
 // Initialize global font scaling before React mounts to prevent FOUC
 const initFontSize = () => {
@@ -63,15 +84,15 @@ const initFontSize = () => {
 initFontSize();
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
+  <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+    <TooltipProvider>
+      <Sonner />
         <BrowserRouter>
           <ScrollToTop />
           <DoctorProvider>
+            <DoctorHydrator />
             <PatientProvider>
+              <PatientHydrator />
               <ConsultationProvider>
                 <ChatHistoryProvider>
                   <Suspense fallback={<PageLoadingFallback />}>
@@ -106,11 +127,13 @@ const App = () => (
                     <Route path="/patient/records" element={<RecordsPage />} />
                     <Route path="/patient/reminders" element={<RemindersPage />} />
                     <Route path="/patient/consultations" element={<ConsultationsPage />} />
+                    <Route path="/patient/find-doctors" element={<FindDoctorsPage />} />
                     <Route path="/patient/wellness" element={<WellnessPage />} />
                     <Route path="/patient/journal" element={<JournalPage />} />
                     <Route path="/patient/ai-companion" element={<AICompanionPage />} />
                     <Route path="/patient/community" element={<CommunityPage />} />
                     <Route path="/patient/community/:id" element={<CommunityGroupPage />} />
+                    <Route path="/patient/mental-screening" element={<MentalHealthScreeningPage />} />
                     
                     {/* Legal & Placeholder Routes */}
                     <Route path="/legal/terms" element={<ComingSoonPage title="Terms of Service" desc="Our terms of service and user agreements will be updated here." />} />
@@ -126,9 +149,8 @@ const App = () => (
           </PatientProvider>
         </DoctorProvider>
         </BrowserRouter>
-      </TooltipProvider>
-    </ThemeProvider>
-  </QueryClientProvider>
+    </TooltipProvider>
+  </ThemeProvider>
 );
 
 export default App;

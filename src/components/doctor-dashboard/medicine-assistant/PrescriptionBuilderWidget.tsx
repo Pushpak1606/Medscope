@@ -6,6 +6,9 @@ import { Search, Plus, Trash2, Edit3, Pill, CheckCircle2, AlertTriangle, Sparkle
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
+import { checkDrugInteractions, DetectedInteraction } from "@/lib/drugInteractions";
+import { DrugInteractionAuditModal } from "./DrugInteractionAuditModal";
+
 export interface PrescriptionDraftItem {
   id: string;
   name: string;
@@ -14,6 +17,7 @@ export interface PrescriptionDraftItem {
   duration: string;
   mealTiming: "Before Meal" | "After Meal" | "With Food" | "At Bedtime" | "Anytime";
   instructions: string;
+  clinicalOverrideRationale?: string;
 }
 
 const INITIAL_BUILDER_ITEMS: PrescriptionDraftItem[] = [
@@ -49,15 +53,21 @@ export const PrescriptionBuilderWidget: React.FC = () => {
     instructions: "Take with water as directed.",
   });
 
+  // Drug Interaction Checking & Audit state (TC-D04)
+  const [isAuditModalOpen, setIsAuditModalOpen] = useState(false);
+  const [detectedConflicts, setDetectedConflicts] = useState<DetectedInteraction[]>([]);
+  const [pendingCandidateItem, setPendingCandidateItem] = useState<PrescriptionDraftItem | null>(null);
+
   const handleAddItem = () => {
-    if (!searchTerm.trim() && !newMed.name.trim()) {
+    const candidateName = (newMed.name || searchTerm).trim();
+    if (!candidateName) {
       toast.error("Please enter a medicine name.");
       return;
     }
 
-    const added: PrescriptionDraftItem = {
+    const candidate: PrescriptionDraftItem = {
       id: `b-${Date.now()}`,
-      name: newMed.name || searchTerm,
+      name: candidateName,
       dosage: newMed.dosage,
       frequency: newMed.frequency,
       duration: newMed.duration,
@@ -65,7 +75,32 @@ export const PrescriptionBuilderWidget: React.FC = () => {
       instructions: newMed.instructions,
     };
 
-    setItems((prev) => [...prev, added]);
+    // Real-time Pharmacological Interaction Check against active regimen
+    const conflicts = checkDrugInteractions(
+      candidate.name,
+      items.map((i) => i.name)
+    );
+
+    if (conflicts.length > 0) {
+      setDetectedConflicts(conflicts);
+      setPendingCandidateItem(candidate);
+      setIsAuditModalOpen(true);
+      return;
+    }
+
+    commitAddItem(candidate);
+  };
+
+  const commitAddItem = (candidate: PrescriptionDraftItem, rationale?: string) => {
+    const finalItem: PrescriptionDraftItem = {
+      ...candidate,
+      clinicalOverrideRationale: rationale,
+      instructions: rationale
+        ? `${candidate.instructions} [Clinical Override: ${rationale}]`
+        : candidate.instructions,
+    };
+
+    setItems((prev) => [...prev, finalItem]);
     setSearchTerm("");
     setNewMed({
       name: "",
@@ -75,7 +110,28 @@ export const PrescriptionBuilderWidget: React.FC = () => {
       mealTiming: "After Meal",
       instructions: "Take with water as directed.",
     });
-    toast.success(`Added ${added.name} to prescription draft.`);
+
+    if (rationale) {
+      toast.warning(`Prescription authorized with recorded clinical override rationale.`);
+    } else {
+      toast.success(`Added ${finalItem.name} to prescription draft.`);
+    }
+  };
+
+  const handleConfirmOverride = (rationale: string) => {
+    if (pendingCandidateItem) {
+      commitAddItem(pendingCandidateItem, rationale);
+    }
+    setIsAuditModalOpen(false);
+    setPendingCandidateItem(null);
+    setDetectedConflicts([]);
+  };
+
+  const handleCancelOverride = () => {
+    setIsAuditModalOpen(false);
+    setPendingCandidateItem(null);
+    setDetectedConflicts([]);
+    toast.info("Prescription item addition cancelled due to clinical interaction.");
   };
 
   const handleRemoveItem = (id: string, name: string) => {
@@ -261,6 +317,17 @@ export const PrescriptionBuilderWidget: React.FC = () => {
             </div>
           ))}
         </div>
+
+        {/* Real-time Drug-Drug Interaction Acknowledgement & Override Modal (TC-D04) */}
+        {pendingCandidateItem && (
+          <DrugInteractionAuditModal
+            isOpen={isAuditModalOpen}
+            candidateDrug={pendingCandidateItem.name}
+            conflicts={detectedConflicts}
+            onConfirmOverride={handleConfirmOverride}
+            onCancel={handleCancelOverride}
+          />
+        )}
       </DoctorGlassCard>
     </section>
   );

@@ -1,6 +1,12 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { secureStorage } from "@/lib/secureStorage";
 import { CommunityGroup, MOCK_GROUPS } from "@/lib/communityMockData";
+import { ScreeningResult } from "@/lib/clinicalScreening";
+import {
+  savePatientOnboarding,
+  getPatientProfile,
+  ensureAuthenticatedUser,
+} from "@/services/firebaseService";
 
 // TODO (Backend Team):
 // Replace local secureStorage / mock data state in PatientContext with REST / GraphQL API hooks (e.g. React Query).
@@ -68,7 +74,17 @@ export interface JournalEntry {
   title: string;
   content: string;
   mood?: string;
+  moodRating?: number; // 1-10 scale
+  sleepQuality?: number; // 1-10 scale
+  stressLevel?: number; // 1-10 scale
+  energyLevel?: number; // 1-10 scale
   tags?: string[];
+  aiInsight?: {
+    sentiment: string;
+    keyThemes: string[];
+    clinicalConcern: boolean;
+    recommendation: string;
+  };
 }
 
 export interface PatientProfile {
@@ -129,6 +145,8 @@ export interface Reminder {
   iconName: string;
   color: string;
   bg: string;
+  missedStreak?: number; // 0, 1, 2, 3+ missed doses
+  escalationLevel?: number; // 1 = standard, 2 = modal / intrusive, 3 = emergency / care team flag
 }
 
 interface PatientContextType {
@@ -141,6 +159,7 @@ interface PatientContextType {
   addReminder: (r: Omit<Reminder, "id">) => void;
   editReminder: (id: string, updates: Partial<Reminder>) => void;
   markReminderDone: (id: string) => void;
+  markReminderMissed: (id: string) => void;
   snoozeReminder: (id: string) => void;
   deleteReminder: (id: string) => void;
   addMoodLog: (log: Omit<MoodLog, "id">) => void;
@@ -151,6 +170,10 @@ interface PatientContextType {
   // Journal
   journalEntries: JournalEntry[];
   addJournalEntry: (entry: Omit<JournalEntry, "id">) => void;
+  // Mental Health Screening Suite (PHQ-9, GAD-7, PSS-10)
+  screeningHistory: ScreeningResult[];
+  addScreeningResult: (result: Omit<ScreeningResult, "id" | "completedAt"> & { id?: string; completedAt?: string }) => void;
+  clearScreeningHistory: () => void;
 
   /* =========================================================================
      ECOSYSTEM REAL-TIME SYNCHRONIZATION MUTATOR APIS (DOCTOR -> PATIENT)
@@ -200,6 +223,30 @@ export const calculateProfileCompleteness = (p: Partial<PatientProfile>): number
   if (p.activityLevel || p.sleepQuality || p.stressLevel || p.diet) score += 10;
 
   return Math.min(100, score);
+};
+
+/* =========================================================================
+   FIRESTORE HYDRATION (called once by PatientHydrator in App.tsx)
+   Pulls patients/{uid} and overlays it on the local profile so the whole
+   app reflects what the patient filled during onboarding.
+   ========================================================================= */
+let patientHydrationStarted = false;
+
+export const hydratePatientContextFromFirestore = (
+  onProfile: (remote: Partial<PatientProfile>) => void
+) => {
+  if (patientHydrationStarted) return;
+  patientHydrationStarted = true;
+  (async () => {
+    try {
+      const { uid } = ensureAuthenticatedUser("patient");
+      if (uid.startsWith("demo")) return; // demo preview: keep local defaults
+      const remote = await getPatientProfile(uid);
+      if (remote) onProfile(remote);
+    } catch (err) {
+      console.warn("[Medscope] Patient profile hydration skipped:", err);
+    }
+  })();
 };
 
 export const PatientProvider = ({ children }: { children: ReactNode }) => {
@@ -330,8 +377,110 @@ const MOCK_VITALS_LOGS: VitalsLog[] = [
       const stored = secureStorage.getItem<JournalEntry[]>("medscope-journal");
       if (stored && stored.length > 0) return stored;
       return [
-        { id: "j1", date: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), title: "Morning Reflections", content: "Felt well-rested today after a 30-minute evening walk. Hydration was good.", mood: "Good", tags: ["Reflection", "Sleep"] },
-        { id: "j2", date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(), title: "Managing Work Stress", content: "Practiced 4-7-8 breathing during afternoon meetings. Helped keep calm.", mood: "Great", tags: ["Mindfulness", "Stress"] },
+        {
+          id: "j1",
+          date: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+          title: "Morning Reflections & Cardio Recovery",
+          content: "Felt well-rested today after a 30-minute evening walk. Hydration was good, no palpitations noted.",
+          mood: "Good",
+          moodRating: 8,
+          sleepQuality: 8,
+          stressLevel: 3,
+          energyLevel: 7,
+          tags: ["Reflection", "Sleep", "Cardio"],
+          aiInsight: {
+            sentiment: "Positive / Regulated",
+            keyThemes: ["Sleep restoration", "Physical activity tolerance"],
+            clinicalConcern: false,
+            recommendation: "Sustain consistent sleep schedule and 30-min walking routine."
+          }
+        },
+        {
+          id: "j2",
+          date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+          title: "Managing Mid-Week Work Stress",
+          content: "Practiced 4-7-8 breathing during afternoon meetings. Mild tension headache but eased up post-lunch.",
+          mood: "Okay",
+          moodRating: 6,
+          sleepQuality: 6,
+          stressLevel: 6,
+          energyLevel: 5,
+          tags: ["Mindfulness", "Stress"],
+          aiInsight: {
+            sentiment: "Mild Strain / Responsive",
+            keyThemes: ["Work stress triggers", "Mindfulness coping"],
+            clinicalConcern: false,
+            recommendation: "Continue boundary setting and midday breathing breaks."
+          }
+        },
+        {
+          id: "j3",
+          date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+          title: "Weekend Reset and Family Time",
+          content: "High energy, pleasant mood. Had low-sodium dinner as advised in diet plan.",
+          mood: "Great",
+          moodRating: 9,
+          sleepQuality: 9,
+          stressLevel: 2,
+          energyLevel: 8,
+          tags: ["Family", "Diet", "Energy"],
+          aiInsight: {
+            sentiment: "Highly Positive",
+            keyThemes: ["Dietary adherence", "Low stress state"],
+            clinicalConcern: false,
+            recommendation: "Optimal lifestyle balance observed."
+          }
+        },
+      ];
+    } catch {
+      return [];
+    }
+  });
+
+  const [screeningHistory, setScreeningHistory] = useState<ScreeningResult[]>(() => {
+    try {
+      const stored = secureStorage.getItem<ScreeningResult[]>("medscope-screening-history");
+      if (stored && stored.length > 0) return stored;
+      return [
+        {
+          id: "scr-1",
+          instrument: "PHQ-9",
+          score: 6,
+          maxScore: 27,
+          severity: "Mild",
+          clinicalInterpretation: "Mild depressive symptoms noted.",
+          actionRecommendation: "Engage in physical activity, sleep hygiene, and Medscope guided wellness exercises. Re-screen in 2 weeks.",
+          escalationTriggered: false,
+          crisisAlert: false,
+          completedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+          answers: { 1: 1, 2: 1, 3: 2, 4: 1, 5: 1, 6: 0, 7: 0, 8: 0, 9: 0 },
+        },
+        {
+          id: "scr-2",
+          instrument: "GAD-7",
+          score: 8,
+          maxScore: 21,
+          severity: "Mild",
+          clinicalInterpretation: "Mild anxiety symptoms reported.",
+          actionRecommendation: "Use Medscope Box Breathing, 5-4-3-2-1 grounding exercises, and daily emotional check-ins.",
+          escalationTriggered: false,
+          crisisAlert: false,
+          completedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+          answers: { 1: 2, 2: 1, 3: 2, 4: 1, 5: 1, 6: 1, 7: 0 },
+        },
+        {
+          id: "scr-3",
+          instrument: "PSS-10",
+          score: 18,
+          maxScore: 40,
+          severity: "Moderate",
+          clinicalInterpretation: "Moderate perceived stress level.",
+          actionRecommendation: "Incorporate daily restorative breaks, sleep schedule stabilization, and Medscope journaling.",
+          escalationTriggered: false,
+          crisisAlert: false,
+          completedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+          answers: { 1: 2, 2: 2, 3: 3, 4: 2, 5: 2, 6: 2, 7: 2, 8: 2, 9: 1, 10: 2 },
+        },
       ];
     } catch {
       return [];
@@ -366,9 +515,18 @@ const MOCK_VITALS_LOGS: VitalsLog[] = [
     }
   });
 
-  // Persistence
+  // Persistence: local mirror + Firestore (patients/{uid})
   useEffect(() => {
     secureStorage.setItem(PROFILE_KEY, profile);
+    const hasIdentity = Boolean(
+      (profile.fullName && profile.fullName.trim()) ||
+      (profile.email && profile.email.trim())
+    );
+    if (!hasIdentity) return;
+    const { uid } = ensureAuthenticatedUser("patient");
+    savePatientOnboarding(uid, profile).catch((err) =>
+      console.warn("[Medscope] Patient profile sync to Firestore failed:", err)
+    );
   }, [profile]);
 
   useEffect(() => {
@@ -382,6 +540,10 @@ const MOCK_VITALS_LOGS: VitalsLog[] = [
   useEffect(() => {
     secureStorage.setItem("medscope-journal", journalEntries);
   }, [journalEntries]);
+
+  useEffect(() => {
+    secureStorage.setItem("medscope-screening-history", screeningHistory);
+  }, [screeningHistory]);
 
   useEffect(() => {
     secureStorage.setItem("medscope-vitals-logs", vitalsLogs);
@@ -417,7 +579,12 @@ const MOCK_VITALS_LOGS: VitalsLog[] = [
   };
 
   const addReminder = (r: Omit<Reminder, "id">) => {
-    const newReminder = { ...r, id: Math.random().toString(36).substring(2, 9) };
+    const newReminder = { 
+      ...r, 
+      id: Math.random().toString(36).substring(2, 9),
+      missedStreak: 0,
+      escalationLevel: 1
+    };
     setReminders(prev => [...prev, newReminder as Reminder]);
   };
 
@@ -426,7 +593,26 @@ const MOCK_VITALS_LOGS: VitalsLog[] = [
   };
 
   const markReminderDone = (id: string) => {
-    setReminders(prev => prev.map(r => r.id === id ? { ...r, status: "completed" as const } : r));
+    setReminders(prev => prev.map(r => r.id === id ? { 
+      ...r, 
+      status: "completed" as const,
+      missedStreak: 0,
+      escalationLevel: 1
+    } : r));
+  };
+
+  const markReminderMissed = (id: string) => {
+    setReminders(prev => prev.map(r => {
+      if (r.id !== id) return r;
+      const newStreak = (r.missedStreak || 0) + 1;
+      const newEscalation = newStreak >= 3 ? 3 : newStreak >= 2 ? 2 : 1;
+      return {
+        ...r,
+        status: "missed" as const,
+        missedStreak: newStreak,
+        escalationLevel: newEscalation,
+      };
+    }));
   };
 
   const snoozeReminder = (id: string) => {
@@ -435,6 +621,19 @@ const MOCK_VITALS_LOGS: VitalsLog[] = [
 
   const deleteReminder = (id: string) => {
     setReminders(prev => prev.filter(r => r.id !== id));
+  };
+
+  const addScreeningResult = (result: Omit<ScreeningResult, "id" | "completedAt"> & { id?: string; completedAt?: string }) => {
+    const newRecord: ScreeningResult = {
+      ...result,
+      id: result.id || `scr-${Date.now()}`,
+      completedAt: result.completedAt || new Date().toISOString(),
+    };
+    setScreeningHistory(prev => [newRecord, ...prev]);
+  };
+
+  const clearScreeningHistory = () => {
+    setScreeningHistory([]);
   };
 
   const addMoodLog = (log: Omit<MoodLog, "id">) => {
@@ -599,6 +798,7 @@ const MOCK_VITALS_LOGS: VitalsLog[] = [
         addReminder,
         editReminder,
         markReminderDone,
+        markReminderMissed,
         snoozeReminder,
         deleteReminder,
         addMoodLog,
@@ -610,6 +810,9 @@ const MOCK_VITALS_LOGS: VitalsLog[] = [
         addJournalEntry,
         updateJournalEntry,
         deleteJournalEntry,
+        screeningHistory,
+        addScreeningResult,
+        clearScreeningHistory,
         joinedGroups,
         joinGroup,
         leaveGroup,

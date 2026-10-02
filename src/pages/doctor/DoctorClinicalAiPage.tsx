@@ -10,10 +10,11 @@ import ClinicalKnowledgeWidget from "@/components/doctor-dashboard/clinical-ai/C
 import PatientEducationGeneratorSection from "@/components/doctor-dashboard/clinical-ai/PatientEducationGeneratorSection";
 import ReferralSuggestionsSection from "@/components/doctor-dashboard/clinical-ai/ReferralSuggestionsSection";
 import AiClinicalPanel from "@/components/doctor-dashboard/clinical-ai/AiClinicalPanel";
+import AdherenceSimulationWidget from "@/components/doctor-dashboard/clinical-ai/AdherenceSimulationWidget";
 
 export const DoctorClinicalAiPage: React.FC = () => {
   return (
-    <DoctorLayout doctorName="Dr. Sarah Jenkins" specialty="Cardiology & Internal Medicine">
+    <DoctorLayout>
       <DoctorPageContainer maxWidth="wide">
         <PageTransition className="space-y-8">
           
@@ -31,6 +32,9 @@ export const DoctorClinicalAiPage: React.FC = () => {
 
           {/* SECTION 5: PATIENT EDUCATION GENERATOR */}
           <PatientEducationGeneratorSection />
+
+          {/* SECTION: 90-DAY MEDICATION ADHERENCE SIMULATION & EMPIRICAL VALIDATION (CHAPTER 6.1, TABLE 6.1) */}
+          <AdherenceSimulationWidget />
 
           {/* 2-COLUMN GRID FOR KNOWLEDGE REFERENCES & EMBEDDED AI DIALOGUE PANEL */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">

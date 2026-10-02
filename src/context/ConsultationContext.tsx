@@ -117,7 +117,7 @@ export interface LiveConsultationSession {
   liveStatusMessage: string;
 }
 
-/* INITIAL MOCK SESSION STATE */
+/* INITIAL CONSULTATION SESSION STATE */
 const INITIAL_LIVE_SESSION: LiveConsultationSession = {
   sessionId: "session-98421",
   status: "doctor_available",
@@ -126,76 +126,59 @@ const INITIAL_LIVE_SESSION: LiveConsultationSession = {
     name: "Marcus Vance",
     age: 54,
     gender: "Male",
-    bloodGroup: "O Positive (O+)",
-    allergies: ["Penicillin (Anaphylaxis)", "Shellfish"],
-    vitals: { bp: "148/92", hr: 94, spo2: 95, temp: "98.6°F" },
+    bloodGroup: "O+",
+    allergies: ["Penicillin"],
+    vitals: { bp: "128/82", hr: 76, spo2: 98, temp: "98.6°F" },
   },
   doctor: {
     id: "doc-1",
-    name: "Dr. Sarah Jenkins, MD",
-    title: "Senior Attending Physician",
+    name: "Dr. Sarah Jenkins",
+    title: "Consultant Physician",
     specialty: "Cardiology & Internal Medicine",
-    hospital: "St. Jude Medical Center • Cath Lab 2",
+    hospital: "City Health Medical Center",
     licenseNumber: "MD-98421",
   },
-  diagnosis: "Subacute Coronary Syndrome • Coronary Artery Disease (CAD)",
+  diagnosis: "Routine Cardiovascular Review",
   prescriptionDraft: [
     {
       id: "rx-1",
-      name: "Clopidogrel Bisulfate",
-      dosage: "75 mg",
+      name: "Atorvastatin",
+      dosage: "20 mg",
       frequency: "Once Daily",
-      duration: "12 Months",
-      mealTiming: "After Meal",
-      instructions: "Take daily post-morning meal to prevent stent thrombosis.",
-    },
-    {
-      id: "rx-2",
-      name: "Atorvastatin Calcium",
-      dosage: "80 mg",
-      frequency: "Once Daily",
-      duration: "Ongoing",
+      duration: "30 Days",
       mealTiming: "At Bedtime",
-      instructions: "High-intensity statin for plaque stabilization.",
+      instructions: "Take once daily in the evening.",
     },
   ],
   prescriptionFinalized: false,
   soapNotes: {
-    subjective: "Patient presents with 2-hour onset of substernal chest tightness on exertion. Rates pain 6/10.",
-    objective: "BP 148/92, HR 94, SpO2 95%. Troponin T: 0.14 ng/mL. 12-lead ECG shows ST elevation in V2-V4.",
-    assessment: "Subacute Coronary Syndrome (ACS) with elevated Troponin T biomarkers. Penicillin allergy noted.",
-    plan: "Initiate Dual Antiplatelet Therapy (DAPT). Schedule primary PCI angiography within 2 hours.",
+    subjective: "Patient attending scheduled follow-up. Reports feeling well with no acute symptoms.",
+    objective: "Vitals within normal limits. Regular rate and rhythm.",
+    assessment: "Stable cardiovascular profile.",
+    plan: "Continue current regimen. Routine labs scheduled for next review.",
   },
-  uploadedReports: [
-    { id: "rep-1", title: "Troponin T Cardiac Biomarker Panel", type: "Laboratory PDF", date: "Today, 08:15 AM", summary: "Troponin T elevated at 0.14 ng/mL (Normal < 0.01 ng/mL)." },
-    { id: "rep-2", title: "12-Lead Electrocardiogram (ECG)", type: "Telemetry Trace", date: "Today, 08:20 AM", summary: "ST elevation in anterolateral leads V2-V4." },
-  ],
+  uploadedReports: [],
   lifestyleRecommendations: [
-    "Sodium restriction < 2,000 mg/day (less than 1 tsp salt).",
-    "Restricted strenuous activity pending Cath Lab evaluation.",
-    "Monitor daily weight and report > 2lb sudden gain.",
+    "Maintain regular moderate aerobic activity (30 mins/day).",
+    "Balanced low-sodium diet and adequate hydration.",
   ],
   dietPlan: {
-    breakfast: "Oatmeal with fresh blueberries, 1 tbsp flaxseed, 1 glass skim milk (or almond milk).",
-    lunch: "Grilled Mediterranean chicken salad with olive oil dressing, quinoa, and avocado.",
-    dinner: "Steamed wild salmon, roasted asparagus, and 1/2 cup wild rice.",
-    snacks: "Handful of raw unsalted almonds and 1 green apple.",
-    waterIntake: "8-10 glasses daily (2.5 Liters).",
-    specialInstructions: "Strict low-sodium (< 1,500mg/day). Avoid grapefruit due to statin interaction.",
+    breakfast: "",
+    lunch: "",
+    dinner: "",
+    snacks: "",
+    waterIntake: "2-2.5L daily",
+    specialInstructions: "Standard balanced nutritional diet.",
     isFollowing: true,
   },
   shareDoctorNotesWithPatient: true,
   followupPlan: {
-    nextAppointmentDate: "August 10, 2026",
-    reason: "Post-PCI stent patency check & serial INR titration.",
-    instructions: "Continue DAPT regimen daily. Emergency Cath Lab contact: 1-800-MED-CARD.",
+    nextAppointmentDate: "Next Month",
+    reason: "Routine clinical follow-up",
+    instructions: "Follow standard precautions and report any new symptoms.",
   },
-  sessionTimeline: [
-    { id: "t-1", timestamp: "08:30 AM", type: "started", actor: "system", title: "Consultation Started", description: "Dr. Sarah Jenkins connected to Exam Room 3B session." },
-    { id: "t-2", timestamp: "08:32 AM", type: "vitals", actor: "system", title: "Vitals Telemetry Synced", description: "BP 148/92, HR 94 bpm, SpO2 95% received." },
-    { id: "t-3", timestamp: "08:35 AM", type: "diagnosis", actor: "doctor", title: "Diagnosis Updated", description: "Subacute Coronary Syndrome • CAD added to chart." },
-  ],
-  liveStatusMessage: "Consultation in progress. Dr. Sarah Jenkins is reviewing clinical notes.",
+  sessionTimeline: [],
+  liveStatusMessage: "Doctor is ready for consultation.",
 };
 
 /* CONTEXT INTERFACE */
@@ -543,17 +526,17 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
         },
       },
       diagnosis: patientDiagnosis,
-      liveStatusMessage: `Doctor is available. Ready to join consultation with ${patientName}`,
-      sessionTimeline: [
-        {
-          id: `t-${Date.now()}`,
-          timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-          type: "started",
-          actor: "doctor",
-          title: "Session Initialized",
-          description: `Dr. Sarah Jenkins prepared consultation workspace for ${patientName}.`,
-        },
-      ],
+      prescriptionDraft: [],
+      prescriptionFinalized: false,
+      soapNotes: {
+        subjective: `Patient presents for evaluation regarding ${patientDiagnosis}.`,
+        objective: `Vitals: BP ${patientVitals.bp || "120/80"}, HR ${patientVitals.hr || 75} bpm, SpO2 ${patientVitals.spo2 || 98}%.`,
+        assessment: patientDiagnosis,
+        plan: "",
+      },
+      uploadedReports: [],
+      liveStatusMessage: `Doctor is available. Ready to start consultation with ${patientName}`,
+      sessionTimeline: [],
     }));
     setIsCallActive(false);
     setCallJoined(false);
@@ -647,6 +630,13 @@ export const ConsultationProvider = ({ children }: { children: ReactNode }) => {
   const endCall = () => {
     setIsCallActive(false);
     setCallJoined(false);
+    // Leaving or ending the call must also move the session out of the live
+    // state, otherwise the video window keeps rendering after the call ends.
+    setSession((prev) =>
+      prev.status === "in-progress"
+        ? { ...prev, status: "doctor_available", liveStatusMessage: "Video call ended. Prescription remains available." }
+        : prev
+    );
   };
 
   return (

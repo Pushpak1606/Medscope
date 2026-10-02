@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { usePatient } from "@/context/PatientContext";
+import { savePatientOnboarding } from "@/services/firebaseService";
+import { getStoredAuthUser } from "@/services/authService";
 import { ArrowLeft, CheckCircle, ChevronLeft, ChevronRight, Loader2, Activity } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { LiquidGlass } from "@liquidglass/react";
@@ -52,19 +54,27 @@ const OnboardingPage = () => {
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
-    
-    // Store onboarding data strictly in localStorage (no remote DB)
+
+    // Local flags first so navigation is never blocked
     try {
       localStorage.setItem("medscope_patient_onboarding", JSON.stringify(formData));
       localStorage.setItem("medscope_onboarding_completed", "true");
     } catch (e) {
-      console.warn("Could not save onboarding data to localStorage:", e);
+      console.warn("Could not save onboarding flags to localStorage:", e);
     }
 
-    await new Promise((resolve) => setTimeout(resolve, 1200));
+    // Persist the full profile to Firestore: patients/{uid} + users/{uid}
+    const authUser = getStoredAuthUser();
+    const uid = authUser?.uid || `local_patient_${Date.now()}`;
+    try {
+      await savePatientOnboarding(uid, formData);
+    } catch (e) {
+      console.warn("Firestore patient save failed; kept in local mirror:", e);
+    }
+
     setIsSubmitting(false);
     setIsSuccess(true);
-    
+
     // Redirect to dashboard after success
     setTimeout(() => {
       // Persist ALL form data into shared context

@@ -3,6 +3,7 @@ import DoctorGlassCard from "../DoctorGlassCard";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Sparkles, Calendar, Clock, Building2, CheckCircle2, ShieldCheck } from "lucide-react";
 import { motion } from "framer-motion";
+import { useDoctor } from "@/context/DoctorContext";
 
 export interface WorkspaceHeroProps {
   doctorName?: string;
@@ -13,12 +14,27 @@ export interface WorkspaceHeroProps {
 }
 
 export const WorkspaceHero: React.FC<WorkspaceHeroProps> = ({
-  doctorName = "Dr. Sarah Jenkins",
-  specialization = "Senior Consultant • Cardiology & Internal Medicine",
-  hospital = "St. Jude Medical Center • Building A, Wing 3",
+  doctorName,
+  specialization,
+  hospital,
   shiftHours = "08:00 AM - 04:00 PM • Active Shift",
   avatarUrl,
 }) => {
+  // Real signed-in doctor profile (hydrated from doctors/{uid} in Firestore)
+  const { doctorProfile } = useDoctor();
+  const name = doctorName || doctorProfile.fullName;
+  const parts = [doctorProfile.subSpecialty, doctorProfile.specialty].filter(
+    (s, i, arr) => s && s.trim() && arr.findIndex((o) => o.toLowerCase() === s.toLowerCase()) === i
+  );
+  const spec = specialization || parts.join(" • ");
+  const hosp = hospital || doctorProfile.hospital;
+  const initials = name
+    .replace(/^Dr\.\s*/i, "")
+    .split(/\s+/)
+    .map((w) => w[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
   // Format current date cleanly (e.g., "Sunday, July 26, 2026")
   const currentDate = new Date().toLocaleDateString("en-US", {
     weekday: "long",
@@ -49,11 +65,11 @@ export const WorkspaceHero: React.FC<WorkspaceHeroProps> = ({
             <div className="absolute inset-0 rounded-3xl bg-gradient-to-tr from-primary to-indigo-500 blur-md opacity-40 animate-pulse" />
             <Avatar className="h-16 w-16 sm:h-20 sm:w-20 rounded-3xl border-2 border-primary/40 shadow-xl relative z-10">
               <AvatarImage
-                src={avatarUrl || `https://api.dicebear.com/7.x/notionists/svg?seed=${doctorName}`}
-                alt={doctorName}
+                src={avatarUrl || `https://api.dicebear.com/7.x/notionists/svg?seed=${name}`}
+                alt={name}
               />
               <AvatarFallback className="bg-primary/20 text-primary font-bold text-xl rounded-3xl">
-                SJ
+                {initials || "DR"}
               </AvatarFallback>
             </Avatar>
             <span className="absolute -bottom-1 -right-1 h-5 w-5 rounded-full bg-emerald-500 border-2 border-background flex items-center justify-center text-[10px] text-white z-20">
@@ -63,26 +79,23 @@ export const WorkspaceHero: React.FC<WorkspaceHeroProps> = ({
 
           <div className="space-y-1.5 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-primary flex items-center gap-1">
-                <ShieldCheck className="h-3 w-3" /> Licensed Clinician
-              </span>
               <span className="text-xs font-medium text-muted-foreground flex items-center gap-1">
                 <Calendar className="h-3 w-3 text-primary" /> {currentDate}
               </span>
             </div>
 
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold font-heading text-foreground tracking-tight truncate">
-              {greetingTime}, {doctorName}
+              {greetingTime}, {name}
             </h1>
 
             <p className="text-xs sm:text-sm font-medium text-muted-foreground truncate">
-              {specialization}
+              {spec}
             </p>
 
             <div className="flex items-center gap-3 text-xs text-muted-foreground/90 pt-0.5 flex-wrap">
               <span className="flex items-center gap-1">
                 <Building2 className="h-3.5 w-3.5 text-primary" />
-                {hospital}
+                {hosp}
               </span>
               <span className="hidden sm:inline text-border">•</span>
               <span className="flex items-center gap-1 font-semibold text-emerald-600 dark:text-emerald-400">
@@ -93,21 +106,13 @@ export const WorkspaceHero: React.FC<WorkspaceHeroProps> = ({
           </div>
         </div>
 
-        {/* Right Side: Key Motivational Sentence Card */}
-        <motion.div
-          initial={{ opacity: 0, x: 10 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.15 }}
-          className="w-full md:w-auto md:max-w-xs p-4 rounded-2xl bg-card/60 backdrop-blur-xl border border-primary/20 shadow-inner space-y-1.5 shrink-0"
-        >
-          <div className="flex items-center gap-1.5 text-xs font-semibold text-primary uppercase tracking-wider">
-            <Sparkles className="h-3.5 w-3.5" />
-            <span>Shift Briefing</span>
+        {/* Right Side: Shift Status Pill */}
+        <div className="flex items-center gap-3 shrink-0">
+          <div className="px-4 py-2.5 rounded-2xl bg-card/70 border border-border/60 backdrop-blur-md flex items-center gap-2 text-xs font-semibold text-foreground shadow-sm">
+            <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span>Clinic Shift Active</span>
           </div>
-          <p className="text-xs sm:text-sm text-foreground font-medium leading-relaxed">
-            "Today you have <span className="font-bold text-primary">8 consultations</span> scheduled. Your first patient arrives in <span className="font-bold text-emerald-500">18 minutes</span>."
-          </p>
-        </motion.div>
+        </div>
 
       </div>
     </DoctorGlassCard>

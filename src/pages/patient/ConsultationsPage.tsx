@@ -42,7 +42,9 @@ export default function ConsultationsPage() {
     bookConsultation,
     cancelConsultation,
     joinConsultation,
-    rescheduleConsultation
+    rescheduleConsultation,
+    callJoined,
+    session,
   } = useConsultation();
 
   // Derived metrics
@@ -71,11 +73,19 @@ export default function ConsultationsPage() {
         <motion.div variants={fadeInOptions} className="flex flex-col gap-4 relative">
           <PageHeader 
             title="Consultations" 
-            subtitle="Manage your upcoming appointments, medical history & live consultation sessions" 
+            subtitle="Manage your appointments, past consultations, and clinical specialists" 
           />
 
-          {/* REAL-TIME SYNCHRONIZED CONSULTATION SESSION VIEW */}
-          <PatientLiveConsultationView />
+          {/* ACTIVE CONSULTATION VIEW (ONLY SHOWN WHEN CALL IS ACTIVE) */}
+          {(callJoined || session.status === "in-progress") && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="w-full"
+            >
+              <PatientLiveConsultationView />
+            </motion.div>
+          )}
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mt-2">
             <div className="bg-card/40 border border-border/50 rounded-2xl p-4 flex flex-col items-center justify-center backdrop-blur-md shadow-sm">

@@ -40,7 +40,7 @@ export const DoctorPatientsPage: React.FC = () => {
   };
 
   return (
-    <DoctorLayout doctorName="Dr. Sarah Jenkins" specialty="Cardiology & Internal Medicine">
+    <DoctorLayout>
       <DoctorPageContainer maxWidth="wide">
         <PageTransition className="space-y-8">
           

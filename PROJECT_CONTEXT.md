@@ -35,8 +35,9 @@ Medscope is built using modern, highly performant web technologies. For detailed
 | **Core Framework** | React 18, Vite 5 (SWC), TypeScript | Component UI structure, fast HMR, and strict typing |
 | **Routing** | React Router DOM v6 | Single-Page Application routing map with 20+ routes |
 | **Styling & UI** | TailwindCSS 3, ShadCN/UI, Radix UI, `@liquidglass/react` | Modern, fully responsive utility layout, accessible component primitives, and premium glassmorphic cards |
-| **State Management** | React Context API, TanStack React Query | Global state persistence (profile, reminders) and cache handling |
-| **Animations & 3D** | Framer Motion, Three.js, Spline | Fluid entrance/stagger animations, and interactive 3D hero assets |
+| **State Management** | React Context API | Global state persistence (profile, reminders, consultations) |
+| **Animations** | Framer Motion | Fluid entrance/stagger animations |
+| **AI / OCR** | Groq LLM, Tesseract.js + OCR.space | Clinical AI microservices; dual-engine optical scanning (offline primary, cloud fallback) |
 | **Form Handling** | React Hook Form, Zod | Type-safe schema validation for authentication and onboarding forms |
 | **Data Viz** | Recharts | Interactive trend charting for health scores and mood tracking |
 | **Security** | CryptoJS (AES-256) | Client-side encryption for Personal Health Information (PHI) |

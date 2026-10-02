@@ -20,10 +20,12 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { INITIAL_POSTS, MOCK_GROUPS, Post } from "@/lib/communityMockData";
 import { toast } from "sonner";
+import { useDoctor } from "@/context/DoctorContext";
 
 const CATEGORIES = ["All", "Mental Health", "Chronic Conditions", "Nutrition", "Recovery", "Lifestyle", "Fitness"];
 
 export const DoctorCommunityPage: React.FC = () => {
+  const { doctorProfile } = useDoctor();
   const [posts, setPosts] = useState<Post[]>(INITIAL_POSTS);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -51,14 +53,14 @@ export const DoctorCommunityPage: React.FC = () => {
   }, [posts, searchQuery, selectedCategory]);
 
   return (
-    <DoctorLayout doctorName="Dr. Sarah Jenkins" specialty="Cardiology & Internal Medicine">
+    <DoctorLayout>
       <DoctorPageContainer maxWidth="wide">
         <PageTransition className="space-y-8">
           
           {/* SECTION 1: DOCTOR COMMUNITY HERO */}
           <DoctorCommunityHero
-            doctorName="Dr. Sarah Jenkins"
-            specialty="Cardiology & Internal Medicine"
+            doctorName={undefined}
+            specialty={undefined}
             pendingReportsCount={3}
             verifiedAnswersCount={12}
             onCreateAnnouncement={() => setIsAnnouncementModalOpen(true)}
@@ -152,7 +154,7 @@ export const DoctorCommunityPage: React.FC = () => {
                     <PostFeedCard
                       key={post.id}
                       post={post}
-                      currentUserName="Dr. Sarah Jenkins, MD"
+                      currentUserName={doctorProfile.fullName}
                     />
                   ))}
                 </div>

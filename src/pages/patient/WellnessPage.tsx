@@ -352,6 +352,37 @@ export default function WellnessPage() {
           </GlassCard>
         </motion.div>
 
+        {/* --- CLINICAL MENTAL HEALTH SCREENING BANNER (FR-05) --- */}
+        <motion.div variants={fadeInOptions}>
+          <GlassCard className="p-6 sm:p-7 relative overflow-hidden bg-gradient-to-r from-pink-500/15 via-purple-500/10 to-card/70 border-pink-500/30">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-5 relative z-10">
+              <div className="space-y-1.5 max-w-2xl">
+                <div className="flex items-center gap-2">
+                  <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-pink-500/20 text-pink-400 border border-pink-500/30">
+                    Clinical Standard Instruments
+                  </span>
+                  <span className="text-xs text-muted-foreground">• PHQ-9 • GAD-7 • PSS-10</span>
+                </div>
+                <h3 className="text-xl font-bold text-foreground">
+                  Validated Mental Health & Clinical Screening
+                </h3>
+                <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                  Take clinically validated self-assessments to detect early signs of depression, anxiety, and chronic stress. High scores automatically prompt priority doctor consultations.
+                </p>
+              </div>
+              <div className="flex-shrink-0">
+                <Link to="/patient/mental-screening">
+                  <Button className="h-12 px-6 rounded-2xl bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-bold text-sm shadow-lg shadow-pink-500/20 gap-2">
+                    <Activity className="w-4 h-4" />
+                    <span>Start Clinical Screening</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </GlassCard>
+        </motion.div>
+
         {/* --- BENTO GRID: GUIDED BREATHING & MOOD TRACKING --- */}
         <motion.div variants={fadeInOptions} className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
           

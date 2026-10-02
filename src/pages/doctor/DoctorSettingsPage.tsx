@@ -18,7 +18,7 @@ import AccountDangerZoneCard from "@/components/doctor-dashboard/settings/Accoun
 
 export const DoctorSettingsPage: React.FC = () => {
   return (
-    <DoctorLayout doctorName="Dr. Sarah Jenkins" specialty="Cardiology & Internal Medicine">
+    <DoctorLayout>
       <DoctorPageContainer maxWidth="wide">
         <PageTransition className="space-y-8">
           

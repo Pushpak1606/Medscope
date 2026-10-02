@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/command";
 import { 
   Bell, FileText, Home, Settings, Calendar, 
-  User, Pill, MessageSquare, BotMessageSquare, Camera, BookHeart, PhoneCall
+  User, Pill, MessageSquare, BotMessageSquare, Camera, BookHeart, PhoneCall, Stethoscope
 } from "lucide-react";
 
 interface GlobalSearchProps {
@@ -57,6 +57,10 @@ const GlobalSearch = ({ open, onOpenChange }: GlobalSearchProps) => {
           <CommandItem onSelect={() => runCommand(() => navigate("/patient/consultations"))}>
             <Calendar className="mr-2 h-4 w-4 text-indigo-500" />
             <span>Consultations</span>
+          </CommandItem>
+          <CommandItem onSelect={() => runCommand(() => navigate("/patient/find-doctors"))}>
+            <Stethoscope className="mr-2 h-4 w-4 text-emerald-500" />
+            <span>Find Doctors for My Problem</span>
           </CommandItem>
         </CommandGroup>
 
